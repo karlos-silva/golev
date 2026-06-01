@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Security audit
+        run: |
+          if [ -f .audit-ignore ]; then
+            IGNORES=$(grep -v '^#' .audit-ignore | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
+            if [ -n "$IGNORES" ]; then
+              pnpm audit --audit-level=high --ignore-cves="$IGNORES"
+            else
+              pnpm audit --audit-level=high
+            fi
+          else
+            pnpm audit --audit-level=high
+          fi
+
+      - run: pnpm turbo lint
+      - run: pnpm turbo typecheck
+      - run: pnpm turbo test:unit
+      - run: pnpm turbo test:integration
+      - run: pnpm turbo build
+
+      - name: Validate migrations
+        run: pnpm --filter @trianox/api db:migrate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test

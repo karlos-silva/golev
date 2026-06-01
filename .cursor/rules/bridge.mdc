@@ -1,0 +1,17 @@
+---
+description: Bridge Cursor → .ai/
+globs: "**/*"
+alwaysApply: true
+---
+
+Este projeto segue o padrão Trianox de arquitetura SaaS.
+
+Para todas as regras, skills e guidelines, consulte a pasta `.ai/` na raiz do repositório.
+
+Ponto de entrada: `.ai/AGENTS.md`
+
+Regras por contexto: `.ai/rules/`
+Skills (guias passo-a-passo): `.ai/skills/`
+Agentes pré-configurados: `.ai/agents/`
+Prompts reutilizáveis: `.ai/prompts/`
+Contexto de negócio: `.ai/context/`

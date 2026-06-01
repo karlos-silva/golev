@@ -1,0 +1,7 @@
+# CVEs ignorados temporariamente (sem fix disponivel)
+# Formato: 1 ID por linha (GHSA-xxxx ou CVE-xxxx)
+# Revisar mensalmente e remover quando fix estiver disponivel
+#
+# Exemplo:
+# GHSA-xxxx-xxxx-xxxx
+# CVE-2024-00000

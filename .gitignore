@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.cursor/plans/
+
+.vscode/
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python (Cursor skills scripts)
+__pycache__/
+*.py[cod]
+
+# Turbo
+.turbo/
+
+# Coverage
+coverage/
+
+# Docker
+*.log
+
+# Playwright
+test-results/
+playwright-report/
