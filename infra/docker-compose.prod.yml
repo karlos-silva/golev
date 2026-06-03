@@ -9,6 +9,9 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - ./caddy/certs:/etc/caddy/certs:ro
       - caddy_data:/data
+    networks:
+      - default
+      - web_edge
     depends_on:
       - web
       - api
@@ -42,6 +45,10 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
+
+networks:
+  web_edge:
+    external: true
 
 volumes:
   pgdata:
