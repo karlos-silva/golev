@@ -2,6 +2,7 @@ name: Preview
 
 # Preview efêmero opt-in: só roda quando a label `preview` é adicionada ao PR
 # (ou em novos commits de um PR que já tem a label). Derruba ao tirar a label / fechar o PR.
+# Build no runner do GitHub; deploy/teardown no runner self-hosted (VPS, sem SSH).
 on:
   pull_request:
     types: [labeled, unlabeled, synchronize, closed]
@@ -15,7 +16,7 @@ env:
   PRODUCT_NAME: golev-plataform
 
 jobs:
-  deploy-preview:
+  build-preview:
     if: >-
       (github.event.action == 'labeled' && github.event.label.name == 'preview') ||
       (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'preview'))
@@ -23,7 +24,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,23 +55,25 @@ jobs:
             NEXT_PUBLIC_API_URL=https://api-preview.golev.app.br
             NEXT_PUBLIC_SITE_URL=https://preview.golev.app.br
 
-      - name: Deploy preview on VPS
-        uses: appleboy/ssh-action@v1
+  deploy-preview:
+    needs: build-preview
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: write
+    steps:
+      - name: Deploy preview (local na VPS)
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GHCR_TOKEN,GHCR_USER
-          script: |
-            set -euo pipefail
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
-            cd /root/apps/golev-plataform/preview
-            docker compose pull
-            docker compose run --rm preview-api npx drizzle-kit migrate
-            docker compose up -d --remove-orphans
+        run: |
+          set -euo pipefail
+          cd /opt/golev/preview
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          docker compose pull
+          docker compose run --rm preview-api npx drizzle-kit migrate
+          docker compose up -d --remove-orphans
 
       - name: Comment preview URL
         if: github.event.action == 'labeled'
@@ -82,23 +84,17 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '🔎 **Preview no ar:** https://preview.golev.app.br\nAPI: https://api-preview.golev.app.br\n\n_Slot único (banco isolado, descartável). Sai do ar ao remover a label `preview` ou fechar o PR._'
+              body: '🔎 **Preview no ar:** https://preview.golev.app.br\nAPI: https://api-preview.golev.app.br\n\n_Slot único (banco isolado, descartável, noindex). Sai do ar ao remover a label `preview` ou fechar o PR._'
             })
 
   teardown-preview:
     if: >-
       (github.event.action == 'unlabeled' && github.event.label.name == 'preview') ||
       (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Tear down preview on VPS
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -euo pipefail
-            cd /root/apps/golev-plataform/preview 2>/dev/null || exit 0
-            docker compose down -v --remove-orphans || true
-            echo "preview derrubado"
+      - name: Tear down preview (local na VPS)
+        run: |
+          cd /opt/golev/preview 2>/dev/null || exit 0
+          docker compose down -v --remove-orphans || true
+          echo "preview derrubado"

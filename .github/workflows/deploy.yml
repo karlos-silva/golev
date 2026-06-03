@@ -155,36 +155,30 @@ jobs:
         (github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AUTO_DEPLOY_PRODUCTION_ON_MAIN == 'true') ||
         (github.event_name == 'workflow_dispatch' && inputs.target == 'production')
       )
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: production
     permissions:
       contents: read
       packages: read
     steps:
-      - name: Deploy to production
-        uses: appleboy/ssh-action@v1
+      - name: Deploy to production (local na VPS)
         env:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID,GHCR_TOKEN,GHCR_USER
-          script: |
-            set -euo pipefail
-            cd ~/apps/${{ env.PRODUCT_NAME }}/production
-            export IMAGE_TAG=latest
-            # Gera o .env (que o compose consome via env_file) a partir do Infisical
-            INFISICAL_TOKEN="$(infisical login --method=universal-auth \
-              --client-id="$INFISICAL_CLIENT_ID" \
-              --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent)"
-            infisical export --token="$INFISICAL_TOKEN" \
-              --projectId="$INFISICAL_PROJECT_ID" --env=prod --format=dotenv > .env
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
-            docker compose pull
-            docker compose run --rm api npx drizzle-kit migrate
-            docker compose up -d --remove-orphans
+        run: |
+          set -euo pipefail
+          cd /opt/golev/production
+          export IMAGE_TAG=latest
+          # Gera o .env (que o compose consome via env_file) a partir do Infisical
+          INFISICAL_TOKEN="$(infisical login --method=universal-auth \
+            --client-id="$INFISICAL_CLIENT_ID" \
+            --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent)"
+          infisical export --token="$INFISICAL_TOKEN" \
+            --projectId="$INFISICAL_PROJECT_ID" --env=prod --format=dotenv > .env
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          docker compose pull
+          docker compose run --rm api npx drizzle-kit migrate
+          docker compose up -d --remove-orphans
