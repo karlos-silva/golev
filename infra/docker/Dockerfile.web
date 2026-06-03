@@ -25,6 +25,8 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
 RUN pnpm --filter @golev/shared build
 RUN pnpm --filter @golev/web build
+# garante que public/ exista (Next não exige; git não versiona dir vazio)
+RUN mkdir -p /app/apps/web/public
 
 FROM node:24-alpine AS runner
 WORKDIR /app
