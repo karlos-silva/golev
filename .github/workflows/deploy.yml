@@ -21,7 +21,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
-  PRODUCT_NAME: saas
+  PRODUCT_NAME: golev-plataform
 
 jobs:
   build-and-push:
@@ -65,7 +65,7 @@ jobs:
           fi
         env:
           IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
-          PRODUCT_NAME: saas
+          PRODUCT_NAME: golev-plataform
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
