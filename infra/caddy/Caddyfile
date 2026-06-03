@@ -19,3 +19,16 @@ api.{$DOMAIN} {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
     reverse_proxy api:3333
 }
+
+# ── Preview efêmero (slot único, opt-in via label `preview` no PR) ──
+# Os upstreams preview-web/preview-api só existem quando há um preview no ar
+# (rede externa web_edge). Sem preview → 502 (esperado).
+preview.{$DOMAIN} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+    reverse_proxy preview-web:3000
+}
+
+api-preview.{$DOMAIN} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+    reverse_proxy preview-api:3333
+}

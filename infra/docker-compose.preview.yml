@@ -1,0 +1,56 @@
+# Preview efêmero — slot único reaproveitável (opt-in via label `preview` no PR).
+# Sobe sob demanda e é derrubado ao tirar a label / fechar o PR.
+# Banco ISOLADO e descartável; credenciais throwaway (não é prod, não usa Infisical).
+# Servido pelo Caddy do prod via rede externa `web_edge` (preview.golev.app.br / api-preview.golev.app.br).
+name: preview
+
+services:
+  preview-web:
+    image: ghcr.io/${GHCR_OWNER:-go-lev}/${PRODUCT_NAME:-golev-plataform}-web:${PREVIEW_TAG:-preview}
+    environment:
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+    networks: [web_edge, internal]
+    depends_on: [preview-api]
+    restart: unless-stopped
+
+  preview-api:
+    image: ghcr.io/${GHCR_OWNER:-go-lev}/${PRODUCT_NAME:-golev-plataform}-api:${PREVIEW_TAG:-preview}
+    environment:
+      PORT: "3333"
+      NODE_ENV: production
+      DATABASE_URL: postgresql://preview:preview@preview-db:5432/preview
+      ALLOWED_ORIGINS: https://preview.golev.app.br
+      JWT_SECRET: preview-only-not-secret
+      JWT_REFRESH_SECRET: preview-only-not-secret-refresh
+      JWT_ACCESS_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+    networks: [web_edge, internal]
+    depends_on:
+      preview-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  preview-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: preview
+      POSTGRES_PASSWORD: preview
+      POSTGRES_DB: preview
+    volumes:
+      - preview_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preview"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [internal]
+    restart: unless-stopped
+
+networks:
+  web_edge:
+    external: true
+  internal:
+
+volumes:
+  preview_pgdata:
