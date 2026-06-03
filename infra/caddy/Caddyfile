@@ -1,4 +1,11 @@
+# TLS de origem via Cloudflare Origin Certificate (15 anos).
+# Cloudflare faz o TLS de borda + CDN; o Caddy só apresenta o cert de origem.
+# Modo SSL/TLS no painel Cloudflare: Full (strict).
+# Os arquivos abaixo são montados a partir de ./caddy/certs (NÃO versionados).
+
 {$DOMAIN} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+
     handle /_next/static/* {
         header Cache-Control "public, max-age=31536000, immutable"
         reverse_proxy web:3000
@@ -9,5 +16,6 @@
 }
 
 api.{$DOMAIN} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
     reverse_proxy api:3333
 }

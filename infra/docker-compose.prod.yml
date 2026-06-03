@@ -4,8 +4,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    env_file: .env
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/certs:/etc/caddy/certs:ro
       - caddy_data:/data
     depends_on:
       - web

@@ -50,15 +50,18 @@ jobs:
               echo "api_tags=${PREFIX}-api:${TAG},${PREFIX}-api:${SHA}" >> "$GITHUB_OUTPUT"
               echo "web_tags=${PREFIX}-web:${TAG},${PREFIX}-web:${SHA}" >> "$GITHUB_OUTPUT"
               echo "deploy_tag=${TAG}" >> "$GITHUB_OUTPUT"
+              echo "infisical_env=staging" >> "$GITHUB_OUTPUT"
             else
               echo "api_tags=${PREFIX}-api:latest,${PREFIX}-api:${SHA}" >> "$GITHUB_OUTPUT"
               echo "web_tags=${PREFIX}-web:latest,${PREFIX}-web:${SHA}" >> "$GITHUB_OUTPUT"
               echo "deploy_tag=latest" >> "$GITHUB_OUTPUT"
+              echo "infisical_env=prod" >> "$GITHUB_OUTPUT"
             fi
           else
             echo "api_tags=${PREFIX}-api:latest,${PREFIX}-api:${SHA}" >> "$GITHUB_OUTPUT"
             echo "web_tags=${PREFIX}-web:latest,${PREFIX}-web:${SHA}" >> "$GITHUB_OUTPUT"
             echo "deploy_tag=latest" >> "$GITHUB_OUTPUT"
+            echo "infisical_env=prod" >> "$GITHUB_OUTPUT"
           fi
         env:
           IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
@@ -79,6 +82,18 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.api_tags }}
 
+      # Busca os NEXT_PUBLIC_* do Infisical e injeta como env vars do job.
+      # São build-time: precisam estar presentes no `next build`.
+      - name: Fetch build secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.12
+        with:
+          method: 'universal'
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          env-slug: ${{ steps.meta.outputs.infisical_env }}
+          domain: 'https://app.infisical.com'
+
       - name: Build and push Web image
         uses: docker/build-push-action@v6
         with:
@@ -86,6 +101,11 @@ jobs:
           file: infra/docker/Dockerfile.web
           push: true
           tags: ${{ steps.meta.outputs.web_tags }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_SITE_URL=${{ env.NEXT_PUBLIC_SITE_URL }}
+            NEXT_PUBLIC_POSTHOG_KEY=${{ env.NEXT_PUBLIC_POSTHOG_KEY }}
+            NEXT_PUBLIC_POSTHOG_HOST=${{ env.NEXT_PUBLIC_POSTHOG_HOST }}
 
   deploy-staging:
     needs: build-and-push
@@ -101,13 +121,25 @@ jobs:
     steps:
       - name: Deploy to staging
         uses: appleboy/ssh-action@v1
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID
           script: |
+            set -euo pipefail
             cd ~/apps/${{ env.PRODUCT_NAME }}/staging
             export IMAGE_TAG="${{ needs.build-and-push.outputs.deploy_tag }}"
+            # Gera o .env (que o compose consome via env_file) a partir do Infisical
+            INFISICAL_TOKEN="$(infisical login --method=universal-auth \
+              --client-id="$INFISICAL_CLIENT_ID" \
+              --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent)"
+            infisical export --token="$INFISICAL_TOKEN" \
+              --projectId="$INFISICAL_PROJECT_ID" --env=staging --format=dotenv > .env
             docker compose pull
             docker compose run --rm api npx drizzle-kit migrate
             docker compose up -d --remove-orphans
@@ -129,13 +161,25 @@ jobs:
     steps:
       - name: Deploy to production
         uses: appleboy/ssh-action@v1
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID
           script: |
+            set -euo pipefail
             cd ~/apps/${{ env.PRODUCT_NAME }}/production
             export IMAGE_TAG=latest
+            # Gera o .env (que o compose consome via env_file) a partir do Infisical
+            INFISICAL_TOKEN="$(infisical login --method=universal-auth \
+              --client-id="$INFISICAL_CLIENT_ID" \
+              --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent)"
+            infisical export --token="$INFISICAL_TOKEN" \
+              --projectId="$INFISICAL_PROJECT_ID" --env=prod --format=dotenv > .env
             docker compose pull
             docker compose run --rm api npx drizzle-kit migrate
             docker compose up -d --remove-orphans

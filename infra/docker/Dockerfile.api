@@ -13,8 +13,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY . .
-RUN pnpm --filter @trianox/shared build
-RUN pnpm --filter @trianox/api build
+RUN pnpm --filter @golev/shared build
+RUN pnpm --filter @golev/api build
 
 FROM node:24-alpine AS runner
 WORKDIR /app
