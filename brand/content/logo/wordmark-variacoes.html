@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Go Lev — Wordmark · Variações tipográficas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Design tokens + fontes: fonte única em @golev/shared/brand -->
+<link rel="stylesheet" href="../../../packages/shared/brand/tokens.css" />
+<link rel="stylesheet" href="../../../packages/shared/brand/fonts.css" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:clamp(28px,5vw,60px) clamp(20px,5vw,52px)}
+  .kick{font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--coral-700);margin-bottom:12px}
+  h1{font-size:clamp(1.8rem,3.4vw,2.5rem);font-weight:800;letter-spacing:-.03em;line-height:1.05}
+  .lead{font-size:1.05rem;color:var(--ink-2);max-width:60ch;margin-top:14px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-top:36px}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:26px 26px 18px}
+  .card.dark{background:var(--forest-900);border-color:var(--forest-900)}
+  .num{font-variant-numeric:tabular-nums;font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--ink-3)}
+  .card.dark .num{color:var(--sage)}
+  .lk{display:flex;align-items:center;gap:11px;min-height:74px}
+  .mark{width:auto;height:44px;flex:none}
+  .wm{color:var(--ink);white-space:nowrap}
+  .card.dark .wm{color:var(--paper)}
+  .spec{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:.82rem;color:var(--ink-2)}
+  .card.dark .spec{border-top-color:rgba(255,255,255,.12);color:var(--sage-tint,#EAF0F1)}
+
+  /* helpers de fonte */
+  .h{font-family:var(--font)} .n{font-family:var(--font-accent)}
+  .w3{font-weight:300}.w4{font-weight:400}.w5{font-weight:500}.w6{font-weight:600}.w7{font-weight:700}.w8{font-weight:800}
+  .it{font-style:italic} .low{text-transform:lowercase} .up{text-transform:uppercase}
+  .tight{letter-spacing:-.03em} .wide{letter-spacing:.18em} .accent{color:var(--coral-700)}
+  .card.dark .accent{color:var(--coral)}
+  .big{font-size:2rem} .med{font-size:1.7rem}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="pena" viewBox="0 0 329 367">
+    <path style="fill:var(--coral)" d="M81.659 237.551C78.2552 237.126 76.2396 237.299 72.659 237.551C77.8254 234.262 81.1577 232.93 87.159 231.051L117.159 208.051C116.877 207.588 116.601 207.378 116.159 207.051C117.233 206.823 117.817 206.827 119.159 207.051C142.181 192.366 153.653 185.254 180.659 177.051C174.266 174.284 170.492 173.51 163.659 172.551C171.365 171.537 175.856 171.253 184.159 171.551C201.233 155.287 195.502 139.605 228.5 130.331C159.446 124.186 147.23 128.931 87.159 180.543C71.3519 209.092 47.0556 258.348 30.6342 298.426C33.1963 293.013 62.6775 254.035 81.659 237.551Z"/>
+    <path fill="currentColor" d="M0.768685 356.051C-2.00099 370.156 3.12815 369.865 9.53604 357.051C17.4194 336.132 23.1761 316.628 30.6342 298.426C47.0556 258.348 71.3519 209.092 87.159 180.543C166.148 99.2141 202.823 78.3918 317.135 40.0508C335.773 31.6674 332.164 19.921 305.269 19.0547C296.092 19.02 271.977 18.0434 261.269 19.0547C250.562 20.066 272.608 6.62535 282.769 0.054714C225.417 -0.970039 198.696 12.0649 163.269 67.5547L171.269 40.0547C141.707 58.9603 129.101 74.9208 116.769 116.555C116.741 105.829 117.304 99.2905 120.769 86.5547C56.1105 205.353 31.0787 262.687 0.768685 356.051Z"/>
+  </symbol>
+</defs></svg>
+
+<div class="wrap">
+  <div class="kick">Go Lev · Wordmark</div>
+  <h1>Pena + nome — variações tipográficas</h1>
+  <p class="lead">A pena é fixa (cor da marca, lâmina denim + base pêssego). O que muda é só o <b>nome</b>: fonte, peso, caixa, itálico e misturas Hanken × Newsreader. Me diga o número que mais gostou — ou combine ideias de dois.</p>
+
+  <div class="grid">
+
+    <!-- 1 -->
+    <div class="card">
+      <span class="num">01</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h w7 tight">Go&nbsp;Lev</span></div>
+      <div class="spec">Hanken · Bold · caixa normal · tracking apertado <i>(o original)</i></div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <span class="num">02</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h w8 low tight">go&nbsp;lev</span></div>
+      <div class="spec">Hanken · ExtraBold · minúsculo</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <span class="num">03</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med n w7 low">go&nbsp;lev</span></div>
+      <div class="spec">Newsreader · Bold · minúsculo <i>(a versão atual)</i></div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <span class="num">04</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n w4">Go&nbsp;Lev</span></div>
+      <div class="spec">Newsreader · Regular · caixa normal <i>(leve, editorial)</i></div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <span class="num">05</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n w5 it low">go&nbsp;lev</span></div>
+      <div class="spec">Newsreader · Itálico · minúsculo</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card">
+      <span class="num">06</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med tight"><span class="h w7">Go</span><span class="n w5 it accent">&nbsp;Lev</span></span></div>
+      <div class="spec">Misto — "Go" Hanken Bold + <i>"Lev"</i> Newsreader itálico (acento no Lev)</div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <span class="num">07</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med low tight"><span class="h w7">go</span><span class="n w5 it accent">&nbsp;lev</span></span></div>
+      <div class="spec">Misto minúsculo — "go" Hanken Bold + <i>"lev"</i> Newsreader itálico</div>
+    </div>
+
+    <!-- 8 -->
+    <div class="card">
+      <span class="num">08</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med"><span class="n w4 it">Go</span><span class="h w7 tight">&nbsp;Lev</span></span></div>
+      <div class="spec">Misto invertido — <i>"Go"</i> Newsreader itálico + "Lev" Hanken Bold</div>
+    </div>
+
+    <!-- 9 -->
+    <div class="card">
+      <span class="num">09</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h tight"><span class="w8">Go</span><span class="w3">&nbsp;Lev</span></span></div>
+      <div class="spec">Hanken — peso contrastado: "Go" ExtraBold + "Lev" Light</div>
+    </div>
+
+    <!-- 10 -->
+    <div class="card">
+      <span class="num">10</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n low"><span class="w7">go</span><span class="w4">&nbsp;lev</span></span></div>
+      <div class="spec">Newsreader — peso contrastado: "go" Bold + "lev" Regular · minúsculo</div>
+    </div>
+
+    <!-- 11 -->
+    <div class="card">
+      <span class="num">11</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm h w6 up" style="font-size:1.25rem;letter-spacing:.16em">Go&nbsp;Lev</span></div>
+      <div class="spec">Hanken · SemiBold · MAIÚSCULO · tracking largo <i>(minimal)</i></div>
+    </div>
+
+    <!-- 12 -->
+    <div class="card">
+      <span class="num">12</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n w5 it">Go&nbsp;Lev</span></div>
+      <div class="spec">Newsreader · Médio Itálico · caixa normal <i>(editorial suave)</i></div>
+    </div>
+
+  </div>
+
+  <!-- ===== SEM ESPAÇO (uma palavra) ===== -->
+  <h1 style="font-size:1.3rem;margin-top:48px">Sem espaço — uma palavra só</h1>
+  <p class="lead" style="margin-top:8px">A maiúscula no "L" ou a troca de fonte/cor separa "Go" de "Lev" sem precisar de espaço.</p>
+  <div class="grid">
+
+    <!-- 13 -->
+    <div class="card">
+      <span class="num">13</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h w7 tight">GoLev</span></div>
+      <div class="spec">Hanken · Bold · camelCase (sem espaço)</div>
+    </div>
+
+    <!-- 14 -->
+    <div class="card">
+      <span class="num">14</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h w8 low tight">golev</span></div>
+      <div class="spec">Hanken · ExtraBold · minúsculo · sem espaço</div>
+    </div>
+
+    <!-- 15 -->
+    <div class="card">
+      <span class="num">15</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n w7 low">golev</span></div>
+      <div class="spec">Newsreader · Bold · minúsculo · sem espaço</div>
+    </div>
+
+    <!-- 16 -->
+    <div class="card">
+      <span class="num">16</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med tight"><span class="h w7">Go</span><span class="n w5 it accent">Lev</span></span></div>
+      <div class="spec">Misto — "Go" Hanken Bold + <i>"Lev"</i> Newsreader itálico · sem espaço</div>
+    </div>
+
+    <!-- 17 -->
+    <div class="card">
+      <span class="num">17</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med low tight"><span class="h w7">go</span><span class="n w5 it accent">lev</span></span></div>
+      <div class="spec">Misto minúsculo — "go" Hanken + <i>"lev"</i> Newsreader itálico · sem espaço</div>
+    </div>
+
+    <!-- 18 -->
+    <div class="card">
+      <span class="num">18</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h tight"><span class="w8">Go</span><span class="w3">Lev</span></span></div>
+      <div class="spec">Hanken — peso: "Go" ExtraBold + "Lev" Light · camelCase</div>
+    </div>
+
+    <!-- 19 -->
+    <div class="card">
+      <span class="num">19</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n low"><span class="w7">go</span><span class="w4">lev</span></span></div>
+      <div class="spec">Newsreader — peso: "go" Bold + "lev" Regular · minúsculo · sem espaço</div>
+    </div>
+
+    <!-- 20 -->
+    <div class="card">
+      <span class="num">20</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med h w7 tight"><span style="color:var(--ink)">Go</span><span class="accent">Lev</span></span></div>
+      <div class="spec">Cor — "Go" tinta + "Lev" pêssego · Hanken Bold · sem espaço</div>
+    </div>
+
+    <!-- 21 -->
+    <div class="card">
+      <span class="num">21</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big n w6">GoLev</span></div>
+      <div class="spec">Newsreader · SemiBold · camelCase · sem espaço</div>
+    </div>
+
+    <!-- 22 -->
+    <div class="card">
+      <span class="num">22</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med low tight"><span class="h w8">go</span><span class="h w4">lev</span></span></div>
+      <div class="spec">Hanken — peso: "go" ExtraBold + "lev" Regular · minúsculo · sem espaço</div>
+    </div>
+
+  </div>
+
+  <!-- ===== DERIVADAS DO 7/17 com "go" itálico ===== -->
+  <h1 style="font-size:1.3rem;margin-top:48px">A partir do 7 / 17 — "go" também itálico</h1>
+  <p class="lead" style="margin-top:8px">Mesma ideia (mix Hanken + Newsreader), agora com as duas palavras inclinadas.</p>
+  <div class="grid">
+
+    <!-- 23 -->
+    <div class="card">
+      <span class="num">23</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med low tight"><span class="h w7 it">go</span><span class="n w5 it accent">lev</span></span></div>
+      <div class="spec">Sem espaço — <i>"go"</i> Hanken Bold itálico + <i>"lev"</i> Newsreader itálico</div>
+    </div>
+
+    <!-- 24 -->
+    <div class="card">
+      <span class="num">24</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med low tight"><span class="h w7 it">go</span><span class="n w5 it accent">&nbsp;lev</span></span></div>
+      <div class="spec">Com espaço — <i>"go"</i> Hanken Bold itálico + <i>"lev"</i> Newsreader itálico</div>
+    </div>
+
+    <!-- 25 -->
+    <div class="card">
+      <span class="num">25</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm big low"><span class="n w7 it">go</span><span class="n w5 it accent">lev</span></span></div>
+      <div class="spec">Tudo Newsreader itálico — <i>"go"</i> Bold + <i>"lev"</i> Regular pêssego · sem espaço</div>
+    </div>
+
+    <!-- 26 -->
+    <div class="card">
+      <span class="num">26</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--forest)"><use href="#pena"/></svg>
+        <span class="wm med tight"><span class="h w7 it">Go</span><span class="n w5 it accent">&nbsp;Lev</span></span></div>
+      <div class="spec">Caixa normal — <i>"Go"</i> Hanken Bold itálico + <i>"Lev"</i> Newsreader itálico</div>
+    </div>
+
+  </div>
+
+  <!-- amostra sobre escuro das 3 mais prováveis -->
+  <h1 style="font-size:1.3rem;margin-top:48px">Como ficam sobre fundo escuro</h1>
+  <div class="grid">
+    <div class="card dark">
+      <span class="num">03 · escuro</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--sage)"><use href="#pena"/></svg>
+        <span class="wm med n w7 low">go&nbsp;lev</span></div>
+      <div class="spec">Newsreader Bold minúsculo</div>
+    </div>
+    <div class="card dark">
+      <span class="num">06 · escuro</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--sage)"><use href="#pena"/></svg>
+        <span class="wm med tight"><span class="h w7">Go</span><span class="n w5 it accent">&nbsp;Lev</span></span></div>
+      <div class="spec">Misto "Go" + itálico "Lev"</div>
+    </div>
+    <div class="card dark">
+      <span class="num">01 · escuro</span>
+      <div class="lk"><svg class="mark" viewBox="0 0 329 367" style="color:var(--sage)"><use href="#pena"/></svg>
+        <span class="wm med h w7 tight">Go&nbsp;Lev</span></div>
+      <div class="spec">Hanken Bold (o original)</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

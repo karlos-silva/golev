@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Go Lev — Brandbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Design tokens + fontes: fonte única em @golev/shared/brand (caminho relativo) -->
+<link rel="stylesheet" href="../../packages/shared/brand/tokens.css" />
+<link rel="stylesheet" href="../../packages/shared/brand/fonts.css" />
+<style>
+  /* ========================================================================
+     GO LEV — BRANDBOOK  ·  paleta Azul & Creme (fixa)
+     Cores/fontes/raios vêm de @golev/shared/brand/tokens.css (fonte única).
+     ======================================================================== */
+  :root{
+    --pad:clamp(20px,5vw,56px); --maxw:1120px;
+    --white:var(--gl-surface);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.55;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;transition:background-color .3s ease,color .3s ease}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-left:var(--pad);padding-right:var(--pad)}
+  h1,h2,h3{font-weight:700;letter-spacing:-0.025em;line-height:1.04;color:var(--ink)}
+  .mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";letter-spacing:.02em}
+  ::selection{background:var(--forest);color:var(--paper)}
+
+  /* ---- SELETOR DE PALETA (sticky) -------------------------------------- */
+  .switcher{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:12px clamp(20px,5vw,56px);background:color-mix(in srgb,var(--paper) 88%,transparent);
+    backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--line)}
+  .switcher .sl{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-right:4px}
+  .switcher button{font-family:var(--font);font-weight:600;font-size:.84rem;cursor:pointer;border-radius:999px;
+    padding:7px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);transition:all .15s ease}
+  .switcher button:hover{border-color:var(--ink-3)}
+  .switcher button.active{background:var(--forest);color:var(--paper);border-color:var(--forest)}
+
+  .kicker{display:flex;align-items:baseline;gap:14px;margin-bottom:28px}
+  .kicker .num{font-size:.8rem;font-weight:600;color:var(--coral-700);letter-spacing:.04em}
+  .kicker .lbl{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-3)}
+  .kicker::after{content:"";flex:1;height:1px;background:var(--line);align-self:center}
+
+  section{padding:clamp(56px,9vw,104px) 0;border-top:1px solid var(--line)}
+  .sec-h{font-size:clamp(1.9rem,3.4vw,2.7rem);margin-bottom:14px;max-width:18ch}
+  .sec-intro{font-size:1.12rem;color:var(--ink-2);max-width:62ch}
+
+  .grid{display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+  .grid.gap{gap:24px;background:transparent;border:none}
+  .c2{grid-template-columns:repeat(2,1fr)} .c3{grid-template-columns:repeat(3,1fr)} .c4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:880px){.c3,.c4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.c2,.c3,.c4{grid-template-columns:1fr}}
+
+  .hero{padding:clamp(28px,4vw,52px) 0 clamp(64px,9vw,110px);border-top:none}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+  .lockup{display:inline-flex;align-items:center;gap:12px}
+  .lockup .wm{font-size:1.45rem}  /* estilo do wordmark vem de .gl-wordmark (tokens.css) */
+  .tag-v{font-size:.78rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+  .hero h1{font-size:clamp(2.8rem,7.2vw,5.6rem);font-weight:800;letter-spacing:-0.04em;max-width:14ch;margin-top:clamp(32px,6vw,64px)}
+  .accent-serif{font-family:var(--font-accent);font-style:italic;font-weight:500;letter-spacing:-0.005em}
+  .hero h1 .lift{color:var(--forest);font-family:var(--font-accent);font-style:italic;font-weight:500;letter-spacing:-0.01em}
+  .hero .lead{font-size:clamp(1.1rem,1.7vw,1.35rem);color:var(--ink-2);max-width:54ch;margin-top:28px}
+  .hero .meta{display:flex;gap:32px;margin-top:48px;flex-wrap:wrap}
+  .hero .meta div{border-left:2px solid var(--coral);padding-left:14px}
+  .hero .meta .k{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3)}
+  .hero .meta .v{font-weight:600}
+
+  .essence{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(28px,5vw,72px);align-items:start}
+  @media(max-width:760px){.essence{grid-template-columns:1fr}}
+  .defs > div{padding:22px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:130px 1fr;gap:18px}
+  .defs > div:first-child{border-top:none;padding-top:0}
+  .defs .t{font-weight:600;color:var(--forest)} .defs .d{color:var(--ink-2)}
+  .traits{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .trait{border:1px solid var(--line);border-radius:var(--r-sm);padding:7px 14px;font-size:.92rem;font-weight:500;color:var(--ink-2);background:var(--surface)}
+  .trait.hl{border-color:var(--forest);color:var(--forest)}
+
+  .voice{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+  @media(max-width:620px){.voice{grid-template-columns:1fr}}
+  .voice > div{padding:clamp(24px,3vw,36px);background:var(--surface)}
+  .voice > div + div{border-left:1px solid var(--line)}
+  @media(max-width:620px){.voice > div + div{border-left:none;border-top:1px solid var(--line)}}
+  .voice h4{font-size:.82rem;text-transform:uppercase;letter-spacing:.14em;margin-bottom:18px}
+  .voice .do h4{color:var(--forest)} .voice .dont h4{color:var(--coral-700)}
+  .voice li{list-style:none;padding-left:24px;position:relative;margin-bottom:14px;color:var(--ink-2)}
+  .voice .do li::before{content:"";position:absolute;left:0;top:9px;width:11px;height:6px;border-left:2px solid var(--forest);border-bottom:2px solid var(--forest);transform:rotate(-45deg)}
+  .voice .dont li::before{content:"";position:absolute;left:2px;top:7px;width:11px;height:11px;background:
+     linear-gradient(45deg,transparent 44%,var(--coral) 46%,var(--coral) 54%,transparent 56%),
+     linear-gradient(-45deg,transparent 44%,var(--coral) 46%,var(--coral) 54%,transparent 56%)}
+
+  .logo-row{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:640px){.logo-row{grid-template-columns:1fr}}
+  .stage{border:1px solid var(--line);border-radius:var(--r-md);min-height:200px;display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap;background:var(--surface)}
+  .stage.dark{background:var(--forest-900);border-color:var(--forest-900)}
+  .stage .wm-lg{font-size:2.1rem}  /* estilo do wordmark vem de .gl-wordmark (tokens.css) */
+  .note{color:var(--ink-3);font-size:.92rem;margin-top:16px}
+
+  .sw{background:var(--surface)}
+  .sw .chip{height:120px}
+  .sw .m{padding:16px 18px;border-top:1px solid var(--line)}
+  .sw .m .n{font-weight:600;font-size:.95rem} .sw .m .h{color:var(--ink-3);font-size:.82rem;margin-top:2px} .sw .m .r{color:var(--ink-2);font-size:.82rem;margin-top:8px}
+  .swgrouph{font-size:.82rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin:40px 0 16px}
+  .swgrouph:first-of-type{margin-top:8px}
+
+  .specimen{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);padding:clamp(24px,3vw,40px)}
+  .glyph{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:800;letter-spacing:-0.04em;line-height:1}
+  .glyph small{display:block;font-size:.8rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:18px}
+  .weights{display:flex;flex-wrap:wrap;gap:22px;margin-top:26px} .weights span{font-size:1.4rem}
+  .scale > div{display:flex;align-items:baseline;gap:24px;padding:20px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+  .scale > div:first-child{border-top:none}
+  .scale .tag{font-size:.78rem;color:var(--ink-3);min-width:150px}
+  .s1{font-size:3.1rem;font-weight:800;letter-spacing:-0.04em;line-height:1} .s2{font-size:2.1rem;font-weight:700;letter-spacing:-0.03em} .s3{font-size:1.4rem;font-weight:600} .sb{font-size:1.05rem} .ss{font-size:.9rem;color:var(--ink-2)}
+
+  .tok{background:var(--surface);height:96px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:.82rem;border:1px solid var(--line)}
+
+  .panel{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);padding:clamp(22px,3vw,32px)}
+  .panel h4{font-size:.82rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin-bottom:20px}
+  .btn{font-family:var(--font);font-weight:600;font-size:.96rem;border-radius:var(--r-sm);padding:12px 22px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:9px;text-decoration:none;transition:all .16s ease}
+  .btn svg{width:16px;height:16px}
+  .btn-primary{background:var(--forest);color:var(--paper)} .btn-primary:hover{background:var(--forest-900)}
+  .btn-accent{background:var(--coral);color:var(--on-accent)} .btn-accent:hover{background:var(--coral-700);color:#fff}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)} .btn-ghost:hover{border-color:var(--ink)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  label{display:block;font-weight:600;font-size:.88rem;margin-bottom:8px}
+  .input{width:100%;font-family:var(--font);font-size:1rem;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--white);color:var(--ink)}
+  .input::placeholder{color:var(--ink-3)}
+  .input:focus{outline:none;border-color:var(--forest);box-shadow:0 0 0 3px var(--sage-tint)}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-size:.8rem;font-weight:600;padding:5px 12px;border-radius:var(--r-sm);border:1px solid var(--line);color:var(--ink-2);background:var(--white)}
+  .badge .dot{width:7px;height:7px;border-radius:50%}
+  .feat .ic{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--forest);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:18px}
+  .feat .ic svg{width:20px;height:20px}
+  .feat h4{font-size:1.05rem;font-weight:700;letter-spacing:-0.01em;color:var(--ink);margin-bottom:8px;text-transform:none}
+  .feat p{color:var(--ink-2);font-size:.95rem}
+  .quote{border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:var(--r-md);background:var(--surface);padding:clamp(26px,3vw,38px)}
+  .quote p{font-family:var(--font-accent);font-style:italic;font-size:1.5rem;font-weight:400;letter-spacing:-0.005em;color:var(--ink);line-height:1.45}
+  .quote .who{display:flex;align-items:center;gap:12px;margin-top:22px}
+  .quote .av{width:40px;height:40px;border-radius:50%;background:var(--sage);border:1px solid var(--line)}
+  .quote .who b{display:block;font-size:.95rem} .quote .who span{color:var(--ink-3);font-size:.85rem}
+
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:760px){.tiles{grid-template-columns:1fr 1fr}}
+  .tile{aspect-ratio:4/5;border-radius:var(--r-md);border:1px solid var(--line);display:flex;align-items:flex-end;padding:16px;font-weight:600;font-size:.92rem}
+  footer{background:var(--forest-900);color:var(--sage);padding:clamp(48px,7vw,80px) 0;border-top:none}
+  footer h3{color:var(--paper);font-size:1.5rem;margin-bottom:14px}
+  footer p{max-width:64ch}
+  footer .mono{color:var(--sage)}
+  footer code{color:var(--paper);background:rgba(255,255,255,.08);padding:2px 7px;border-radius:4px;font-size:.85em}
+</style>
+</head>
+<body data-pal="azul">
+
+<!-- símbolo reutilizável: a pena (leveza, "Lev"). Lâmina = currentColor · base = acento -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="golev-mark" viewBox="0 0 329 367">
+      <path style="fill:var(--coral)" d="M81.659 237.551C78.2552 237.126 76.2396 237.299 72.659 237.551C77.8254 234.262 81.1577 232.93 87.159 231.051L117.159 208.051C116.877 207.588 116.601 207.378 116.159 207.051C117.233 206.823 117.817 206.827 119.159 207.051C142.181 192.366 153.653 185.254 180.659 177.051C174.266 174.284 170.492 173.51 163.659 172.551C171.365 171.537 175.856 171.253 184.159 171.551C201.233 155.287 195.502 139.605 228.5 130.331C159.446 124.186 147.23 128.931 87.159 180.543C71.3519 209.092 47.0556 258.348 30.6342 298.426C33.1963 293.013 62.6775 254.035 81.659 237.551Z"/>
+      <path fill="currentColor" d="M0.768685 356.051C-2.00099 370.156 3.12815 369.865 9.53604 357.051C17.4194 336.132 23.1761 316.628 30.6342 298.426C47.0556 258.348 71.3519 209.092 87.159 180.543C166.148 99.2141 202.823 78.3918 317.135 40.0508C335.773 31.6674 332.164 19.921 305.269 19.0547C296.092 19.02 271.977 18.0434 261.269 19.0547C250.562 20.066 272.608 6.62535 282.769 0.054714C225.417 -0.970039 198.696 12.0649 163.269 67.5547L171.269 40.0547C141.707 58.9603 129.101 74.9208 116.769 116.555C116.741 105.829 117.304 99.2905 120.769 86.5547C56.1105 205.353 31.0787 262.687 0.768685 356.051Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <span class="lockup">
+        <svg viewBox="0 0 48 48" width="30" height="30" style="color:var(--forest)" aria-label="Go Lev"><use href="#golev-mark"/></svg>
+        <span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span>
+      </span>
+      <span class="tag-v">Brandbook · v1</span>
+    </div>
+
+    <h1>Cuidado que <span class="lift">eleva</span> quem decide mudar.</h1>
+    <p class="lead">O sistema de design da Go Lev — uma identidade sóbria, calorosa e confiável para uma plataforma de saúde que acompanha pessoas em transformação, com seriedade clínica e proximidade humana.</p>
+
+    <div class="meta">
+      <div><div class="k">Setor</div><div class="v">Saúde &amp; emagrecimento</div></div>
+      <div><div class="k">Tom</div><div class="v">Sóbrio, próximo, confiável</div></div>
+      <div><div class="k">Versão</div><div class="v mono">1.0 — Jun 2026</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ ESSÊNCIA ============================ -->
+<section id="essencia">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">01</span><span class="lbl">Essência</span></div>
+    <div class="essence">
+      <div>
+        <h2 class="sec-h">Acompanhamos. Não cobramos.</h2>
+        <p class="sec-intro">A Go Lev combina acompanhamento médico com proximidade humana. Não vendemos um "antes e depois" — caminhamos junto com quem decidiu mudar, com método e respeito ao ritmo de cada um.</p>
+        <div class="traits" style="margin-top:26px;">
+          <span class="trait hl">Confiável</span>
+          <span class="trait hl">Acolhedora</span>
+          <span class="trait">Próxima</span>
+          <span class="trait">Serena</span>
+          <span class="trait">Honesta</span>
+          <span class="trait">Encorajadora</span>
+        </div>
+      </div>
+      <div class="defs">
+        <div><span class="t">Propósito</span><span class="d">Tornar a jornada de emagrecimento mais segura, leve e humana.</span></div>
+        <div><span class="t">Promessa</span><span class="d">Você não está sozinho — acompanhamento próximo, sem julgamento.</span></div>
+        <div><span class="t">Sensação</span><span class="d">Seriedade de consultório com a calma de quem cuida de verdade.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ VOZ ============================ -->
+<section id="voz">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">02</span><span class="lbl">Tom de voz</span></div>
+    <h2 class="sec-h">Como a Go Lev fala</h2>
+    <p class="sec-intro" style="margin-bottom:38px;">Como alguém de confiança que torce por você: clareza sem frieza, calor sem exagero. Nunca culpamos, nunca prometemos milagres.</p>
+    <div class="voice">
+      <div class="do">
+        <h4>Fazemos</h4>
+        <ul>
+          <li>"A gente caminha com você, no seu ritmo."</li>
+          <li>Linguagem clara, direta e acolhedora</li>
+          <li>Reforçar segurança e acompanhamento profissional</li>
+          <li>Reconhecer cada passo, não só o resultado final</li>
+        </ul>
+      </div>
+      <div class="dont">
+        <h4>Evitamos</h4>
+        <ul>
+          <li>Promessas de "perca X kg em Y dias"</li>
+          <li>Tom alarmista, culpado ou de pressão</li>
+          <li>Jargão médico sem explicação</li>
+          <li>Estética de "fitness extremo" e padrões irreais</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ LOGO ============================ -->
+<section id="logo">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">03</span><span class="lbl">Logo</span></div>
+    <h2 class="sec-h">A pena: leveza que se eleva</h2>
+    <p class="sec-intro">O símbolo é uma <b>pena</b> — leveza, alívio e a ideia de "elevar" ("lev"). Traço orgânico, desenhado à mão, sem rigidez geométrica. A lâmina é sóbria na primária; a base recebe o acento — o único respingo de calor. Emagrecer, aqui, é sobre <span class="accent-serif" style="color:var(--forest)">ficar mais leve</span>, não sobre um número.</p>
+
+    <div class="logo-row" style="margin-top:34px;">
+      <div class="stage">
+        <svg viewBox="0 0 329 367" width="58" height="64" style="color:var(--forest)"><use href="#golev-mark"/></svg>
+        <span class="lockup">
+          <svg viewBox="0 0 329 367" width="36" height="40" style="color:var(--forest)"><use href="#golev-mark"/></svg>
+          <span class="wm-lg gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span>
+        </span>
+      </div>
+      <div class="stage dark">
+        <svg viewBox="0 0 329 367" width="58" height="64" style="color:var(--sage)"><use href="#golev-mark"/></svg>
+        <span class="lockup">
+          <svg viewBox="0 0 329 367" width="36" height="40" style="color:var(--sage)"><use href="#golev-mark"/></svg>
+          <span class="wm-lg gl-wordmark gl-wordmark--on-dark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span>
+        </span>
+      </div>
+    </div>
+    <h3 style="font-size:1.3rem;font-weight:700;letter-spacing:-0.02em;margin:48px 0 20px;">O que o símbolo conta</h3>
+    <div class="grid c2 gap">
+      <div class="panel" style="display:flex;align-items:center;justify-content:center;min-height:260px;">
+        <svg viewBox="0 0 329 367" width="190" height="212" style="color:var(--forest)" aria-label="Pena Go Lev"><use href="#golev-mark"/></svg>
+      </div>
+      <div class="defs">
+        <div><span class="t">Pena = leveza</span><span class="d">A coisa mais leve que existe. "Go Lev" é leveza — o nome e o símbolo se encontram.</span></div>
+        <div><span class="t">Ficar mais leve</span><span class="d">Emagrecer é, antes do número, a sensação de tirar um peso. A pena diz isso sem balança nem "antes e depois".</span></div>
+        <div><span class="t">Sobe sem cobrar</span><span class="d">Flutua e se eleva — progresso com gentileza. É pena, não seta: acompanha, não cobra.</span></div>
+        <div><span class="t">Calor na base</span><span class="d">A lâmina é sóbria (primária); a base carrega o acento pêssego — o único respingo de calor da marca.</span></div>
+      </div>
+    </div>
+
+    <p class="note"><b>O acento na base faz parte do símbolo</b> — sempre presente, com ou sem texto. Respiro mínimo = metade da altura da pena. Não distorcer (mantenha a proporção 329×367), não inclinar, não aplicar sombra, não trocar a cor do acento. Em fundos escuros, a lâmina vira creme/apoio e a base mantém o acento.</p>
+  </div>
+</section>
+
+<!-- ============================ CORES ============================ -->
+<section id="cores">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">04</span><span class="lbl">Cores</span></div>
+    <h2 class="sec-h">Paleta quente, aplicada com contenção</h2>
+    <p class="sec-intro">Canvas claro e quente, texto espresso. A primária ancora a confiança; o acento entra pontualmente para dar calor — nunca cobrindo tudo. O apoio aparece só em tintas leves. Os HEX abaixo refletem a paleta ativa no seletor.</p>
+
+    <div class="swgrouph">Marca</div>
+    <div class="grid c4">
+      <div class="sw"><div class="chip" style="background:var(--forest-900)"></div><div class="m"><div class="n">Primária escura</div><div class="h mono" data-var="--forest-900"></div><div class="r">Fundos escuros, ênfase</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--forest)"></div><div class="m"><div class="n">Primária</div><div class="h mono" data-var="--forest"></div><div class="r">Cor principal da marca</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--forest-600)"></div><div class="m"><div class="n">Primária 600</div><div class="h mono" data-var="--forest-600"></div><div class="r">Ações / hover</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--sage)"></div><div class="m"><div class="n">Apoio</div><div class="h mono" data-var="--sage"></div><div class="r">Apoio discreto</div></div></div>
+    </div>
+
+    <div class="swgrouph">Acento &amp; tinta</div>
+    <div class="grid c4">
+      <div class="sw"><div class="chip" style="background:var(--coral)"></div><div class="m"><div class="n">Acento</div><div class="h mono" data-var="--coral"></div><div class="r">Detalhe quente, pontual</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--coral-700)"></div><div class="m"><div class="n">Acento forte</div><div class="h mono" data-var="--coral-700"></div><div class="r">Acento sobre claro (texto)</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--coral-tint)"></div><div class="m"><div class="n">Acento tinta</div><div class="h mono" data-var="--coral-tint"></div><div class="r">Fundo de acento sutil</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--sage-tint)"></div><div class="m"><div class="n">Apoio tinta</div><div class="h mono" data-var="--sage-tint"></div><div class="r">Tinta de apoio leve</div></div></div>
+    </div>
+
+    <div class="swgrouph">Neutros quentes</div>
+    <div class="grid c4">
+      <div class="sw"><div class="chip" style="background:var(--ink)"></div><div class="m"><div class="n">Ink</div><div class="h mono" data-var="--ink"></div><div class="r">Texto principal</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--ink-2)"></div><div class="m"><div class="n">Ink 2</div><div class="h mono" data-var="--ink-2"></div><div class="r">Texto secundário</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--paper)"></div><div class="m"><div class="n">Paper</div><div class="h mono" data-var="--paper"></div><div class="r">Fundo principal</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--surface);border-bottom:1px solid var(--line)"></div><div class="m"><div class="n">Surface</div><div class="h mono" data-var="--surface"></div><div class="r">Superfície / cards</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TIPO ============================ -->
+<section id="tipografia">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">05</span><span class="lbl">Tipografia</span></div>
+    <h2 class="sec-h">Uma grotesca, com um <span class="accent-serif" style="color:var(--forest)">toque</span> editorial</h2>
+    <p class="sec-intro"><b>Hanken Grotesque</b> faz tudo — títulos em pesos altos com tracking apertado dão autoridade; o corpo respira em regular. Como <b>super detalhe</b>, <b>Newsreader</b> itálica entra em <em>uma</em> palavra de ênfase por vez (ex.: "eleva"). É tempero, não prato principal — nunca em blocos de texto.</p>
+
+    <div class="specimen" style="margin-top:32px;">
+      <span class="glyph"><small>Hanken Grotesque</small>Aa Bb Cc Gg Ll&nbsp;&nbsp;0123456789</span>
+      <div class="weights mono">
+        <span style="font-weight:300">300 Light</span>
+        <span style="font-weight:400">400 Regular</span>
+        <span style="font-weight:500">500 Medium</span>
+        <span style="font-weight:600">600 SemiBold</span>
+        <span style="font-weight:700">700 Bold</span>
+        <span style="font-weight:800">800 ExtraBold</span>
+      </div>
+    </div>
+
+    <div class="specimen scale" style="margin-top:24px;">
+      <div><span class="tag mono">Display · 800</span><span class="s1">Sua jornada começa aqui</span></div>
+      <div><span class="tag mono">H2 · 700</span><span class="s2">Acompanhamento humano</span></div>
+      <div><span class="tag mono">H3 · 600</span><span class="s3">Cuidado no seu ritmo</span></div>
+      <div><span class="tag mono">Corpo · 400</span><span class="sb">Texto base para leitura confortável em parágrafos longos.</span></div>
+      <div><span class="tag mono">Apoio · 400</span><span class="ss">Legendas, observações e textos auxiliares.</span></div>
+      <div><span class="tag mono">Acento · Newsreader itálica</span><span class="s3 accent-serif" style="color:var(--forest)">eleva &middot; leveza &middot; junto</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TOKENS ============================ -->
+<section id="tokens">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">06</span><span class="lbl">Forma</span></div>
+    <h2 class="sec-h">Bordas contidas, hairlines no lugar de sombras</h2>
+    <p class="sec-intro">Sobriedade vem da estrutura: raios discretos (4–12px), linhas finas para separar, sombra só quando há real elevação. Nada de cantos super-arredondados ou glow.</p>
+    <div class="grid c4 gap" style="margin-top:30px;">
+      <div class="tok" style="border-radius:4px">4px · xs</div>
+      <div class="tok" style="border-radius:8px">8px · sm (botões)</div>
+      <div class="tok" style="border-radius:12px">12px · md (cards)</div>
+      <div class="tok" style="box-shadow:0 10px 30px rgba(0,0,0,.08)">elevação rara</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COMPONENTES ============================ -->
+<section id="componentes">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">07</span><span class="lbl">Componentes</span></div>
+    <h2 class="sec-h">Elementos de interface</h2>
+    <p class="sec-intro" style="margin-bottom:34px;">Primária para ações de confiança; acento só em momentos de incentivo. Ícones de linha (monoline), nunca emoji.</p>
+
+    <div class="grid c2 gap">
+      <div class="panel">
+        <h4>Botões</h4>
+        <div class="row">
+          <a class="btn btn-primary" href="#">Começar agora
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-accent" href="#">Falar com a gente</a>
+          <a class="btn btn-ghost" href="#">Saiba mais</a>
+        </div>
+        <h4 style="margin-top:28px;">Badges</h4>
+        <div class="row">
+          <span class="badge"><span class="dot" style="background:var(--forest)"></span>Acompanhamento ativo</span>
+          <span class="badge"><span class="dot" style="background:var(--coral)"></span>Feito para você</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Formulário</h4>
+        <div style="margin-bottom:16px;"><label for="n">Nome</label><input class="input" id="n" placeholder="Como podemos te chamar?" /></div>
+        <div style="margin-bottom:20px;"><label for="e">E-mail</label><input class="input" id="e" placeholder="voce@email.com" /></div>
+        <a class="btn btn-primary" href="#" style="width:100%;justify-content:center;">Criar minha conta</a>
+      </div>
+    </div>
+
+    <div class="grid c3 gap" style="margin-top:24px;">
+      <div class="panel feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 5 4-12 2 7h6"/></svg></div>
+        <h4>Cuidado contínuo</h4><p>Acompanhamento próximo e personalizado em cada etapa.</p>
+      </div>
+      <div class="panel feat">
+        <div class="ic" style="color:var(--coral-700)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h4>Sem julgamento</h4><p>Um espaço seguro para mudar no seu ritmo, com respeito.</p>
+      </div>
+      <div class="panel feat">
+        <div class="ic" style="color:var(--ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 16l4-6 3 3 5-7"/></svg></div>
+        <h4>Base científica</h4><p>Decisões guiadas por profissionais e evidência real.</p>
+      </div>
+    </div>
+
+    <div class="quote" style="margin-top:24px;">
+      <p>"Pela primeira vez senti que tinha alguém do meu lado — não me cobrando, mas torcendo por mim."</p>
+      <div class="who"><span class="av"></span><div><b>Ana, 34</b><span>3 meses com a Go Lev</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ IMAGERY ============================ -->
+<section id="imagery">
+  <div class="wrap">
+    <div class="kicker"><span class="num mono">08</span><span class="lbl">Imagem</span></div>
+    <h2 class="sec-h">Direção fotográfica</h2>
+    <p class="sec-intro">Fotografia real e natural — luz suave, pessoas diversas, momentos cotidianos. Enquadramento limpo, nada de "academia" ou estoque genérico. Cor da marca como sobreposição discreta, nunca filtro pesado.</p>
+    <div class="tiles" style="margin-top:30px;">
+      <div class="tile" style="background:var(--forest);color:var(--paper)">Luz natural</div>
+      <div class="tile" style="background:var(--coral-tint);color:var(--coral-700)">Calor humano</div>
+      <div class="tile" style="background:var(--sage-tint);color:var(--forest)">Serenidade</div>
+      <div class="tile" style="background:var(--surface);color:var(--ink-2)">Cotidiano real</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOOTER ============================ -->
+<footer>
+  <div class="wrap">
+    <span class="lockup" style="margin-bottom:24px;">
+      <svg viewBox="0 0 48 48" width="30" height="30" style="color:var(--sage)"><use href="#golev-mark"/></svg>
+      <span class="gl-wordmark gl-wordmark--on-dark" style="font-size:1.45rem;"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span>
+    </span>
+    <h3>Próximo passo</h3>
+    <p>Escolha a paleta no seletor do topo. Quando você decidir, estes tokens viram a base do design system no código: <code>apps/web/src/app/globals.css</code> (cores, fonte, raios) e os componentes em <code>apps/web/src/components/ui</code>.</p>
+    <p class="mono" style="margin-top:26px;">Go Lev · Brandbook v1 · Junho 2026</p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var body = document.body;
+    var btns = document.querySelectorAll('.switcher button');
+    function refreshHex(){
+      var cs = getComputedStyle(body);
+      document.querySelectorAll('[data-var]').forEach(function(el){
+        el.textContent = (cs.getPropertyValue(el.getAttribute('data-var')) || '').trim().toUpperCase();
+      });
+    }
+    btns.forEach(function(b){
+      b.addEventListener('click', function(){
+        body.setAttribute('data-pal', b.getAttribute('data-pal'));
+        btns.forEach(function(x){ x.classList.toggle('active', x === b); });
+        refreshHex();
+      });
+    });
+    refreshHex();
+  })();
+</script>
+
+</body>
+</html>

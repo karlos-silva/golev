@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Go Lev — Carrossel · Tirzepatida x Semaglutida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Design tokens + fontes: fonte única em @golev/shared/brand (caminho relativo p/ funcionar em file:// e http) -->
+<link rel="stylesheet" href="../../../../packages/shared/brand/tokens.css" />
+<link rel="stylesheet" href="../../../../packages/shared/brand/fonts.css" />
+<style>
+  /* ============================================================
+     Carrossel Go Lev — slides NATIVOS 1080x1350 (4:5 Instagram).
+     Preview: cada slide é reduzido por transform:scale.
+     Export PNG: o script remove o scale e fotografa em tamanho real.
+     ============================================================ */
+  :root{ --SCALE:0.3333; }     /* fator de preview (1080*0.3333 ≈ 360px); cores/fontes vêm de tokens.css */
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:#E7E2DA;-webkit-font-smoothing:antialiased;padding-bottom:60px}
+
+  .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 20px;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-bottom:1px solid #d8d2c8}
+  .bar .sl{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8a8278;margin-right:4px}
+  .bar button{font-family:var(--font);font-weight:600;font-size:.82rem;cursor:pointer;border-radius:999px;padding:7px 14px;border:1px solid #d2ccc2;background:#fff;color:#54504a;transition:all .15s}
+  .bar button.active{background:#33302c;color:#fff;border-color:#33302c}
+  .bar .hint{margin-left:auto;font-size:.78rem;color:#8a8278}
+
+  .deck{max-width:1180px;margin:28px auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,360px);gap:22px;justify-content:center}
+
+  /* moldura do preview: recorta o slide reduzido */
+  .card{width:360px;height:450px;overflow:hidden;border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.10);position:relative}
+  .card .n{position:absolute;top:8px;left:10px;z-index:2;font-size:.7rem;font-weight:700;color:#fff;background:rgba(0,0,0,.32);padding:3px 9px;border-radius:999px;letter-spacing:.05em}
+
+  /* SLIDE NATIVO 1080x1350 */
+  .slide{width:1080px;height:1350px;transform:scale(var(--SCALE));transform-origin:top left;
+    background:var(--paper);color:var(--ink);padding:96px 84px;display:flex;flex-direction:column}
+  .slide.dark{background:var(--forest-900)}
+  .slide .top{display:flex;align-items:center;justify-content:space-between}
+  .lock{display:inline-flex;align-items:center;gap:16px}
+  .lock .wm{font-size:38px}  /* estilo do wordmark vem de .gl-wordmark (tokens.css) */
+  .slide.dark .gl-wm-go{color:var(--paper)}
+  .slide.dark .gl-wm-lev{color:var(--coral)}
+  .pg{font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;letter-spacing:.08em;color:var(--ink-3)}
+  .slide.dark .pg{color:var(--sage)}
+  .kick{margin-top:auto;font-size:26px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--coral-700)}
+  .slide.dark .kick{color:var(--coral)}
+  .ttl{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin-top:22px;color:var(--ink);font-size:78px}
+  .slide.dark .ttl{color:var(--paper)}
+  .ttl.lg{font-size:96px}
+  .ttl .em{font-family:var(--font-accent);font-style:italic;font-weight:500;color:var(--forest)}
+  .slide.dark .ttl .em{color:var(--sage)}
+  .em-i{font-family:var(--font-accent);font-style:italic;color:var(--forest)}
+  .body{margin-top:34px;font-size:42px;line-height:1.45;color:var(--ink-2)}
+  .slide.dark .body{color:var(--sage-tint)}
+  .sub{margin-top:30px;font-size:46px;line-height:1.4;color:var(--ink-2)}
+  .cta{margin-top:40px;display:inline-flex;align-self:flex-start;font-weight:600;font-size:40px;padding:26px 46px;border-radius:16px;background:var(--coral);color:var(--on-accent)}
+  .foot{margin-top:40px;font-size:26px;color:var(--ink-3)}
+  .slide.dark .foot{color:var(--sage)}
+  .swipe{margin-top:36px;font-size:26px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--coral-700)}
+
+  .diag{margin-top:44px;display:flex;gap:40px}
+  .diag .d{flex:1;border:2px solid var(--line);border-radius:22px;padding:34px;background:var(--surface)}
+  .diag .d .lab{font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:18px}
+  .diag .d .nm{font-weight:700;color:var(--forest);font-size:38px}
+  .diag svg{display:block;margin-top:22px;width:100%}
+</style>
+</head>
+<body data-pal="azul">
+
+<div class="bar">
+  <span class="sl">Go Lev</span>
+  <span class="hint">Carrossel · Tirzepatida × Semaglutida · 8 slides 1080×1350 · paleta Azul &amp; Creme</span>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="m" viewBox="0 0 329 367">
+    <path style="fill:var(--coral)" d="M81.659 237.551C78.2552 237.126 76.2396 237.299 72.659 237.551C77.8254 234.262 81.1577 232.93 87.159 231.051L117.159 208.051C116.877 207.588 116.601 207.378 116.159 207.051C117.233 206.823 117.817 206.827 119.159 207.051C142.181 192.366 153.653 185.254 180.659 177.051C174.266 174.284 170.492 173.51 163.659 172.551C171.365 171.537 175.856 171.253 184.159 171.551C201.233 155.287 195.502 139.605 228.5 130.331C159.446 124.186 147.23 128.931 87.159 180.543C71.3519 209.092 47.0556 258.348 30.6342 298.426C33.1963 293.013 62.6775 254.035 81.659 237.551Z"/>
+    <path fill="currentColor" d="M0.768685 356.051C-2.00099 370.156 3.12815 369.865 9.53604 357.051C17.4194 336.132 23.1761 316.628 30.6342 298.426C47.0556 258.348 71.3519 209.092 87.159 180.543C166.148 99.2141 202.823 78.3918 317.135 40.0508C335.773 31.6674 332.164 19.921 305.269 19.0547C296.092 19.02 271.977 18.0434 261.269 19.0547C250.562 20.066 272.608 6.62535 282.769 0.054714C225.417 -0.970039 198.696 12.0649 163.269 67.5547L171.269 40.0547C141.707 58.9603 129.101 74.9208 116.769 116.555C116.741 105.829 117.304 99.2905 120.769 86.5547C56.1105 205.353 31.0787 262.687 0.768685 356.051Z"/>
+  </symbol>
+</defs></svg>
+
+<div class="deck">
+
+  <!-- 1 -->
+  <div class="card"><span class="n">01</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">01 / 08</span></div>
+    <span class="kick" style="margin-top:auto">Saúde com ciência</span>
+    <h2 class="ttl lg">Tirzepatida × Semaglutida: qual a real <span class="em">diferença</span>?</h2>
+    <p class="sub">Sem hype, sem promessa de número. Só o que importa pra sua decisão.</p>
+    <span class="swipe">arraste →</span>
+  </div></div>
+
+  <!-- 2 -->
+  <div class="card"><span class="n">02</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">02 / 08</span></div>
+    <span class="kick" style="margin-top:auto">Ponto de partida</span>
+    <h2 class="ttl">Primeiro: as duas são remédios, não atalhos.</h2>
+    <p class="body">Ambas são de prescrição e funcionam dentro de um acompanhamento — alimentação, rotina e saúde caminhando <span class="em-i">junto</span>. Nenhuma age sozinha.</p>
+  </div></div>
+
+  <!-- 3 -->
+  <div class="card"><span class="n">03</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">03 / 08</span></div>
+    <span class="kick" style="margin-top:auto">No que se parecem</span>
+    <h2 class="ttl">Mais semelhantes do que parece</h2>
+    <p class="body">As duas são de aplicação semanal e agem na saciedade: você sente menos fome, fica satisfeito por mais tempo e a digestão fica mais lenta.</p>
+  </div></div>
+
+  <!-- 4 -->
+  <div class="card"><span class="n">04</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">04 / 08</span></div>
+    <span class="kick" style="margin-top:auto">A diferença principal</span>
+    <h2 class="ttl">Um caminho, ou dois?</h2>
+    <div class="diag">
+      <div class="d"><div class="lab">Semaglutida</div><div class="nm">1 ação · GLP-1</div>
+        <svg height="40" viewBox="0 0 120 34" fill="none" preserveAspectRatio="none"><path d="M6 26 C40 26 70 12 114 10" stroke="var(--forest)" stroke-width="4" stroke-linecap="round"/></svg></div>
+      <div class="d"><div class="lab">Tirzepatida</div><div class="nm">2 ações · GLP-1 + GIP</div>
+        <svg height="40" viewBox="0 0 120 34" fill="none" preserveAspectRatio="none"><path d="M6 28 C40 28 70 14 114 12" stroke="var(--forest)" stroke-width="4" stroke-linecap="round"/><path d="M6 22 C40 22 70 6 114 6" stroke="var(--coral)" stroke-width="4" stroke-linecap="round"/></svg></div>
+    </div>
+    <p class="body">Mecanismos parecidos, alcances um pouco diferentes.</p>
+  </div></div>
+
+  <!-- 5 -->
+  <div class="card"><span class="n">05</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">05 / 08</span></div>
+    <span class="kick" style="margin-top:auto">Com honestidade</span>
+    <h2 class="ttl">E os resultados?</h2>
+    <p class="body">Em estudos, a tirzepatida costuma mostrar perda de peso média maior. Mas "média" não é "você": resposta, dose e tolerância variam. Não existe número garantido.</p>
+  </div></div>
+
+  <!-- 6 -->
+  <div class="card"><span class="n">06</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">06 / 08</span></div>
+    <span class="kick" style="margin-top:auto">Segurança primeiro</span>
+    <h2 class="ttl">E os efeitos no corpo?</h2>
+    <p class="body">Efeitos parecidos, principalmente no estômago (enjoo, intestino) — geralmente no início e com a dose subindo aos poucos. Por isso o acompanhamento não é opcional.</p>
+  </div></div>
+
+  <!-- 7 -->
+  <div class="card"><span class="n">07</span><div class="slide">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--forest)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">07 / 08</span></div>
+    <span class="kick" style="margin-top:auto">A pergunta que importa</span>
+    <h2 class="ttl">"Então, qual é a <span class="em">melhor</span>?"</h2>
+    <p class="body">Depende de você — histórico, saúde, objetivos e o que seu médico avalia. A melhor escolha é a que é segura pra você, não a da internet.</p>
+  </div></div>
+
+  <!-- 8 -->
+  <div class="card"><span class="n">08</span><div class="slide dark">
+    <div class="top"><span class="lock"><svg viewBox="0 0 329 367" width="41" height="46" style="color:var(--sage)"><use href="#m"/></svg><span class="wm gl-wordmark"><span class="gl-wm-go">Go</span><span class="gl-wm-lev">&nbsp;Lev</span></span></span><span class="pg">08 / 08</span></div>
+    <span class="kick" style="margin-top:auto">Você não decide sozinho</span>
+    <h2 class="ttl">A gente caminha <span class="em">junto</span> nessa decisão.</h2>
+    <p class="body">Na Go Lev, a escolha do tratamento vem com acompanhamento de verdade — sem cobrança, no seu ritmo.</p>
+    <span class="cta">Salve este post · link na bio</span>
+    <p class="foot">Conteúdo educativo, não substitui avaliação médica.</p>
+  </div></div>
+
+</div>
+
+</body>
+</html>
