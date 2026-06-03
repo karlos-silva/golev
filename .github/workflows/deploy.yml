@@ -118,6 +118,9 @@ jobs:
       secrets.VPS_SSH_KEY != ''
     runs-on: ubuntu-latest
     environment: staging
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Deploy to staging
         uses: appleboy/ssh-action@v1
@@ -125,11 +128,13 @@ jobs:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID
+          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID,GHCR_TOKEN,GHCR_USER
           script: |
             set -euo pipefail
             cd ~/apps/${{ env.PRODUCT_NAME }}/staging
@@ -140,6 +145,7 @@ jobs:
               --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent)"
             infisical export --token="$INFISICAL_TOKEN" \
               --projectId="$INFISICAL_PROJECT_ID" --env=staging --format=dotenv > .env
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             docker compose pull
             docker compose run --rm api npx drizzle-kit migrate
             docker compose up -d --remove-orphans
@@ -158,6 +164,9 @@ jobs:
       )
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Deploy to production
         uses: appleboy/ssh-action@v1
@@ -165,11 +174,13 @@ jobs:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID
+          envs: INFISICAL_CLIENT_ID,INFISICAL_CLIENT_SECRET,INFISICAL_PROJECT_ID,GHCR_TOKEN,GHCR_USER
           script: |
             set -euo pipefail
             cd ~/apps/${{ env.PRODUCT_NAME }}/production
@@ -180,6 +191,7 @@ jobs:
               --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent)"
             infisical export --token="$INFISICAL_TOKEN" \
               --projectId="$INFISICAL_PROJECT_ID" --env=prod --format=dotenv > .env
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             docker compose pull
             docker compose run --rm api npx drizzle-kit migrate
             docker compose up -d --remove-orphans
