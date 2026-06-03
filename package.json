@@ -41,6 +41,15 @@
       "esbuild",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "fastify": "^5.8.5",
+      "fast-uri": "^3.1.2"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-r5fr-rjxr-66jc"
+      ]
+    }
   }
 }

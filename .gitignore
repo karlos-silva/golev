@@ -46,3 +46,7 @@ infra/caddy/certs/
 # Playwright
 test-results/
 playwright-report/
+
+# Arquivos soltos/acidentais
+package-lock.json
+Vector (1).js
