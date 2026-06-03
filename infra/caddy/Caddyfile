@@ -25,10 +25,18 @@ api.{$DOMAIN} {
 # (rede externa web_edge). Sem preview → 502 (esperado).
 preview.{$DOMAIN} {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+    # Nunca indexar o preview (evita canibalizar o SEO do site real).
+    header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+    handle /robots.txt {
+        header Content-Type "text/plain"
+        respond "User-agent: *
+Disallow: /" 200
+    }
     reverse_proxy preview-web:3000
 }
 
 api-preview.{$DOMAIN} {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+    header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
     reverse_proxy preview-api:3333
 }
