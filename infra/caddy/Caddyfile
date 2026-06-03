@@ -26,12 +26,9 @@ api.{$DOMAIN} {
 preview.{$DOMAIN} {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
     # Nunca indexar o preview (evita canibalizar o SEO do site real).
+    # X-Robots-Tag: noindex é o sinal autoritativo do Google; o crawl precisa
+    # ser permitido pra ele VER o header — por isso não bloqueamos no robots.txt.
     header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
-    handle /robots.txt {
-        header Content-Type "text/plain"
-        respond "User-agent: *
-Disallow: /" 200
-    }
     reverse_proxy preview-web:3000
 }
 
