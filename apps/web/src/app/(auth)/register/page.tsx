@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-import { registerSchema } from '@trianox/shared';
+import { registerSchema } from '@golev/shared';
 import { useRegister } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,6 @@ export default function RegisterPage() {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
       password: formData.get('password') as string,
-      tenantName: formData.get('tenantName') as string,
     };
 
     const result = registerSchema.safeParse(raw);
@@ -52,34 +51,19 @@ export default function RegisterPage() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Seu nome"
-                autoComplete="name"
-                autoFocus
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tenantName">Organização</Label>
-              <Input
-                id="tenantName"
-                name="tenantName"
-                type="text"
-                placeholder="Minha Empresa"
-                autoComplete="organization"
-              />
-              {errors.tenantName && (
-                <p className="text-xs text-destructive">{errors.tenantName}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome</Label>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Seu nome"
+              autoComplete="name"
+              autoFocus
+            />
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

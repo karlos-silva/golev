@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Landing Page', () => {
   test('should load homepage', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/trianox/i);
+    await expect(page).toHaveTitle(/go lev/i);
   });
 
   test('should navigate to pricing', async ({ page }) => {

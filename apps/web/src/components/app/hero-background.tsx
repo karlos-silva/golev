@@ -41,7 +41,7 @@ function Triangle({
       >
         <polygon
           points="50,5 95,90 5,90"
-          stroke="#264E9B"
+          stroke="#059669"
           strokeWidth="1.5"
           fill="rgba(38,78,155,0.04)"
         />
@@ -145,7 +145,7 @@ export function HeroBackground() {
         className="absolute inset-0 opacity-[0.06] dark:opacity-[0.1]"
         style={{
           backgroundImage:
-            'radial-gradient(circle, #264E9B 1px, transparent 1px)',
+            'radial-gradient(circle, #059669 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         }}
       />

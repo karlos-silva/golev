@@ -9,26 +9,13 @@
 - email (text, unique)
 - name (text)
 - passwordHash (text)
+- role (text: member, ...) — default `member`
 - isActive (boolean)
 - createdAt, updatedAt, deletedAt
-
-### tenants
-- id (UUID, PK)
-- name (text)
-- slug (text, unique)
-- isActive (boolean)
-- createdAt, updatedAt, deletedAt
-
-### tenant_memberships
-- id (UUID, PK)
-- tenantId (FK → tenants)
-- userId (FK → users)
-- role (text: owner, admin, member)
-- createdAt
 
 ### customers (billing)
 - id (UUID, PK)
-- tenantId (FK → tenants, unique)
+- userId (FK → users, unique)
 - stripeCustomerId (text, unique)
 - createdAt
 

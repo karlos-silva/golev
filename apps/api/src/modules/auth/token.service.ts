@@ -8,7 +8,6 @@ import { refreshTokens, users } from '../../../drizzle/schema';
 
 interface JwtPayload {
   userId: string;
-  tenantId: string;
   role: string;
 }
 
@@ -80,22 +79,15 @@ export class TokenService {
 
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, payload.userId),
-      with: { memberships: true },
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const membership = user.memberships[0];
-    if (!membership) {
-      throw new UnauthorizedException('No tenant membership');
-    }
-
     const tokens = await this.generateTokens({
       userId: user.id,
-      tenantId: membership.tenantId,
-      role: membership.role,
+      role: user.role,
     });
 
     await this.saveRefreshToken(user.id, tokens.refreshToken);
@@ -105,8 +97,7 @@ export class TokenService {
         id: user.id,
         email: user.email,
         name: user.name,
-        tenantId: membership.tenantId,
-        role: membership.role,
+        role: user.role,
       },
       tokens,
     };

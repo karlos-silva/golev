@@ -9,7 +9,7 @@ export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
   @Get('subscription')
-  getSubscription(@CurrentUser('tenantId') tenantId: string) {
-    return this.billingService.getSubscription(tenantId);
+  getSubscription(@CurrentUser('userId') userId: string) {
+    return this.billingService.getSubscription(userId);
   }
 }

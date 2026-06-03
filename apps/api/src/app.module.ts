@@ -4,7 +4,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { TenantsModule } from './modules/tenants/tenants.module';
 import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
@@ -24,7 +23,6 @@ import { BillingModule } from './modules/billing/billing.module';
     ]),
     DatabaseModule,
     AuthModule,
-    TenantsModule,
     BillingModule,
   ],
 })

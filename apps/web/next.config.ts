@@ -2,7 +2,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  transpilePackages: ['@trianox/shared'],
+  images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: 'i.pravatar.cc' }] },
+  transpilePackages: ['@golev/shared'],
 };
 
 export default nextConfig;

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { LegalDocumentNotice } from '@/components/app/legal-document-notice';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade | Trianox SaaS',
-  description: 'Saiba como a Trianox SaaS coleta, utiliza e protege seus dados.',
+  title: 'Política de Privacidade | Go Lev',
+  description: 'Saiba como a Go Lev coleta, utiliza e protege seus dados.',
   alternates: {
     canonical: '/legal/privacy',
   },

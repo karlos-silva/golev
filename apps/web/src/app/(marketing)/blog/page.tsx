@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Blog | Trianox SaaS',
+  title: 'Blog | Go Lev',
   description: 'Artigos sobre produto, tecnologia e boas práticas para SaaS.',
   openGraph: {
-    title: 'Blog | Trianox SaaS',
+    title: 'Blog | Go Lev',
     description: 'Artigos sobre produto, tecnologia e boas práticas para SaaS.',
     type: 'website',
   },
@@ -17,15 +17,9 @@ export const metadata: Metadata = {
 const posts = [
   {
     slug: 'como-comecar',
-    title: 'Como começar com Trianox SaaS',
-    excerpt: 'Um guia rápido para configurar seu primeiro projeto com a stack Trianox.',
+    title: 'Como começar com Go Lev',
+    excerpt: 'Um guia rápido para dar os primeiros passos na plataforma Go Lev.',
     date: '2026-01-15',
-  },
-  {
-    slug: 'multi-tenancy-drizzle',
-    title: 'Multi-tenancy com Drizzle ORM',
-    excerpt: 'Padrões de isolamento de tenant utilizando Drizzle e PostgreSQL.',
-    date: '2026-02-01',
   },
 ];
 

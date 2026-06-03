@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Este projeto segue o padrão Trianox de arquitetura SaaS.
+Este projeto segue o padrão Go Lev de arquitetura SaaS.
 
 Para todas as regras e guidelines, leia `.ai/AGENTS.md` como ponto de entrada.
 
@@ -8,8 +8,7 @@ Para todas as regras e guidelines, leia `.ai/AGENTS.md` como ponto de entrada.
 
 - TypeScript strict, sem `any`
 - Validar inputs com Zod
-- Tipos de `@trianox/shared`
-- Tenant isolation em toda query
+- Tipos de `@golev/shared`
 - Controller sem regra de negócio
 - Sem Repository/Use Case/Domain Entity classes
 - Drizzle é o data access layer

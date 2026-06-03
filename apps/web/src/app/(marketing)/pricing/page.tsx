@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Preços',
-  description: 'Planos e preços do Trianox SaaS.',
+  description: 'Planos e preços do Go Lev.',
   openGraph: {
-    title: 'Preços | Trianox SaaS',
-    description: 'Planos e preços do Trianox SaaS.',
+    title: 'Preços | Go Lev',
+    description: 'Planos e preços do Go Lev.',
     type: 'website',
   },
 };

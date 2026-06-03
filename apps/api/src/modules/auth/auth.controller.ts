@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { loginSchema, registerSchema, refreshTokenSchema } from '@trianox/shared';
+import { loginSchema, registerSchema, refreshTokenSchema } from '@golev/shared';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';

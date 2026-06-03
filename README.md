@@ -1,6 +1,6 @@
-# Trianox SaaS Template
+# Go Lev Template
 
-Template padrão para produtos SaaS da Trianox. Monorepo com Next.js, NestJS, Drizzle ORM e infraestrutura completa.
+Template padrão para produtos SaaS da Go Lev. Monorepo com Next.js, NestJS, Drizzle ORM e infraestrutura completa.
 
 ## Tech Stack
 
@@ -32,7 +32,7 @@ cp .env.example .env
 docker compose -f infra/docker-compose.yml --project-directory . up db -d
 
 # 4. Rodar migrations
-pnpm --filter @trianox/api db:migrate
+pnpm --filter @golev/api db:migrate
 
 # 5. Iniciar dev
 pnpm dev
@@ -72,9 +72,9 @@ Isso inicia:
 | `pnpm typecheck` | Type check de todos os apps |
 | `pnpm test:unit` | Roda testes unitários |
 | `pnpm test:e2e` | Roda testes E2E (Playwright) |
-| `pnpm --filter @trianox/api db:generate` | Gera migration |
-| `pnpm --filter @trianox/api db:migrate` | Aplica migrations |
-| `pnpm --filter @trianox/api db:studio` | Abre Drizzle Studio |
+| `pnpm --filter @golev/api db:generate` | Gera migration |
+| `pnpm --filter @golev/api db:migrate` | Aplica migrations |
+| `pnpm --filter @golev/api db:studio` | Abre Drizzle Studio |
 
 ---
 
@@ -88,11 +88,11 @@ Ao criar um novo produto a partir deste template, siga o checklist abaixo. Marqu
 
 - [ ] Criar repositório a partir deste template
 - [ ] Rodar `pnpm init` — o script interativo faz:
-  - Substituir `@trianox/` pelo scope do seu produto em todos os arquivos
-  - Renomear `Trianox` pelo nome da sua empresa em textos e configs
+  - Substituir `@golev/` pelo scope do seu produto em todos os arquivos
+  - Renomear `Go Lev` pelo nome da sua empresa em textos e configs
   - Atualizar defaults de deploy (GHCR org, product name)
   - Limpar conteúdo placeholder (blog, legal, feature pages)
-  - Remover `trianox-sass-architecture.md`
+  - Remover `golev-architecture.md`
   - Gerar README limpo
   - Resetar histórico git (opcional)
   - Reinstalar dependências (opcional)
@@ -229,7 +229,7 @@ Ao criar um novo produto a partir deste template, siga o checklist abaixo. Marqu
 
 ## Documentação
 
-- [Arquitetura Completa](./trianox-sass-architecture.md)
+- [Arquitetura Completa](./golev-architecture.md)
 - [AI Guidelines](./.ai/AGENTS.md)
 - [Rules](./.ai/rules/)
 - [Skills](./.ai/skills/)

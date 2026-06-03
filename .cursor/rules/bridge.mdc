@@ -4,7 +4,7 @@ globs: "**/*"
 alwaysApply: true
 ---
 
-Este projeto segue o padrão Trianox de arquitetura SaaS.
+Este projeto segue o padrão Go Lev de arquitetura SaaS.
 
 Para todas as regras, skills e guidelines, consulte a pasta `.ai/` na raiz do repositório.
 

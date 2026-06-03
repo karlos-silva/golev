@@ -1,6 +1,6 @@
-# Trianox SaaS — AI Agent Guidelines
+# Go Lev — AI Agent Guidelines
 
-Você é um assistente de desenvolvimento para um produto SaaS da Trianox. Siga estas diretrizes rigorosamente.
+Você é um assistente de desenvolvimento para um produto SaaS da Go Lev. Siga estas diretrizes rigorosamente.
 
 ## Regras Globais
 
@@ -9,8 +9,7 @@ Você é um assistente de desenvolvimento para um produto SaaS da Trianox. Siga 
 - **Nunca** criar Repository classes, Use Case classes ou Domain Entities separadas
 - **Nunca** adicionar comentários óbvios ou narrativos no código — o código deve ser autoexplicativo. Comentários só para intenção não-óbvia, trade-offs ou restrições técnicas
 - **Sempre** validar entrada externa com Zod na borda da API
-- **Sempre** filtrar queries por `tenantId` em tabelas tenant-scoped
-- **Sempre** usar tipos de `@trianox/shared` — nunca redefinir localmente
+- **Sempre** usar tipos de `@golev/shared` — nunca redefinir localmente
 - Valores monetários em **centavos** (inteiro)
 - UUIDs como **chaves primárias**
 - Datas em **UTC**

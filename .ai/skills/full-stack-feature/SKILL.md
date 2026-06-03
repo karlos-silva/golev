@@ -38,6 +38,5 @@ description: Implementa uma feature full-stack (schema → API → UI)
 ## Validação
 - [ ] TypeScript compila em todos os packages
 - [ ] Migration gerada e revisada
-- [ ] Tenant isolation no backend
 - [ ] Dados fluem corretamente E2E
 - [ ] Testes passam

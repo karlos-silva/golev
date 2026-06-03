@@ -3,16 +3,10 @@ import { notFound } from 'next/navigation';
 
 const posts: Record<string, { title: string; content: string; date: string }> = {
   'como-comecar': {
-    title: 'Como começar com Trianox SaaS',
+    title: 'Como começar com Go Lev',
     content:
       'Este é um post de exemplo. Substitua pelo conteúdo real do seu blog. Você pode integrar com um CMS headless como Sanity, Contentful ou usar arquivos MDX.',
     date: '2026-01-15',
-  },
-  'multi-tenancy-drizzle': {
-    title: 'Multi-tenancy com Drizzle ORM',
-    content:
-      'Este é um post de exemplo sobre multi-tenancy. Substitua pelo conteúdo real.',
-    date: '2026-02-01',
   },
 };
 
@@ -26,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
 
   return {
-    title: `${post.title} | Blog | Trianox SaaS`,
+    title: `${post.title} | Blog | Go Lev`,
     description: post.content.slice(0, 155),
     openGraph: {
       title: post.title,

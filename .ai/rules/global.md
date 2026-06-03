@@ -14,8 +14,7 @@ globs: "**/*"
 - Valores monetários em centavos (inteiro)
 - Logs estruturados
 - Correlation IDs por request
-- Tenant isolation em toda query de dados tenant-scoped
-- Importar tipos e schemas de `@trianox/shared`
+- Importar tipos e schemas de `@golev/shared`
 
 ## Nunca
 - `any` no código (exceto type assertions documentadas)

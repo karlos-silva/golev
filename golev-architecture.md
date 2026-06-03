@@ -1,14 +1,16 @@
 ---
 
-## title: Trianox SaaS Architecture Standard
+## title: Go Lev Architecture Standard
 version: 2.0
 status: Ativo
-owner: Trianox
-scope: Todos os produtos SaaS da Trianox
+owner: Go Lev
+scope: Todos os produtos SaaS da Go Lev
 
-# Trianox SaaS Architecture Standard
+# Go Lev Architecture Standard
 
-Documento que define a arquitetura padrão, tech stack, fluxo de Git, estratégia de deploy, organização de IA e guidelines para todos os produtos SaaS da Trianox. Todo novo produto deve seguir este padrão como ponto de partida.
+> **Nota (Go Lev):** Este projeto **não usa multi-tenancy**. As seções deste documento que descrevem `tenants`, `tenant_memberships`, isolamento por `tenantId` e payload de JWT com `tenantId` são **históricas do template original e não se aplicam** ao Go Lev. A autenticação é por e-mail/senha (JWT com `userId` + `role`), e `customers` referencia `userId`. Consulte `.ai/AGENTS.md` e `.ai/context/DATA_MODEL.md` para o modelo atual.
+
+Documento que define a arquitetura padrão, tech stack, fluxo de Git, estratégia de deploy, organização de IA e guidelines para todos os produtos SaaS da Go Lev. Todo novo produto deve seguir este padrão como ponto de partida.
 
 ---
 
@@ -143,7 +145,7 @@ O script `prepare` roda automaticamente após `pnpm install`. Devs novos não pr
 
 ## 2. Estrutura do Monorepo
 
-Todo produto SaaS da Trianox segue a mesma estrutura de monorepo.
+Todo produto SaaS da Go Lev segue a mesma estrutura de monorepo.
 
 ```text
 <produto>/
@@ -278,7 +280,7 @@ Todo produto SaaS da Trianox segue a mesma estrutura de monorepo.
 ├── turbo.json
 ├── package.json                     # Root package.json
 ├── README.md
-└── trianox-sass-architecture.md     # Este padrão (opcional por produto)
+└── golev-architecture.md     # Este padrão (opcional por produto)
 ```
 
 ### 2.1 Regras de Importação
@@ -1130,7 +1132,7 @@ CD: build + push ghcr.io (latest + sha)
 
 ### 9.1 Modelo de Infraestrutura
 
-**Uma VPS por produto SaaS.** Cada produto da Trianox roda isolado.
+**Uma VPS por produto SaaS.** Cada produto da Go Lev roda isolado.
 
 Staging e produção rodam na **mesma VPS**, separados por Docker Compose projects com portas e domínios diferentes.
 
@@ -1230,14 +1232,14 @@ services:
     restart: unless-stopped
 
   web:
-    image: ghcr.io/trianox/<produto>-web:latest
+    image: ghcr.io/golev/<produto>-web:latest
     env_file: .env
     depends_on:
       - api
     restart: unless-stopped
 
   api:
-    image: ghcr.io/trianox/<produto>-api:latest
+    image: ghcr.io/golev/<produto>-api:latest
     env_file: .env
     volumes:
       - uploads:/data/uploads
@@ -1666,7 +1668,7 @@ Dev quer criar feature nova
 
 ## 14. Checklist de Novo Produto SaaS
 
-Ao iniciar um novo produto SaaS na Trianox:
+Ao iniciar um novo produto SaaS na Go Lev:
 
 - [ ] Criar repositório a partir de template (se existir)
 - [ ] Configurar monorepo: `pnpm-workspace.yaml` + `turbo.json`

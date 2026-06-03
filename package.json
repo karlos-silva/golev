@@ -1,5 +1,5 @@
 {
-  "name": "trianox-saas-template",
+  "name": "golev-platform",
   "private": true,
   "scripts": {
     "init": "bash scripts/init-template.sh",

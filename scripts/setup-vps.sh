@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Setup inicial da VPS para um produto SaaS Trianox.
+# Setup inicial da VPS para um produto SaaS Go Lev.
 #
 # Uso:
 #   ./scripts/setup-vps.sh <VPS_HOST> <VPS_USER> <DOMAIN> [PRODUCT_NAME]
@@ -47,7 +47,7 @@ SSH_CMD="ssh ${VPS_USER}@${VPS_HOST}"
 SCP_CMD="scp -q"
 
 echo "╔══════════════════════════════════════════════════╗"
-echo "║  Trianox SaaS — Setup VPS                       ║"
+echo "║  Go Lev — Setup VPS                       ║"
 echo "╚══════════════════════════════════════════════════╝"
 echo ""
 echo "  VPS:      ${VPS_USER}@${VPS_HOST}"

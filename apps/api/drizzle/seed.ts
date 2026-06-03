@@ -1,6 +1,10 @@
+import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import * as argon2 from 'argon2';
 import * as schema from './schema';
+
+config({ path: '../../.env' });
 
 async function seed() {
   const client = postgres(process.env.DATABASE_URL!);
@@ -8,15 +12,20 @@ async function seed() {
 
   console.log('Seeding database...');
 
-  const [tenant] = await db
-    .insert(schema.tenants)
+  const passwordHash = await argon2.hash('changeme123');
+
+  const [user] = await db
+    .insert(schema.users)
     .values({
-      name: 'Trianox',
-      slug: 'trianox',
+      email: 'demo@golev.com.br',
+      name: 'Demo Go Lev',
+      passwordHash,
+      role: 'member',
     })
+    .onConflictDoNothing()
     .returning();
 
-  console.log('Created tenant:', tenant!.name);
+  console.log('Created user:', user?.email ?? 'already existed');
 
   console.log('Seed completed.');
   await client.end();

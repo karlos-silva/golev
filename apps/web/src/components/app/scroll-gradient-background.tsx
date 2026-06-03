@@ -112,7 +112,7 @@ export function ScrollGradientBackground() {
       <div
         className="absolute inset-0 opacity-[0.04] dark:opacity-[0.07]"
         style={{
-          backgroundImage: 'radial-gradient(circle, #264E9B 0.8px, transparent 0.8px)',
+          backgroundImage: 'radial-gradient(circle, #059669 0.8px, transparent 0.8px)',
           backgroundSize: '24px 24px',
         }}
       />

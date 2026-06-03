@@ -42,7 +42,7 @@ globs: "apps/web/**"
 ## Sempre
 - Usar `next/image` para imagens
 - Usar `next/font` para fontes
-- Importar tipos de `@trianox/shared`
+- Importar tipos de `@golev/shared`
 - Exportar metadata em páginas marketing
 
 ## Nunca

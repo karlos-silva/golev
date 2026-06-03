@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { LegalDocumentNotice } from '@/components/app/legal-document-notice';
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso | Trianox SaaS',
-  description: 'Termos e condições de uso da plataforma Trianox SaaS.',
+  title: 'Termos de Uso | Go Lev',
+  description: 'Termos e condições de uso da plataforma Go Lev.',
   alternates: {
     canonical: '/legal/terms',
   },
@@ -22,7 +22,7 @@ export default function TermsPage() {
         <div>
           <h2 className="text-xl font-semibold text-foreground">1. Aceitação dos Termos</h2>
           <p className="mt-3">
-            Ao acessar e utilizar a plataforma Trianox SaaS, você concorda com estes termos e
+            Ao acessar e utilizar a plataforma Go Lev, você concorda com estes termos e
             condições. Se não concordar, não utilize o serviço.
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function TermsPage() {
         <div>
           <h2 className="text-xl font-semibold text-foreground">2. Descrição do Serviço</h2>
           <p className="mt-3">
-            A Trianox fornece uma plataforma SaaS para gestão empresarial. Os recursos disponíveis
+            A Go Lev fornece uma plataforma SaaS para gestão empresarial. Os recursos disponíveis
             dependem do plano contratado.
           </p>
         </div>

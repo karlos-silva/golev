@@ -10,9 +10,9 @@ globs: "apps/api/drizzle/**"
 - Inicializar com `drizzle({ client, schema })`
 
 ## Schema
-- Tabelas: snake_case, plural (`tenant_memberships`)
+- Tabelas: snake_case, plural (`refresh_tokens`)
 - Colunas: snake_case (`created_at`)
-- Schema TS: camelCase (`tenantMemberships`, `createdAt`)
+- Schema TS: camelCase (`refreshTokens`, `createdAt`)
 - Sempre incluir `createdAt` e `updatedAt`
 - Soft delete com `deletedAt` quando apropriado
 
@@ -35,13 +35,11 @@ globs: "apps/api/drizzle/**"
 - Commitar schema + migration juntos
 - Expand-contract para mudanças destrutivas
 
-## Multi-tenancy
-- Toda query em tabela tenant-scoped DEVE filtrar por `tenantId`
 
 ## Naming Conventions
 | Onde | Convenção | Exemplo |
 |------|-----------|---------|
-| Tabelas (DB) | snake_case, plural | `tenant_memberships` |
+| Tabelas (DB) | snake_case, plural | `refresh_tokens` |
 | Colunas (DB) | snake_case | `created_at` |
-| Schema (TS) | camelCase | `tenantMemberships` |
+| Schema (TS) | camelCase | `refreshTokens` |
 | Schema file | Domínio singular | `auth.ts`, `billing.ts` |

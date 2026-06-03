@@ -19,7 +19,6 @@ description: Adiciona um novo endpoint REST na API
 2. **Adicionar método no Service**
    - Regra de negócio
    - Acesso ao Drizzle
-   - Filtrar por tenantId
 
 3. **Adicionar rota no Controller**
    - Decorator HTTP correto (`@Get`, `@Post`, etc.)
@@ -33,6 +32,5 @@ description: Adiciona um novo endpoint REST na API
 
 ## Validação
 - [ ] Schema Zod em shared
-- [ ] Tenant isolation
 - [ ] Guard configurado
 - [ ] Testes escritos

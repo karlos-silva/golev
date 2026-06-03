@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Features',
-  description: 'Conheça as funcionalidades do Trianox SaaS.',
+  description: 'Conheça as funcionalidades do Go Lev.',
 };
 
 export default function FeaturesPage() {

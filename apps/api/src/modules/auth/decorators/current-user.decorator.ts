@@ -3,7 +3,6 @@ import type { ExecutionContext } from '@nestjs/common';
 
 export type AuthenticatedUser = {
   userId: string;
-  tenantId: string;
   role: string;
 };
 

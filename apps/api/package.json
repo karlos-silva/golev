@@ -1,5 +1,5 @@
 {
-  "name": "@trianox/api",
+  "name": "@golev/api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -27,7 +27,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-fastify": "^11.0.20",
     "@nestjs/throttler": "^6.4.0",
-    "@trianox/shared": "workspace:*",
+    "@golev/shared": "workspace:*",
     "argon2": "^0.43.0",
     "drizzle-orm": "^0.44.1",
     "drizzle-zod": "^0.7.1",

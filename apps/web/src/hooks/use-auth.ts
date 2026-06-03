@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { useAuth } from '@/stores/auth';
-import type { AuthResponse, LoginInput, RegisterInput } from '@trianox/shared';
+import type { AuthResponse, LoginInput, RegisterInput } from '@golev/shared';
 
 export function useLogin() {
   const router = useRouter();

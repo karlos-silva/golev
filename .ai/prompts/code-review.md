@@ -1,13 +1,12 @@
 # Code Review Prompt
 
-Revise o código a seguir contra as regras do projeto Trianox:
+Revise o código a seguir contra as regras do projeto Go Lev:
 
 1. Leia `.ai/rules/global.md` para regras universais
 2. Leia a rule específica do contexto (backend, frontend, drizzle, etc.)
 3. Verifique:
    - TypeScript strict, sem `any`
-   - Tipos de `@trianox/shared`
-   - Tenant isolation nas queries
+   - Tipos de `@golev/shared`
    - Validação com Zod
    - Camadas respeitadas (controller vs service)
    - Naming conventions

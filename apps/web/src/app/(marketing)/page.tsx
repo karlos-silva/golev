@@ -2,235 +2,198 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRef } from 'react';
 import {
-  SlideUp,
   FadeIn,
-  ScaleIn,
+  SlideUp,
   ScrollReveal,
-  Parallax,
   StaggerChildren,
   StaggerItem,
-  GrowLine,
-  motion,
-  useScroll,
-  useTransform,
 } from '@/components/app/animations';
-import { ScrollGradientBackground } from '@/components/app/scroll-gradient-background';
-import { HeroBackground } from '@/components/app/hero-background';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   ArrowRight,
   Check,
-  Lock,
-  Building2,
-  CreditCard,
-  Palette,
-  BarChart3,
-  Rocket,
-  Triangle,
-  Server,
-  Database,
-  Box,
-  Wind,
+  Minus,
+  Plus,
+  ShieldCheck,
+  HeartHandshake,
+  Activity,
+  Sparkles,
+  Stethoscope,
+  Brain,
+  Salad,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-function FloatingShape({
-  className,
-  delay = 0,
-}: {
-  className?: string;
-  delay?: number;
-}) {
+/* ------------------------------------------------- kicker editorial */
+function Kicker({ n, label }: { n: string; label: string }) {
   return (
-    <motion.div
-      className={className}
-      animate={{
-        y: [0, -20, 0],
-        rotate: [0, 5, -5, 0],
-      }}
-      transition={{
-        duration: 6,
-        delay,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    />
-  );
-}
-
-function SectionDivider() {
-  return (
-    <div className="relative py-4">
-      <GrowLine className="mx-auto h-px w-full max-w-4xl bg-gradient-to-r from-transparent via-[#264E9B]/20 to-transparent" />
+    <div className="mb-8 flex items-center gap-3">
+      <span className="font-serif text-sm italic text-brand">{n}</span>
+      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-3">{label}</span>
+      <span className="ml-1 h-px flex-1 bg-border" />
     </div>
   );
 }
 
-function HeroSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end start'],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
-
+/* ----------------------------------------------------------- HERO */
+function Hero() {
+  const meta = [
+    { k: 'Avaliação', v: 'Inicial gratuita' },
+    { k: 'Cuidado', v: 'Acompanhamento médico' },
+    { k: 'Ritmo', v: 'No seu tempo' },
+  ];
   return (
-    <section ref={ref} className="relative min-h-screen overflow-hidden">
-      <HeroBackground />
-
-      {/* Floating decorative shapes */}
-      <Parallax speed={0.3} className="absolute left-[8%] top-[15%] -z-[1]">
-        <FloatingShape
-          className="h-16 w-16 rounded-full border border-[#264E9B]/15 bg-gradient-to-br from-[#264E9B]/5 to-transparent"
-          delay={0}
-        />
-      </Parallax>
-      <Parallax speed={-0.2} className="absolute right-[12%] top-[25%] -z-[1]">
-        <FloatingShape
-          className="h-12 w-12 rotate-45 rounded-lg border border-[#10244A]/10 bg-gradient-to-br from-[#10244A]/5 to-transparent"
-          delay={1.5}
-        />
-      </Parallax>
-      <Parallax speed={0.25} className="absolute left-[15%] bottom-[20%] -z-[1]">
-        <FloatingShape
-          className="h-10 w-10 rounded-full border border-[#264E9B]/10 bg-gradient-to-br from-[#264E9B]/5 to-transparent"
-          delay={3}
-        />
-      </Parallax>
-
-      <motion.div
-        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-        className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center"
-      >
-        <FadeIn>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#264E9B]/20 bg-[#264E9B]/5 px-4 py-1.5 text-sm text-[#264E9B] dark:border-[#6B8FD4]/30 dark:bg-[#6B8FD4]/10 dark:text-[#A0B8E8]">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#264E9B] opacity-75 dark:bg-[#6B8FD4]" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#264E9B] dark:bg-[#6B8FD4]" />
+    <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden">
+      {/* fundo em gradiente (mesh) + textura — o efeito logo na entrada */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(50% 60% at 86% 6%, color-mix(in srgb, var(--gl-accent) 55%, transparent), transparent 60%), radial-gradient(46% 56% at 8% 28%, color-mix(in srgb, var(--gl-primary) 38%, transparent), transparent 60%), radial-gradient(60% 70% at 72% 92%, color-mix(in srgb, var(--gl-support) 45%, transparent), transparent 64%), linear-gradient(160deg, var(--gl-surface), var(--gl-accent-tint))',
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-[0.07] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        }}
+      />
+      {/* textura de pontos (dot grid) com máscara suave */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'radial-gradient(var(--gl-ink) 1px, transparent 1.4px)',
+          backgroundSize: '22px 22px',
+          opacity: 0.06,
+          WebkitMaskImage: 'radial-gradient(115% 100% at 50% 0%, #000 25%, transparent 72%)',
+          maskImage: 'radial-gradient(115% 100% at 50% 0%, #000 25%, transparent 72%)',
+        }}
+      />
+      {/* emenda suave com o fundo da página */}
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-40" style={{ background: 'linear-gradient(to bottom, transparent, var(--gl-paper))' }} />
+      <div className="relative mx-auto w-full max-w-6xl px-6 py-20">
+        <div>
+          <FadeIn>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/40 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--gl-accent)' }} />
+              Emagrecimento com acompanhamento humano
             </span>
-            Template SaaS pronto para produção
-          </div>
-        </FadeIn>
+          </FadeIn>
+          <SlideUp delay={0.05}>
+            <h1 className="mt-5 max-w-[15ch] text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">
+              Cuidado que{' '}
+              <span className="font-serif font-medium italic text-primary">eleva</span>{' '}
+              quem decide mudar.
+            </h1>
+          </SlideUp>
+          <SlideUp delay={0.1}>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              A Go&nbsp;Lev une acompanhamento médico e proximidade humana para você
+              emagrecer com segurança — sem dietas malucas, sem julgamento, no seu ritmo.
+            </p>
+          </SlideUp>
+          <SlideUp delay={0.15}>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href="/avaliacao"
+                className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-strong"
+              >
+                Ver se faz sentido pra mim
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                href="#como-funciona"
+                className="inline-flex items-center justify-center rounded-lg border border-border px-7 py-3.5 text-sm font-semibold text-foreground transition-colors hover:border-foreground"
+              >
+                Como funciona
+              </Link>
+            </div>
+          </SlideUp>
+          <SlideUp delay={0.2}>
+            <div className="mt-12 flex flex-wrap gap-x-10 gap-y-6">
+              {meta.map((m) => (
+                <div key={m.k} className="border-l-2 pl-3.5" style={{ borderColor: 'var(--gl-accent)' }}>
+                  <div className="text-xs uppercase tracking-[0.12em] text-ink-3">{m.k}</div>
+                  <div className="mt-0.5 font-semibold">{m.v}</div>
+                </div>
+              ))}
+            </div>
+          </SlideUp>
+        </div>
 
-        <SlideUp delay={0.05}>
-          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center">
-            <Image
-              src="/logo.svg"
-              alt="Trianox"
-              width={80}
-              height={80}
-              priority
-            />
-          </div>
-        </SlideUp>
-
-        <SlideUp delay={0.1}>
-          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            Construa seu SaaS
-            <br />
-            <span className="bg-gradient-to-r from-[#10244A] to-[#264E9B] bg-clip-text text-transparent dark:from-[#6B8FD4] dark:to-[#A0B8E8]">
-              mais rápido.
-            </span>
-          </h1>
-        </SlideUp>
-
-        <SlideUp delay={0.15}>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Template completo com autenticação, billing, multi-tenancy e tudo que
-            você precisa para lançar seu produto SaaS rapidamente.
-          </p>
-        </SlideUp>
-
-        <SlideUp delay={0.2}>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="group inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#10244A] to-[#264E9B] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#10244A]/20 transition-all hover:shadow-xl hover:shadow-[#10244A]/30 dark:from-[#264E9B] dark:to-[#4A7ADB]"
-            >
-              Começar grátis
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/features"
-              className="rounded-lg border border-[#264E9B]/20 bg-white/50 px-8 py-3.5 text-sm font-semibold shadow-sm backdrop-blur-sm transition-all hover:border-[#264E9B]/40 hover:bg-white/80 dark:bg-white/5 dark:hover:bg-white/10"
-            >
-              Ver features
-            </Link>
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Sem cartão de crédito. Setup em 5 minutos.
-          </p>
-        </SlideUp>
-
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <div className="flex flex-col items-center gap-2 text-muted-foreground/50">
-            <span className="text-xs">Scroll</span>
-            <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
-              <rect x="1" y="1" width="14" height="22" rx="7" stroke="currentColor" strokeWidth="1.5" />
-              <motion.circle
-                cx="8" cy="8" r="2" fill="currentColor"
-                animate={{ cy: [8, 14, 8] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            </svg>
-          </div>
-        </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }
 
-function FeaturesSection() {
+/* ------------------------------------------------- COMO FUNCIONA */
+const steps = [
+  { n: '01', title: 'Avaliação', desc: 'Você conta sua história e seus objetivos. A gente escuta com atenção — sem cobrança, sem julgamento.' },
+  { n: '02', title: 'Plano sob medida', desc: 'Um time de saúde monta um acompanhamento pensado pro seu corpo e a sua rotina. Nada genérico.' },
+  { n: '03', title: 'Acompanhamento', desc: 'Consultas, mensagens e suporte de verdade. A gente segue junto, não só no começo.' },
+  { n: '04', title: 'No seu ritmo', desc: 'Ajustes ao longo do caminho, respeitando o seu tempo. Aqui, cada passo conta.' },
+];
+function ComoFunciona() {
   return (
-    <section className="relative py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <ScrollReveal className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#264E9B] dark:text-[#6B8FD4]">
-            Tudo incluído
-          </p>
-          <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            Tudo que você precisa
+    <section id="como-funciona" className="scroll-mt-20 border-t border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="01" label="Como funciona" />
+          <h2 className="max-w-[18ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            Do primeiro passo ao seu ritmo,{' '}
+            <span className="font-serif font-medium italic text-primary">sem pressa.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            Stack moderna, arquitetura sólida e infraestrutura pronta para escalar.
+        </ScrollReveal>
+        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((s) => (
+            <div key={s.n} className="bg-card p-8">
+              <div className="font-serif text-3xl italic text-brand">{s.n}</div>
+              <h3 className="mt-4 text-xl font-bold tracking-tight">{s.title}</h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------- ABORDAGEM */
+const pilares: { icon: LucideIcon; title: string; desc: string }[] = [
+  { icon: ShieldCheck, title: 'Acompanhamento médico', desc: 'Profissionais de saúde ao seu lado em cada etapa. Segurança vem primeiro, sempre.' },
+  { icon: HeartHandshake, title: 'Sem julgamento', desc: 'Um espaço pra mudar com leveza, no seu tempo. A gente torce por você de verdade.' },
+  { icon: Activity, title: 'Base científica', desc: 'Decisões guiadas por evidência e bom senso — nada de modismo ou promessa milagrosa.' },
+  { icon: Sparkles, title: 'Cuidado contínuo', desc: 'Acompanhamento próximo que continua depois do começo. Você nunca fica sozinho.' },
+];
+function Abordagem() {
+  return (
+    <section className="border-t border-border bg-card/50">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="02" label="Nossa abordagem" />
+          <h2 className="max-w-[20ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            A gente acompanha.{' '}
+            <span className="font-serif font-medium italic text-primary">Não cobra.</span>
+          </h2>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            Não vendemos um “antes e depois”. Caminhamos junto com quem decidiu mudar,
+            com método, ciência e respeito ao ritmo de cada um.
           </p>
         </ScrollReveal>
-
-        <SectionDivider />
-
-        <StaggerChildren staggerDelay={0.08} className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => (
-            <StaggerItem key={feature.title}>
-              <Card className="group relative h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#264E9B]/5">
-                {/* Hover gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#264E9B]/0 to-[#10244A]/0 transition-all duration-500 group-hover:from-[#264E9B]/[0.02] group-hover:to-[#10244A]/[0.04]" />
-                <CardHeader>
-                  <motion.div
-                    className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#10244A]/10 to-[#264E9B]/10 dark:from-[#6B8FD4]/15 dark:to-[#A0B8E8]/15"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <feature.icon className="h-5 w-5 text-[#264E9B] dark:text-[#6B8FD4]" />
-                  </motion.div>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </CardContent>
-                {/* Bottom accent line */}
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#264E9B]/0 to-transparent transition-all duration-500 group-hover:via-[#264E9B]/30" />
-              </Card>
+        <StaggerChildren staggerDelay={0.08} className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {pilares.map((p) => (
+            <StaggerItem key={p.title}>
+              <div className="h-full bg-background p-7">
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: 'var(--gl-support-tint)' }}>
+                  <p.icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold tracking-tight">{p.title}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{p.desc}</p>
+              </div>
             </StaggerItem>
           ))}
         </StaggerChildren>
@@ -239,268 +202,126 @@ function FeaturesSection() {
   );
 }
 
-function StatsSection() {
-  const stats = [
-    { value: '5min', label: 'Setup completo' },
-    { value: '100%', label: 'TypeScript strict' },
-    { value: '12+', label: 'Componentes prontos' },
-    { value: '∞', label: 'Escalabilidade' },
-  ];
-
+/* ----------------------------------------------------- TRATAMENTOS */
+function Pen({ band, base = false }: { band: string; base?: boolean }) {
   return (
-    <section className="relative overflow-hidden py-20">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#10244A]/[0.03] via-[#264E9B]/[0.06] to-[#10244A]/[0.03] dark:from-[#264E9B]/[0.05] dark:via-[#264E9B]/[0.1] dark:to-[#264E9B]/[0.05]" />
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-          {stats.map((stat, i) => (
-            <ScrollReveal key={stat.label} delay={i * 0.1}>
-              <div className="text-center">
-                <Parallax speed={0.05 * (i % 2 === 0 ? 1 : -1)}>
-                  <div className="text-4xl font-bold tracking-tight text-[#10244A] dark:text-[#A0B8E8] sm:text-5xl">
-                    {stat.value}
-                  </div>
-                  <p className="mt-2 text-sm font-medium text-muted-foreground">
-                    {stat.label}
-                  </p>
-                </Parallax>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </div>
-    </section>
+    <svg viewBox="0 0 120 244" width="116" height="208" aria-hidden>
+      <ellipse cx="60" cy={base ? 236 : 232} rx="27" ry="5" fill="rgba(0,0,0,0.07)" />
+      {/* corpo */}
+      <rect x="45" y="62" width="30" height="158" rx="13" fill="#FCFBF9" stroke="rgba(0,0,0,0.10)" />
+      {/* brilho lateral */}
+      <rect x="50" y="74" width="5" height="120" rx="2.5" fill="#ffffff" opacity="0.85" />
+      {/* banda de acento (dose) */}
+      <rect x="45" y="150" width="30" height="24" fill={band} />
+      <rect x="45" y="150" width="30" height="24" fill="#000000" opacity="0.06" />
+      {/* janela de dose */}
+      <rect x="55" y="118" width="10" height="22" rx="2" fill="#EAE8E3" />
+      {/* tampa */}
+      <rect x="47" y="24" width="26" height="44" rx="11" fill="#F1EFEA" stroke="rgba(0,0,0,0.08)" />
+      <rect x="47" y="38" width="26" height="6" fill={band} opacity="0.55" />
+      {base ? (
+        <>
+          <rect x="53" y="216" width="14" height="8" fill="#D9D6D1" />
+          <rect x="38" y="220" width="44" height="16" rx="7" fill="#E7E4DF" stroke="rgba(0,0,0,0.06)" />
+        </>
+      ) : (
+        <rect x="56" y="216" width="8" height="16" rx="2" fill="#D2CFCA" />
+      )}
+    </svg>
   );
 }
 
-function StackSection() {
-  const stack: { name: string; desc: string; icon: LucideIcon }[] = [
-    { name: 'Next.js', desc: 'App Router + SSR', icon: Triangle },
-    { name: 'NestJS', desc: 'API robusta', icon: Server },
-    { name: 'PostgreSQL', desc: 'Drizzle ORM', icon: Database },
-    { name: 'Stripe', desc: 'Billing integrado', icon: CreditCard },
-    { name: 'Docker', desc: 'Deploy simples', icon: Box },
-    { name: 'Tailwind', desc: 'CSS moderno', icon: Wind },
-  ];
+const tratamentos: { nome: string; brands: string[]; band: string; base: boolean }[] = [
+  { nome: 'Semaglutida', brands: ['Ozempic®', 'Wegovy®'], band: 'var(--gl-accent)', base: false },
+  { nome: 'Tirzepatida', brands: ['Mounjaro®'], band: 'var(--gl-primary)', base: true },
+];
 
+function Tratamentos() {
   return (
-    <section className="relative py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="grid items-center gap-16 lg:grid-cols-2">
-          <div>
-            <ScrollReveal>
-              <p className="text-sm font-semibold uppercase tracking-widest text-[#264E9B] dark:text-[#6B8FD4]">
-                Stack completa
-              </p>
-              <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-                Construído com as{' '}
-                <span className="bg-gradient-to-r from-[#10244A] to-[#264E9B] bg-clip-text text-transparent dark:from-[#6B8FD4] dark:to-[#A0B8E8]">
-                  melhores ferramentas.
-                </span>
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Cada tecnologia foi escolhida por performance, DX e maturidade.
-                Sem hype, só ferramentas battle-tested.
-              </p>
-            </ScrollReveal>
-          </div>
-
-          <StaggerChildren staggerDelay={0.06} className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {stack.map((item) => (
-              <StaggerItem key={item.name}>
-                <motion.div
-                  className="group flex flex-col items-center gap-2 rounded-xl border bg-card p-5 text-center transition-all"
-                  whileHover={{
-                    y: -4,
-                    boxShadow: '0 20px 40px rgba(16,36,74,0.08)',
-                  }}
-                >
-                  <item.icon className="h-6 w-6 text-[#264E9B] dark:text-[#6B8FD4]" />
-                  <span className="font-semibold">{item.name}</span>
-                  <span className="text-xs text-muted-foreground">{item.desc}</span>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function WorkflowSection() {
-  const steps = [
-    {
-      step: '01',
-      title: 'Clone o template',
-      desc: 'Fork o repositório e configure as variáveis de ambiente. Tudo documentado.',
-    },
-    {
-      step: '02',
-      title: 'Customize',
-      desc: 'Adapte o design, configure Stripe, e adicione suas features de negócio.',
-    },
-    {
-      step: '03',
-      title: 'Deploy',
-      desc: 'Push para o GitHub e o CI/CD cuida do resto. Staging e produção automáticos.',
-    },
-  ];
-
-  return (
-    <section className="relative py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <ScrollReveal className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#264E9B] dark:text-[#6B8FD4]">
-            Simples de usar
-          </p>
-          <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            Do zero ao deploy em 3 passos
+    <section id="tratamentos" className="scroll-mt-20 border-t border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="03" label="Tratamentos" />
+          <h2 className="max-w-[24ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            Faça uma avaliação médica e tenha o{' '}
+            <span className="font-serif font-medium italic text-primary">diagnóstico certo.</span>
           </h2>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            Existem tratamentos seguros e registrados na ANVISA que atuam como inibidores de
+            apetite, cada um com um princípio ativo. É essencial que o médico entenda a sua
+            necessidade antes de qualquer prescrição.
+          </p>
         </ScrollReveal>
-
-        <div className="mt-20 grid gap-8 lg:grid-cols-3">
-          {steps.map((item, i) => (
-            <ScrollReveal key={item.step} delay={i * 0.15}>
-              <div className="relative">
-                {/* Connecting line */}
-                {i < steps.length - 1 && (
-                  <div className="absolute left-1/2 top-8 hidden h-px w-[calc(100%+2rem)] bg-gradient-to-r from-[#264E9B]/20 to-[#264E9B]/5 lg:block" />
-                )}
-
-                <div className="flex flex-col items-center text-center">
-                  <Parallax speed={0.05}>
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#10244A] to-[#264E9B] text-lg font-bold text-white shadow-lg shadow-[#10244A]/15 dark:from-[#264E9B] dark:to-[#4A7ADB]">
-                      {item.step}
-                    </div>
-                  </Parallax>
-                  <h3 className="mt-6 text-xl font-semibold">{item.title}</h3>
-                  <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
-                    {item.desc}
+        <StaggerChildren staggerDelay={0.1} className="mt-14 grid gap-6 sm:grid-cols-2">
+          {tratamentos.map((t) => (
+            <StaggerItem key={t.nome}>
+              <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-shadow duration-300 hover:shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                <div
+                  className="flex h-64 items-center justify-center"
+                  style={{ background: 'radial-gradient(130% 95% at 50% 0%, var(--gl-accent-tint), var(--gl-surface) 72%)' }}
+                >
+                  <div className="transition-transform duration-500 ease-out group-hover:-translate-y-1.5">
+                    <Pen band={t.band} base={t.base} />
+                  </div>
+                </div>
+                <div className="p-7">
+                  <h3 className="text-xl font-bold tracking-tight">{t.nome}</h3>
+                  <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                    Princípio ativo encontrado em tratamentos como{' '}
+                    {t.brands.map((b, i) => (
+                      <span key={b}>
+                        {i > 0 && ' e '}
+                        <span
+                          className="font-medium text-foreground underline decoration-2 underline-offset-4"
+                          style={{ textDecorationColor: 'var(--gl-accent)' }}
+                        >
+                          {b}
+                        </span>
+                      </span>
+                    ))}
+                    . Sob prescrição.
                   </p>
                 </div>
               </div>
-            </ScrollReveal>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerChildren>
+        <p className="mt-6 text-xs leading-relaxed text-ink-3">
+          O uso de qualquer medicamento depende de avaliação e prescrição médica individual.
+          Esta página é informativa e não substitui uma consulta.
+        </p>
       </div>
     </section>
   );
 }
 
-function PricingSection() {
-  const plans = [
-    {
-      name: 'Starter',
-      price: 'Grátis',
-      period: '',
-      desc: 'Perfeito para validar sua ideia',
-      features: ['Autenticação completa', 'Multi-tenancy básico', 'Deploy Docker', '1 ambiente'],
-      highlighted: false,
-    },
-    {
-      name: 'Pro',
-      price: 'R$ 97',
-      period: '/mês',
-      desc: 'Para times que precisam escalar',
-      features: [
-        'Tudo do Starter',
-        'Billing com Stripe',
-        'Analytics avançado',
-        'Staging + Produção',
-        'Suporte prioritário',
-      ],
-      highlighted: true,
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      period: '',
-      desc: 'Para grandes organizações',
-      features: [
-        'Tudo do Pro',
-        'SLA dedicado',
-        'Integrações custom',
-        'Onboarding guiado',
-        'White-label',
-      ],
-      highlighted: false,
-    },
-  ];
-
+/* --------------------------------------------------- GLP-1 EXPLAINER */
+const glp = [
+  { q: 'O que são os tratamentos com GLP‑1?', a: 'São medicamentos análogos do GLP‑1, um hormônio que o corpo produz e que ajuda a regular o apetite e a sensação de saciedade. Usados com acompanhamento, apoiam o emagrecimento.' },
+  { q: 'Como funcionam?', a: 'Eles aumentam a saciedade e deixam a digestão mais lenta, ajudando você a comer menos sem passar fome o dia inteiro — sempre como parte de um plano maior.' },
+  { q: 'Para quem são indicados?', a: 'A indicação é individual e definida por um médico, considerando seu histórico, seus exames e seus objetivos. Não serve para todo mundo, e tudo bem.' },
+  { q: 'Já tenho prescrição. E aí?', a: 'Sem problema. A gente avalia o seu caso e dá continuidade ao acompanhamento com segurança, do seu jeito.' },
+];
+function ExplicaGLP() {
   return (
-    <section className="relative py-28">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#264E9B]/[0.03] to-transparent dark:via-[#264E9B]/[0.06]" />
-      <div className="relative mx-auto max-w-7xl px-6">
-        <ScrollReveal className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#264E9B] dark:text-[#6B8FD4]">
-            Preços
-          </p>
-          <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            Simples e transparente
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            Escolha o plano ideal para o momento do seu produto.
+    <section className="border-t border-border bg-card/50">
+      <div className="mx-auto max-w-3xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="04" label="Entenda o GLP‑1" />
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Sem mistério, sem promessa mágica.</h2>
+          <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
+            A gente explica de forma simples — porque decidir com clareza faz parte do cuidado.
           </p>
         </ScrollReveal>
-
-        <div className="mt-16 grid gap-6 lg:grid-cols-3">
-          {plans.map((plan, i) => (
-            <ScrollReveal key={plan.name} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ y: -6 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-                className="relative"
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2">
-                    <span className="whitespace-nowrap rounded-full bg-gradient-to-r from-[#10244A] to-[#264E9B] px-4 py-1 text-xs font-semibold text-white shadow-md dark:from-[#264E9B] dark:to-[#4A7ADB]">
-                      Mais popular
-                    </span>
-                  </div>
-                )}
-                <Card
-                  className={`relative h-full ${
-                    plan.highlighted
-                      ? 'border-[#264E9B]/40 shadow-xl shadow-[#264E9B]/10 dark:border-[#6B8FD4]/40'
-                      : ''
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#264E9B] to-transparent" />
-                  )}
-                  <CardHeader className="pb-2">
-                    <p className="text-sm font-medium text-muted-foreground">{plan.name}</p>
-                    <div className="mt-3 flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.period && (
-                        <span className="text-sm text-muted-foreground">{plan.period}</span>
-                      )}
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{plan.desc}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="mt-4 space-y-3">
-                      {plan.features.map((feat) => (
-                        <li key={feat} className="flex items-start gap-2.5">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#264E9B] dark:text-[#6B8FD4]" />
-                          <span className="text-sm">{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href="/register"
-                      className={`mt-8 block w-full rounded-lg py-3 text-center text-sm font-semibold transition-all ${
-                        plan.highlighted
-                          ? 'bg-gradient-to-r from-[#10244A] to-[#264E9B] text-white shadow-lg shadow-[#10244A]/20 hover:shadow-xl dark:from-[#264E9B] dark:to-[#4A7ADB]'
-                          : 'border bg-card hover:bg-accent'
-                      }`}
-                    >
-                      Começar agora
-                    </Link>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </ScrollReveal>
+        <div className="mt-10">
+          {glp.map((f) => (
+            <details key={f.q} className="group border-b border-border py-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <Plus className="h-5 w-5 shrink-0 text-brand transition-transform duration-200 group-open:rotate-45" />
+              </summary>
+              <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">{f.a}</p>
+            </details>
           ))}
         </div>
       </div>
@@ -508,58 +329,240 @@ function PricingSection() {
   );
 }
 
-function CtaSection() {
+/* ------------------------------------------------------------ TIME */
+const team: { icon: LucideIcon; role: string; desc: string }[] = [
+  { icon: Stethoscope, role: 'Médicos', desc: 'Avaliam, cuidam da sua saúde e, quando faz sentido, prescrevem com segurança.' },
+  { icon: Salad, role: 'Nutrição', desc: 'Um plano alimentar que cabe na sua vida — comida de verdade, sem cardápio impossível.' },
+  { icon: Brain, role: 'Apoio emocional', desc: 'Mudar de hábito também é sobre a cabeça. Aqui, você é cuidado por inteiro.' },
+];
+function Time() {
   return (
-    <section className="py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <ScaleIn>
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#10244A] to-[#264E9B] p-14 text-center text-white shadow-2xl dark:from-[#1a3366] dark:to-[#3568c7] lg:p-20">
-            {/* Decorative elements inside CTA */}
-            <div className="absolute inset-0 overflow-hidden">
-              <motion.div
-                className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-white/5"
-                animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-                transition={{ duration: 20, repeat: Infinity }}
-              />
-              <motion.div
-                className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-white/5"
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 15, repeat: Infinity }}
-              />
-              <div
-                className="absolute inset-0 opacity-[0.04]"
-                style={{
-                  backgroundImage: 'radial-gradient(circle, white 0.8px, transparent 0.8px)',
-                  backgroundSize: '20px 20px',
-                }}
-              />
+    <section className="border-t border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="05" label="Um time com você" />
+          <h2 className="max-w-[22ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            Gente de verdade,{' '}
+            <span className="font-serif font-medium italic text-primary">do seu lado.</span>
+          </h2>
+        </ScrollReveal>
+        <div className="mt-14 grid gap-5 sm:grid-cols-3">
+          {team.map((t) => (
+            <div key={t.role} className="rounded-2xl border border-border bg-card p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full" style={{ background: 'var(--gl-support-tint)' }}>
+                <t.icon className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="mt-5 text-lg font-bold tracking-tight">{t.role}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{t.desc}</p>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-                Pronto para começar?
+/* ------------------------------------------------------ DEPOIMENTOS */
+const depo = [
+  { quote: 'Pela primeira vez senti que tinha alguém do meu lado — não me cobrando, mas torcendo por mim.', name: 'Ana, 34', meta: '3 meses com a Go Lev', img: 'https://i.pravatar.cc/120?img=47' },
+  { quote: 'Sem dieta maluca, sem culpa. Fui no meu ritmo e, quando vi, tinha mudado de verdade.', name: 'Rafael, 41', meta: '6 meses com a Go Lev', img: 'https://i.pravatar.cc/120?img=12' },
+];
+function Depoimentos() {
+  return (
+    <section className="border-t border-border bg-card/50">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="06" label="Histórias" />
+          <h2 className="max-w-[20ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            Cada passo conta —{' '}
+            <span className="font-serif font-medium italic text-primary">e a gente celebra junto.</span>
+          </h2>
+        </ScrollReveal>
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          {depo.map((d) => (
+            <blockquote key={d.name} className="rounded-2xl border border-border border-l-2 border-l-brand bg-background p-8">
+              <p className="font-serif text-xl italic leading-relaxed text-foreground sm:text-2xl">“{d.quote}”</p>
+              <footer className="mt-6 flex items-center gap-3">
+                <Image src={d.img} alt={d.name} width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
+                <span>
+                  <span className="block text-sm font-semibold">{d.name}</span>
+                  <span className="block text-sm text-ink-3">{d.meta}</span>
+                </span>
+              </footer>
+            </blockquote>
+          ))}
+        </div>
+        <p className="mt-6 text-xs text-ink-3">Imagens ilustrativas. Resultados variam de pessoa para pessoa.</p>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------ COMPARAÇÃO */
+const compareGolev = [
+  'Acompanhamento médico contínuo',
+  'Plano sob medida e sustentável',
+  'Acolhimento, sem julgamento',
+  'Ajustes e suporte sempre que precisar',
+];
+const compareSolo = [
+  'Tentativa e erro, sem orientação',
+  'Dietas restritivas e efeito sanfona',
+  'Culpa quando algo sai do plano',
+  'Custos avulsos que se acumulam',
+];
+
+function Comparacao() {
+  return (
+    <section className="border-t border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="07" label="A diferença" />
+          <h2 className="max-w-[20ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            Fazer sozinho ou{' '}
+            <span className="font-serif font-medium italic text-primary">com a Go&nbsp;Lev.</span>
+          </h2>
+        </ScrollReveal>
+
+        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2">
+          {/* Sozinho */}
+          <div className="bg-card p-8 sm:p-10">
+            <span className="text-xs font-semibold uppercase tracking-widest text-ink-3">Sozinho</span>
+            <ul className="mt-6 space-y-4">
+              {compareSolo.map((s) => (
+                <li key={s} className="flex items-start gap-3 text-[15px] text-muted-foreground">
+                  <Minus className="mt-1 h-4 w-4 shrink-0 text-ink-3" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Com a Go Lev */}
+          <div className="bg-background p-8 sm:p-10">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold uppercase tracking-widest text-brand">Com a Go&nbsp;Lev</span>
+              <span className="rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-brand" style={{ background: 'var(--gl-accent-tint)' }}>
+                Recomendado
+              </span>
+            </div>
+            <ul className="mt-6 space-y-4">
+              {compareGolev.map((s) => (
+                <li key={s} className="flex items-start gap-3 text-[15px] text-foreground">
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 border-t border-border pt-6">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm text-ink-2">a partir de</span>
+                <span className="font-serif text-3xl font-medium italic text-primary">R$ 249</span>
+                <span className="text-sm text-ink-2">/mês</span>
+              </div>
+              <p className="mt-1 text-[13px] text-ink-3">Tudo incluído — acompanhamento, ajustes e suporte.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <Link
+            href="/avaliacao"
+            className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-strong"
+          >
+            Quero ver se faz sentido pra mim
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <p className="text-xs text-ink-3">
+            <span className="font-semibold text-ink-2">Valor de exemplo</span> · avaliação inicial gratuita, sem compromisso.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------- FAQ */
+const faqs = [
+  { q: 'Preciso fazer dieta restritiva?', a: 'Não. A gente monta um plano realista que cabe na sua vida — sustentável, sem sofrimento e sem efeito sanfona.' },
+  { q: 'Tem acompanhamento médico de verdade?', a: 'Tem. Profissionais de saúde avaliam o seu caso, acompanham sua evolução e ajustam o plano com segurança.' },
+  { q: 'Em quanto tempo vejo resultado?', a: 'Cada corpo tem o seu tempo — e a gente respeita o seu. O foco é mudança consistente e saudável, não promessa de prazo.' },
+  { q: 'Como funciona o pagamento?', a: 'Planos simples e transparentes, sem letra miúda. Dá pra começar com uma avaliação inicial gratuita.' },
+];
+function Faq() {
+  return (
+    <section className="border-t border-border bg-card/50">
+      <div className="mx-auto max-w-3xl px-6 py-24 sm:py-28">
+        <ScrollReveal>
+          <Kicker n="08" label="Perguntas frequentes" />
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">A gente te explica.</h2>
+        </ScrollReveal>
+        <div className="mt-10">
+          {faqs.map((f) => (
+            <details key={f.q} className="group border-b border-border py-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <Plus className="h-5 w-5 shrink-0 text-brand transition-transform duration-200 group-open:rotate-45" />
+              </summary>
+              <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* --------------------------------------------------------------- CTA */
+function CtaFinal() {
+  return (
+    <section className="relative overflow-hidden border-t border-border">
+      {/* fundo em gradiente (mesh) da seção */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(60% 80% at 14% 18%, color-mix(in srgb, var(--gl-accent) 60%, transparent), transparent 60%), radial-gradient(55% 75% at 88% 26%, color-mix(in srgb, var(--gl-primary) 48%, transparent), transparent 60%), radial-gradient(80% 90% at 60% 110%, color-mix(in srgb, var(--gl-support) 55%, transparent), transparent 62%), linear-gradient(135deg, var(--gl-surface), var(--gl-accent-tint))',
+        }}
+      />
+      {/* textura de grão fina e moderna */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-[0.07] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-6 py-32 sm:py-36">
+        <ScrollReveal>
+          <div
+            className="relative overflow-hidden rounded-3xl border border-white/50 px-8 py-24 text-center shadow-[0_24px_70px_rgba(0,0,0,0.10)] backdrop-blur-2xl sm:px-16 sm:py-32"
+            style={{ background: 'color-mix(in srgb, var(--gl-surface) 52%, transparent)' }}
+          >
+            {/* sheen de vidro no topo */}
+            <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-white/70" />
+            <div className="relative">
+              <h2 className="mx-auto max-w-[22ch] text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                O primeiro passo é o mais leve.{' '}
+                <span className="font-serif font-medium italic text-primary">A gente segue com você.</span>
               </h2>
-              <p className="mx-auto mt-6 max-w-xl text-lg text-white/80">
-                Crie sua conta em segundos e comece a construir seu produto SaaS hoje.
+              <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+                Faça a avaliação gratuita em alguns minutos e veja se faz sentido. Sem compromisso, no seu tempo.
               </p>
-              <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <div className="mt-9 flex items-center justify-center">
                 <Link
-                  href="/register"
-                  className="group inline-flex items-center gap-2 rounded-lg bg-white px-8 py-4 text-sm font-semibold text-[#10244A] shadow-lg transition-all hover:bg-white/90 hover:shadow-xl"
+                  href="/avaliacao"
+                  className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-strong"
                 >
-                  Criar conta grátis
+                  Ver se faz sentido pra mim
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  href="/features"
-                  className="rounded-lg border border-white/20 bg-white/10 px-8 py-4 text-sm font-semibold backdrop-blur-sm transition-all hover:bg-white/20"
-                >
-                  Explorar features
                 </Link>
               </div>
             </div>
           </div>
-        </ScaleIn>
+        </ScrollReveal>
       </div>
     </section>
   );
@@ -568,56 +571,16 @@ function CtaSection() {
 export default function HomePage() {
   return (
     <>
-      <ScrollGradientBackground />
-      <HeroSection />
-      <SectionDivider />
-      <FeaturesSection />
-      <StatsSection />
-      <SectionDivider />
-      <StackSection />
-      <WorkflowSection />
-      <SectionDivider />
-      <PricingSection />
-      <CtaSection />
+      <Hero />
+      <ComoFunciona />
+      <Abordagem />
+      <Tratamentos />
+      <ExplicaGLP />
+      <Time />
+      <Depoimentos />
+      <Comparacao />
+      <Faq />
+      <CtaFinal />
     </>
   );
 }
-
-const features: { icon: LucideIcon; title: string; description: string }[] = [
-  {
-    icon: Lock,
-    title: 'Autenticação completa',
-    description:
-      'JWT com access/refresh tokens, rate limiting, password hashing com argon2 e role-based access control.',
-  },
-  {
-    icon: Building2,
-    title: 'Multi-tenancy nativo',
-    description:
-      'Isolamento de dados por tenant com roles e permissions granulares. Cada organização tem seu espaço.',
-  },
-  {
-    icon: CreditCard,
-    title: 'Billing com Stripe',
-    description:
-      'Subscriptions, webhooks, invoices e gestão de planos integrados com Stripe pronto para usar.',
-  },
-  {
-    icon: Palette,
-    title: 'UI moderna e acessível',
-    description:
-      'shadcn/ui + Tailwind CSS v4 com dark mode, componentes acessíveis e design system consistente.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Analytics integrado',
-    description:
-      'PostHog para product analytics e Plausible/Umami para web analytics das landing pages.',
-  },
-  {
-    icon: Rocket,
-    title: 'Deploy simples',
-    description:
-      'Docker + Caddy com TLS automático. CI/CD com GitHub Actions. Staging e produção na mesma VPS.',
-  },
-];

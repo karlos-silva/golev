@@ -10,7 +10,7 @@ globs: "apps/api/**"
 - Sem Clean Architecture, sem Repository Pattern
 - Controller: recebe HTTP, valida com Zod, delega para Service, retorna response
 - Service: regra de negócio, acessa Drizzle diretamente, coordena transações
-- Guard: autorização (roles, permissions, tenant ownership)
+- Guard: autorização (roles, permissions)
 - Interceptor: cross-cutting (logging, timing, transform)
 
 ## Sempre

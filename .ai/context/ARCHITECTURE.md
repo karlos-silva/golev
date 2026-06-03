@@ -1,6 +1,6 @@
 # Architecture
 
-Para a arquitetura completa, consulte `trianox-sass-architecture.md` na raiz do repositório.
+Para a arquitetura completa, consulte `golev-architecture.md` na raiz do repositório.
 
 ## Resumo
 

@@ -7,15 +7,10 @@ import {
 import { eq } from 'drizzle-orm';
 import * as argon2 from 'argon2';
 import { DATABASE, type Database } from '../../database/database.module';
-import {
-  users,
-  refreshTokens,
-  tenants,
-  tenantMemberships,
-} from '../../../drizzle/schema';
+import { users, refreshTokens } from '../../../drizzle/schema';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
-import type { LoginInput, RegisterInput } from '@trianox/shared';
+import type { LoginInput, RegisterInput } from '@golev/shared';
 
 @Injectable()
 export class AuthService {
@@ -34,33 +29,21 @@ export class AuthService {
     }
 
     const passwordHash = await this.passwordService.hash(input.password);
-    const slug = input.tenantName.toLowerCase().replace(/\s+/g, '-');
 
     return this.db.transaction(async (tx) => {
-      const [tenant] = await tx
-        .insert(tenants)
-        .values({ name: input.tenantName, slug })
-        .returning();
-
       const [user] = await tx
         .insert(users)
         .values({
           email: input.email,
           name: input.name,
           passwordHash,
+          role: 'member',
         })
         .returning();
 
-      await tx.insert(tenantMemberships).values({
-        tenantId: tenant!.id,
-        userId: user!.id,
-        role: 'owner',
-      });
-
       const tokens = await this.tokenService.generateTokens({
         userId: user!.id,
-        tenantId: tenant!.id,
-        role: 'owner',
+        role: user!.role,
       });
 
       const tokenHash = await argon2.hash(tokens.refreshToken);
@@ -78,8 +61,7 @@ export class AuthService {
           id: user!.id,
           email: user!.email,
           name: user!.name,
-          tenantId: tenant!.id,
-          role: 'owner',
+          role: user!.role,
         },
         tokens,
       };
@@ -89,7 +71,6 @@ export class AuthService {
   async login(input: LoginInput) {
     const user = await this.db.query.users.findFirst({
       where: eq(users.email, input.email),
-      with: { memberships: true },
     });
 
     if (!user) {
@@ -104,15 +85,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const membership = user.memberships[0];
-    if (!membership) {
-      throw new UnauthorizedException('No tenant membership found');
-    }
-
     const tokens = await this.tokenService.generateTokens({
       userId: user.id,
-      tenantId: membership.tenantId,
-      role: membership.role,
+      role: user.role,
     });
 
     await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
@@ -122,8 +97,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        tenantId: membership.tenantId,
-        role: membership.role,
+        role: user.role,
       },
       tokens,
     };

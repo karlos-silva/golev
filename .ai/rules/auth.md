@@ -7,7 +7,7 @@ globs: "apps/api/src/modules/auth/**"
 
 ## Estratégia
 - JWT custom com NestJS (sem serviços externos)
-- Access token: 15min, stateless, contém userId, tenantId, role
+- Access token: 15min, stateless, contém userId, role
 - Refresh token: 7 dias, hash no DB, rotation obrigatória
 - Token blocklist: tabela PostgreSQL para logout/revogação
 

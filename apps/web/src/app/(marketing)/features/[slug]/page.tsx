@@ -2,12 +2,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 const features: Record<string, { title: string; description: string; details: string }> = {
-  'multi-tenancy': {
-    title: 'Multi-tenancy',
-    description: 'Isolamento completo de dados entre organizações.',
-    details:
-      'Cada organização tem seus dados completamente isolados. Todas as queries são filtradas por tenant, garantindo segurança e privacidade.',
-  },
   autenticacao: {
     title: 'Autenticação Segura',
     description: 'JWT com refresh tokens e rate limiting.',
@@ -32,10 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!feature) return {};
 
   return {
-    title: `${feature.title} | Features | Trianox SaaS`,
+    title: `${feature.title} | Features | Go Lev`,
     description: feature.description,
     openGraph: {
-      title: `${feature.title} | Trianox SaaS`,
+      title: `${feature.title} | Go Lev`,
       description: feature.description,
       type: 'website',
     },

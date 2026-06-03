@@ -7,9 +7,9 @@ import { customers } from '../../../drizzle/schema';
 export class BillingService {
   constructor(@Inject(DATABASE) private db: Database) {}
 
-  async getSubscription(tenantId: string) {
+  async getSubscription(userId: string) {
     const customer = await this.db.query.customers.findFirst({
-      where: eq(customers.tenantId, tenantId),
+      where: eq(customers.userId, userId),
       with: { subscriptions: true },
     });
 

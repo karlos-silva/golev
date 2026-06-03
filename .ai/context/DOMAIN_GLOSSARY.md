@@ -4,9 +4,7 @@
 
 | Termo | Definição |
 |-------|-----------|
-| Tenant | Organização/empresa que usa o produto |
-| Member | Usuário que pertence a um tenant |
-| Owner | Criador do tenant, permissões totais |
-| Admin | Membro com permissões administrativas |
+| User | Usuário da plataforma (autenticado por email/senha) |
+| Role | Papel do usuário (ex.: `member`); base para autorização |
 | Subscription | Assinatura de um plano de billing |
-| Customer | Entidade Stripe vinculada a um tenant |
+| Customer | Entidade Stripe vinculada a um usuário |

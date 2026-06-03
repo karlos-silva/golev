@@ -14,7 +14,7 @@ description: Gera e aplica uma migration Drizzle de forma segura
 
 2. **Gerar migration:**
    ```bash
-   pnpm --filter @trianox/api db:generate
+   pnpm --filter @golev/api db:generate
    ```
 
 3. **Revisar SQL gerado** em `apps/api/drizzle/migrations/`
@@ -24,7 +24,7 @@ description: Gera e aplica uma migration Drizzle de forma segura
 
 4. **Aplicar no banco local:**
    ```bash
-   pnpm --filter @trianox/api db:migrate
+   pnpm --filter @golev/api db:migrate
    ```
 
 5. **Atualizar Zod schemas** em `packages/shared` se contratos mudaram

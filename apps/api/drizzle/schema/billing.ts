@@ -6,14 +6,14 @@ import {
   integer,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { tenants } from './tenants';
+import { users } from './auth';
 
 export const customers = pgTable('customers', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  userId: uuid('user_id')
     .notNull()
     .unique()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: 'cascade' }),
   stripeCustomerId: text('stripe_customer_id').unique(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
@@ -21,9 +21,9 @@ export const customers = pgTable('customers', {
 });
 
 export const customersRelations = relations(customers, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [customers.tenantId],
-    references: [tenants.id],
+  user: one(users, {
+    fields: [customers.userId],
+    references: [users.id],
   }),
   subscriptions: many(subscriptions),
 }));
