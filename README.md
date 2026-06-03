@@ -1,5 +1,9 @@
 # Go Lev Template
 
+[![CI](https://github.com/go-lev/plataform/actions/workflows/ci.yml/badge.svg)](https://github.com/go-lev/plataform/actions/workflows/ci.yml)
+[![Deploy](https://github.com/go-lev/plataform/actions/workflows/deploy.yml/badge.svg)](https://github.com/go-lev/plataform/actions/workflows/deploy.yml)
+[![site](https://img.shields.io/website?url=https%3A%2F%2Fgolev.app.br&label=golev.app.br)](https://golev.app.br)
+
 Template padrão para produtos SaaS da Go Lev. Monorepo com Next.js, NestJS, Drizzle ORM e infraestrutura completa.
 
 ## Tech Stack
