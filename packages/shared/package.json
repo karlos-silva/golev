@@ -1,5 +1,5 @@
 {
-  "name": "@trianox/shared",
+  "name": "@golev/shared",
   "version": "0.0.0",
   "private": true,
   "main": "./dist/index.js",
@@ -10,6 +10,9 @@
       "require": "./dist/index.js",
       "import": "./dist/index.js"
     },
+    "./brand/tokens.css": "./brand/tokens.css",
+    "./brand/fonts.css": "./brand/fonts.css",
+    "./brand/mark.svg": "./brand/mark.svg",
     "./*": {
       "types": "./dist/*/index.d.ts",
       "require": "./dist/*/index.js",

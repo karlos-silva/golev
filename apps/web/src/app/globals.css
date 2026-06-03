@@ -1,78 +1,67 @@
 @import "tailwindcss";
+@import "@golev/shared/brand/tokens.css";
 
-@theme {
-  --color-background: oklch(1 0 0);
-  --color-foreground: oklch(0.145 0 0);
-  --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.145 0 0);
-  --color-popover: oklch(1 0 0);
-  --color-popover-foreground: oklch(0.145 0 0);
-  --color-primary: oklch(0.205 0 0);
-  --color-primary-foreground: oklch(0.985 0 0);
-  --color-secondary: oklch(0.97 0 0);
-  --color-secondary-foreground: oklch(0.205 0 0);
-  --color-muted: oklch(0.97 0 0);
-  --color-muted-foreground: oklch(0.556 0 0);
-  --color-accent: oklch(0.97 0 0);
-  --color-accent-foreground: oklch(0.205 0 0);
-  --color-destructive: oklch(0.577 0.245 27.325);
-  --color-destructive-foreground: oklch(0.577 0.245 27.325);
-  --color-border: oklch(0.922 0 0);
-  --color-input: oklch(0.922 0 0);
-  --color-ring: oklch(0.708 0 0);
-  --color-brand: oklch(0.4 0.15 255);
+/* ============================================================================
+   GO LEV — Design tokens (paleta Azul & Creme, raios, fontes, wordmark) vêm de
+   @golev/shared/brand/tokens.css — a FONTE ÚNICA. Para mudar uma cor, edite lá.
+   Abaixo só o mapeamento dos --gl-* para os tokens do Tailwind (@theme inline).
+   ============================================================================ */
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-}
+/* ---- Tokens do Tailwind (derivam da paleta acima) ---- */
+@theme inline {
+  /* shadcn/ui (mantidos p/ os componentes existentes) */
+  --color-background:var(--gl-paper);
+  --color-foreground:var(--gl-ink);
+  --color-card:var(--gl-surface);
+  --color-card-foreground:var(--gl-ink);
+  --color-popover:var(--gl-surface);
+  --color-popover-foreground:var(--gl-ink);
+  --color-primary:var(--gl-primary);
+  --color-primary-foreground:var(--gl-paper);
+  --color-secondary:var(--gl-support-tint);
+  --color-secondary-foreground:var(--gl-primary-strong);
+  --color-muted:var(--gl-support-tint);
+  --color-muted-foreground:var(--gl-ink-2);
+  --color-accent:var(--gl-support-tint);
+  --color-accent-foreground:var(--gl-ink);
+  --color-destructive:#BC4B3C;
+  --color-destructive-foreground:#FFFFFF;
+  --color-border:var(--gl-line);
+  --color-input:var(--gl-line);
+  --color-ring:var(--gl-primary);
 
-.dark {
-  --color-background: oklch(0.145 0 0);
-  --color-foreground: oklch(0.985 0 0);
-  --color-card: oklch(0.175 0 0);
-  --color-card-foreground: oklch(0.985 0 0);
-  --color-popover: oklch(0.175 0 0);
-  --color-popover-foreground: oklch(0.985 0 0);
-  --color-primary: oklch(0.985 0 0);
-  --color-primary-foreground: oklch(0.205 0 0);
-  --color-secondary: oklch(0.215 0 0);
-  --color-secondary-foreground: oklch(0.985 0 0);
-  --color-muted: oklch(0.215 0 0);
-  --color-muted-foreground: oklch(0.708 0 0);
-  --color-accent: oklch(0.215 0 0);
-  --color-accent-foreground: oklch(0.985 0 0);
-  --color-destructive: oklch(0.396 0.141 25.723);
-  --color-destructive-foreground: oklch(0.637 0.237 25.331);
-  --color-border: oklch(0.275 0 0);
-  --color-input: oklch(0.275 0 0);
-  --color-ring: oklch(0.439 0 0);
-  --color-brand: oklch(0.55 0.15 255);
+  /* marca (usados na landing) */
+  --color-brand:var(--gl-accent-strong);
+  --color-brand-soft:var(--gl-accent);
+  --color-brand-tint:var(--gl-accent-tint);
+  --color-on-accent:var(--gl-on-accent);
+  --color-primary-strong:var(--gl-primary-strong);
+  --color-support:var(--gl-support);
+  --color-support-tint:var(--gl-support-tint);
+  --color-surface:var(--gl-surface);
+  --color-line:var(--gl-line);
+  --color-ink-2:var(--gl-ink-2);
+  --color-ink-3:var(--gl-ink-3);
+
+  --font-sans:var(--font-hanken), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif:var(--font-newsreader), Georgia, "Times New Roman", serif;
 }
 
 @layer base {
-  *,
-  *::before,
-  *::after {
-    @apply border-border;
+  *,*::before,*::after{ @apply border-border; }
+  html{ scroll-behavior:smooth; }
+  body{
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings:"rlig" 1,"calt" 1;
   }
+  ::selection{ background:var(--gl-primary); color:var(--gl-paper); }
+  h1,h2,h3{ letter-spacing:-0.025em; }
 
-  html {
-    transition: background-color 300ms ease;
+  .gl-input{
+    width:100%; border:1px solid var(--gl-line); background:var(--gl-surface);
+    border-radius:8px; padding:12px 16px; font-size:15px; color:var(--gl-ink); outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
   }
-
-  html *:not(script):not(style) {
-    transition: background-color 300ms ease, border-color 300ms ease,
-      box-shadow 300ms ease;
-  }
-
-  html {
-    scroll-behavior: smooth;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
+  .gl-input::placeholder{ color:var(--gl-ink-3); }
+  .gl-input:focus{ border-color:var(--gl-primary); box-shadow:0 0 0 3px var(--gl-support-tint); }
 }

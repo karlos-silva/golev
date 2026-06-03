@@ -1,18 +1,30 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Hanken_Grotesk, Newsreader } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import './globals.css';
 import { QueryProvider } from '@/lib/query-client';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const hanken = Hanken_Grotesk({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-hanken',
+});
+
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-newsreader',
+});
 
 export const metadata: Metadata = {
   title: {
-    default: 'Trianox SaaS',
-    template: '%s | Trianox SaaS',
+    default: 'Go Lev',
+    template: '%s | Go Lev',
   },
-  description: 'Template SaaS by Trianox',
+  description: 'Go Lev — saúde e emagrecimento com acompanhamento humano.',
 };
 
 export default function RootLayout({
@@ -21,13 +33,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-        >
+    <html
+      lang="pt-BR"
+      suppressHydrationWarning
+      className={`${hanken.variable} ${newsreader.variable}`}
+    >
+      <body className="font-sans antialiased">
+        <ThemeProvider attribute="class" forcedTheme="light">
           <QueryProvider>{children}</QueryProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
