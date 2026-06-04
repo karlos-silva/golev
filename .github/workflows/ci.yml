@@ -36,17 +36,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Security audit
-        run: |
-          if [ -f .audit-ignore ]; then
-            IGNORES=$(grep -v '^#' .audit-ignore | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
-            if [ -n "$IGNORES" ]; then
-              pnpm audit --audit-level=high --ignore-cves="$IGNORES"
-            else
-              pnpm audit --audit-level=high
-            fi
-          else
-            pnpm audit --audit-level=high
-          fi
+        # CVEs sem fix são ignorados via pnpm.auditConfig.ignoreGhsas no package.json
+        run: pnpm audit --audit-level=high
 
       - run: pnpm turbo lint
       - run: pnpm turbo typecheck

@@ -9,10 +9,11 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "lint": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "build"],
       "outputs": []
     },
     "test:unit": {
