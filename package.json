@@ -11,6 +11,7 @@
     "test:integration": "turbo test:integration",
     "test:e2e": "playwright test",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "db:prod": "bash scripts/db-prod.sh",
     "prepare": "husky"
   },
   "devDependencies": {
