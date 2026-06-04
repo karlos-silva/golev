@@ -4,6 +4,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import helmet from '@fastify/helmet';
 import { AppModule } from './app.module';
 import { parseAllowedOrigins } from './config/allowed-origins';
+import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
 
 const DEFAULT_BODY_LIMIT = 1_048_576; // 1 MiB
 
@@ -42,6 +43,8 @@ async function bootstrap() {
   );
 
   await app.register(helmet);
+
+  app.useGlobalFilters(new ZodExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3333, '0.0.0.0');
   console.log(`API running on ${await app.getUrl()}`);
