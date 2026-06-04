@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Acesso rápido ao Postgres de PRODUÇÃO.
-# Abre o túnel SSH e o Drizzle Studio já conectado, lendo a POSTGRES_PASSWORD
-# do Infisical em runtime (nunca salva em disco; nada de senha hardcoded).
+# Abre o túnel SSH e o Drizzle Studio já conectado, lendo a DATABASE_URL
+# do Infisical em runtime (a MESMA que a API usa) e só trocando o host
+# interno (db:5432) pelo túnel local. Nada é salvo em disco.
 #
 # Pré-requisitos:
 #   - alias SSH `golev-db` no ~/.ssh/config (LocalForward 5433 -> VPS 127.0.0.1:5432)
@@ -15,8 +16,7 @@ PROJECT_ID="<INFISICAL_PROJECT_ID>"
 ENV_SLUG="prod"
 SSH_ALIAS="golev-db"
 LOCAL_PORT="5433"
-DB_USER="golev"
-DB_NAME="golev_pg"
+INTERNAL_HOST="db:5432" # host:porta do Postgres na rede Docker do prod
 
 infisical_export() {
   if [ -n "${INFISICAL_CLIENT_ID:-}" ] && [ -n "${INFISICAL_CLIENT_SECRET:-}" ]; then
@@ -31,11 +31,17 @@ infisical_export() {
   fi
 }
 
-echo "→ lendo POSTGRES_PASSWORD do Infisical ($ENV_SLUG)…"
-PGPASS=$(infisical_export 2>/dev/null \
-  | grep '^POSTGRES_PASSWORD=' | cut -d= -f2- | sed "s/^['\"]//; s/['\"]\$//")
-if [ -z "${PGPASS:-}" ]; then
-  echo "❌ não consegui ler a senha. Rode 'infisical login' (ou exporte INFISICAL_CLIENT_ID/SECRET)."
+echo "→ lendo DATABASE_URL do Infisical ($ENV_SLUG)…"
+PROD_DB_URL=$(infisical_export 2>/dev/null \
+  | grep '^DATABASE_URL=' | cut -d= -f2- | sed "s/^['\"]//; s/['\"]\$//")
+if [ -z "${PROD_DB_URL:-}" ]; then
+  echo "❌ não consegui ler a DATABASE_URL. Rode 'infisical login' (ou exporte INFISICAL_CLIENT_ID/SECRET)."
+  exit 1
+fi
+# Reaproveita a URL exata da API, trocando só o host interno pelo túnel local.
+LOCAL_DB_URL="${PROD_DB_URL/@${INTERNAL_HOST}\//@localhost:${LOCAL_PORT}/}"
+if [ "$LOCAL_DB_URL" = "$PROD_DB_URL" ]; then
+  echo "⚠️  não encontrei '@${INTERNAL_HOST}/' na DATABASE_URL — verifique o host do banco no Infisical."
   exit 1
 fi
 
@@ -51,7 +57,7 @@ fi
 cleanup() { [ "$OPENED" = "1" ] && ssh -O exit "$SSH_ALIAS" 2>/dev/null || true; }
 trap cleanup EXIT
 
-export DATABASE_URL="postgresql://${DB_USER}:${PGPASS}@localhost:${LOCAL_PORT}/${DB_NAME}"
+export DATABASE_URL="$LOCAL_DB_URL"
 echo "→ conectado ao PROD via túnel. Abrindo Drizzle Studio (Ctrl+C encerra e fecha o túnel)…"
 cd "$(dirname "$0")/../apps/api"
 pnpm db:studio
