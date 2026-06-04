@@ -44,6 +44,14 @@ Guias passo-a-passo em `.ai/skills/`:
 - `create-migration/` — Gerar e aplicar migration Drizzle
 - `add-api-endpoint/` — Adicionar endpoint na API
 - `full-stack-feature/` — Feature full-stack (schema → API → UI)
+- `deploy/` — Deploy de produção, preview efêmero e acesso ao banco de prod
+
+## Deploy & Infraestrutura
+
+Como a app roda em produção (VPS + Docker + Caddy + Cloudflare + Infisical +
+runner self-hosted), CI/CD, previews e acesso ao banco: ver
+`.ai/context/DEPLOYMENT.md` (arquitetura) e a skill `.ai/skills/deploy/`
+(procedimentos). **Leia antes de mexer em deploy, infra ou secrets.**
 
 ## Agentes Pré-configurados
 
