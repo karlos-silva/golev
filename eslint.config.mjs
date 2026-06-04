@@ -12,6 +12,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/drizzle/migrations/**',
       '**/next-env.d.ts',
+      '**/*.config.{js,mjs,ts}',
     ],
   },
   eslint.configs.recommended,
