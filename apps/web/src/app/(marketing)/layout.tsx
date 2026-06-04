@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Logo } from '@/components/app/logo';
+import { SiteHeader } from '@/components/app/site-header';
 
 export const metadata: Metadata = {
   title: 'Go Lev — emagrecimento com acompanhamento humano',
@@ -22,27 +22,7 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="transition-opacity hover:opacity-80">
-            <Logo size="md" />
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-6">
-            <Link
-              href="/#como-funciona"
-              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              Como funciona
-            </Link>
-            <Link
-              href="/avaliacao"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-strong"
-            >
-              Começar
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main className="flex-1">{children}</main>
 

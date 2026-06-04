@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Logo } from '@/components/app/logo';
+import { buttonVariants } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Check, ShieldCheck } from 'lucide-react';
 
 /* ============================================================
@@ -226,8 +227,10 @@ export default function AvaliacaoPage() {
                         whileHover={{ scale: 1.012 }}
                         whileTap={{ scale: 0.985 }}
                         onClick={() => (q.kind === 'multi' ? toggleMulti(q.id, c.value) : answerSingle(q.id, c.value))}
-                        className={`flex items-center justify-between rounded-xl border px-5 py-4 text-left text-[15px] font-medium transition-colors ${
-                          sel ? 'border-primary' : 'border-border hover:border-foreground/40'
+                        className={`flex items-center justify-between rounded-xl border px-5 py-4 text-left text-[15px] font-medium transition-[border-color,background-color,box-shadow] duration-200 ${
+                          sel
+                            ? 'border-primary shadow-[0_10px_28px_-14px_rgba(31,59,76,0.32)]'
+                            : 'border-border hover:border-foreground/40 hover:bg-support-tint/30'
                         }`}
                         style={{ background: sel ? 'var(--gl-support-tint)' : 'var(--gl-surface)' }}
                       >
@@ -275,9 +278,9 @@ export default function AvaliacaoPage() {
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => go(1)}
-                    className="mt-9 inline-flex items-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-strong"
+                    className={buttonVariants({ size: 'lg', className: 'mt-9' })}
                   >
-                    Continuar <ArrowRight className="h-4 w-4" />
+                    Continuar <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -387,9 +390,9 @@ function Result({
           whileTap={{ scale: 0.98 }}
           onClick={onSubmit}
           disabled={!canSubmit}
-          className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-40"
+          className={buttonVariants({ size: 'lg', className: 'mt-2' })}
         >
-          Quero fazer parte <ArrowRight className="h-4 w-4" />
+          Quero fazer parte <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
         </motion.button>
         <p className="flex items-center gap-2 text-xs text-ink-3">
           <ShieldCheck className="h-4 w-4" /> Seus dados são tratados com sigilo. Avaliação sem compromisso.
