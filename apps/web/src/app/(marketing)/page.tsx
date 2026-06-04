@@ -10,6 +10,7 @@ import {
   StaggerItem,
   motion,
 } from '@/components/app/animations';
+import { Accordion } from '@/components/app/accordion';
 import { Kicker } from '@/components/app/kicker';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
@@ -17,7 +18,6 @@ import {
   ArrowRight,
   Check,
   Minus,
-  Plus,
   ShieldCheck,
   HeartHandshake,
   Activity,
@@ -25,6 +25,7 @@ import {
   Stethoscope,
   Brain,
   Salad,
+  Timer,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -330,11 +331,11 @@ function Tratamentos() {
 }
 
 /* --------------------------------------------------- GLP-1 EXPLAINER */
-const glp = [
-  { q: 'O que são os tratamentos com GLP‑1?', a: 'São medicamentos análogos do GLP‑1, um hormônio que o corpo produz e que ajuda a regular o apetite e a sensação de saciedade. Usados com acompanhamento, apoiam o emagrecimento.' },
-  { q: 'Como funcionam?', a: 'Eles aumentam a saciedade e deixam a digestão mais lenta, ajudando você a comer menos sem passar fome o dia inteiro — sempre como parte de um plano maior.' },
-  { q: 'Para quem são indicados?', a: 'A indicação é individual e definida por um médico, considerando seu histórico, seus exames e seus objetivos. Não serve para todo mundo, e tudo bem.' },
-  { q: 'Já tenho prescrição. E aí?', a: 'Sem problema. A gente avalia o seu caso e dá continuidade ao acompanhamento com segurança, do seu jeito.' },
+const glpSteps: { icon: LucideIcon; title: string; body: string }[] = [
+  { icon: Sparkles, title: 'O corpo já conhece', body: 'O GLP‑1 é um hormônio que você mesmo produz — ele ajuda a regular a fome e a sensação de saciedade. Nada de exótico.' },
+  { icon: Brain, title: 'A medicação reforça o sinal', body: 'Análoga a esse hormônio, ela conversa com o cérebro: a vontade de comer aperta menos ao longo do dia.' },
+  { icon: Timer, title: 'A digestão fica mais calma', body: 'O estômago esvazia mais devagar, então a saciedade dura mais tempo depois das refeições.' },
+  { icon: Salad, title: 'Você come o suficiente', body: 'Sem passar fome o dia inteiro, fica mais fácil seguir o plano e manter a mudança no seu ritmo.' },
 ];
 function ExplicaGLP() {
   return (
@@ -342,21 +343,68 @@ function ExplicaGLP() {
       <div className="mx-auto max-w-3xl px-6 py-24 sm:py-28">
         <ScrollReveal>
           <Kicker n="04" label="Entenda o GLP‑1" />
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Sem mistério, sem promessa mágica.</h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
-            A gente explica de forma simples — porque decidir com clareza faz parte do cuidado.
+          <h2 className="max-w-[22ch] text-3xl font-bold tracking-tight sm:text-4xl">
+            Sem mistério,{' '}
+            <span className="font-serif font-medium italic text-primary">sem promessa mágica.</span>
+          </h2>
+          <p className="mt-4 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
+            Como o GLP‑1 age no seu corpo, em quatro passos — porque decidir com clareza faz parte do cuidado.
           </p>
         </ScrollReveal>
-        <div className="mt-10">
-          {glp.map((f) => (
-            <details key={f.q} className="group border-b border-border py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold [&::-webkit-details-marker]:hidden">
-                {f.q}
-                <Plus className="h-5 w-5 shrink-0 text-brand transition-transform duration-200 group-open:rotate-45" />
-              </summary>
-              <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">{f.a}</p>
-            </details>
-          ))}
+
+        {/* Trilha: o fio se desenha conforme rola; cada passo surge em sequência */}
+        <div className="relative mt-14 sm:mt-16">
+          <motion.div
+            aria-hidden
+            initial={{ scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ transformOrigin: 'top' }}
+            className="absolute left-[23px] top-6 bottom-10 w-0.5 rounded-full bg-gradient-to-b from-support via-support to-support/10"
+          />
+          <StaggerChildren className="space-y-9" staggerDelay={0.16}>
+            {glpSteps.map((s, i) => {
+              const isLast = i === glpSteps.length - 1;
+              return (
+                <StaggerItem key={s.title}>
+                  <div className="relative flex items-start gap-5 sm:gap-6">
+                    <div
+                      className={`relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                        isLast
+                          ? 'border-transparent bg-brand text-white shadow-[0_12px_30px_-8px_rgba(188,107,67,0.5)]'
+                          : 'border-border bg-card text-primary shadow-[0_8px_22px_-12px_rgba(31,59,76,0.3)]'
+                      }`}
+                    >
+                      <s.icon className="h-5 w-5" />
+                    </div>
+                    <div className="pt-1">
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-3">
+                        Passo 0{i + 1}
+                      </span>
+                      <h3 className="mt-1 text-lg font-bold tracking-tight">{s.title}</h3>
+                      <p className="mt-1.5 max-w-[48ch] text-[15px] leading-relaxed text-muted-foreground">
+                        {s.body}
+                      </p>
+                    </div>
+                  </div>
+                </StaggerItem>
+              );
+            })}
+          </StaggerChildren>
+        </div>
+
+        {/* Fecho de segurança — indicação individual */}
+        <div className="mt-12 flex items-start gap-4 rounded-2xl border border-border bg-support-tint/40 p-6">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card">
+            <Stethoscope className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-[15px] font-bold tracking-tight">Sempre como parte de um plano maior</h3>
+            <p className="mt-1 max-w-[60ch] text-[14px] leading-relaxed text-muted-foreground">
+              A indicação é individual e definida por um médico, a partir do seu histórico e dos seus exames. Já tem prescrição? A gente dá continuidade ao acompanhamento com segurança.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -511,10 +559,15 @@ function Comparacao() {
 
 /* ------------------------------------------------------------- FAQ */
 const faqs = [
-  { q: 'Preciso fazer dieta restritiva?', a: 'Não. A gente monta um plano realista que cabe na sua vida — sustentável, sem sofrimento e sem efeito sanfona.' },
-  { q: 'Tem acompanhamento médico de verdade?', a: 'Tem. Profissionais de saúde avaliam o seu caso, acompanham sua evolução e ajustam o plano com segurança.' },
-  { q: 'Em quanto tempo vejo resultado?', a: 'Cada corpo tem o seu tempo — e a gente respeita o seu. O foco é mudança consistente e saudável, não promessa de prazo.' },
-  { q: 'Como funciona o pagamento?', a: 'Planos simples e transparentes, sem letra miúda. Dá pra começar com uma avaliação inicial gratuita.' },
+  { q: 'Preciso fazer dieta restritiva?', a: 'Não. A gente monta um plano realista que cabe na sua rotina — comida de verdade, no seu ritmo, sem sofrimento e sem efeito sanfona.' },
+  { q: 'Onde entram a alimentação e o treino no plano?', a: 'Bem no centro. O medicamento, quando faz sentido, é só uma parte do caminho — quem sustenta a mudança são os hábitos. Por isso seu plano tem nutrição e movimento pensados para a sua vida, sem cardápio impossível.' },
+  { q: 'Tem acompanhamento médico de verdade?', a: 'Tem. Profissionais de saúde avaliam o seu caso, acompanham sua evolução de perto e ajustam o plano com segurança. Você não caminha sozinho.' },
+  { q: 'As medicações são seguras?', a: 'Quando indicadas e acompanhadas por um médico, sim. A indicação é sempre individual: a gente avalia seu histórico, seus exames e seus objetivos antes de qualquer passo. Sem atalho, sem automedicação.' },
+  { q: 'E as novas regras da ANVISA para esses medicamentos?', a: 'A gente acompanha as atualizações de perto e segue todas elas. Esses medicamentos exigem prescrição e acompanhamento profissional — e é assim que a Go Lev trabalha desde o início, com responsabilidade.' },
+  { q: 'E quando eu parar a medicação? Vou recuperar o peso?', a: 'Essa é a parte que mais importa para a gente. O remédio ajuda na jornada, mas não segura o resultado sozinho. Por isso o foco é construir hábitos que ficam — com o apoio da nutrição — para você se manter bem mesmo depois de parar.' },
+  { q: 'Quanto tempo dura o acompanhamento?', a: 'O tempo que a sua saúde pedir. Sem prazo mágico e sem alta de surpresa — a gente acompanha enquanto fizer sentido e ajusta o ritmo junto com você.' },
+  { q: 'Como a Go Lev me ajuda a longo prazo?', a: 'Nosso objetivo não é só te ver emagrecer — é te ver manter, com leveza. Mais do que perder peso, a gente cuida para você criar uma relação saudável com comida, corpo e rotina, que continua de pé bem depois do plano.' },
+  { q: 'Como funciona o pagamento?', a: 'Planos simples e transparentes, sem letra miúda. Dá para começar com uma avaliação inicial gratuita e decidir com calma se faz sentido para você.' },
 ];
 function Faq() {
   return (
@@ -525,15 +578,7 @@ function Faq() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">A gente te explica.</h2>
         </ScrollReveal>
         <div className="mt-10">
-          {faqs.map((f) => (
-            <details key={f.q} className="group border-b border-border py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold [&::-webkit-details-marker]:hidden">
-                {f.q}
-                <Plus className="h-5 w-5 shrink-0 text-brand transition-transform duration-200 group-open:rotate-45" />
-              </summary>
-              <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">{f.a}</p>
-            </details>
-          ))}
+          <Accordion items={faqs} />
         </div>
       </div>
     </section>

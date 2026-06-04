@@ -8,6 +8,20 @@
       "when": 1780357613165,
       "tag": "0000_rapid_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780561782937,
+      "tag": "0001_uneven_firestar",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780597200569,
+      "tag": "0002_chilly_gunslinger",
+      "breakpoints": true
     }
   ]
 }

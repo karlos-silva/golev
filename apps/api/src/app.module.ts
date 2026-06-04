@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { AnamneseModule } from './modules/anamnese/anamnese.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BillingModule } from './modules/billing/billing.module';
     DatabaseModule,
     AuthModule,
     BillingModule,
+    AnamneseModule,
   ],
 })
 export class AppModule {}
