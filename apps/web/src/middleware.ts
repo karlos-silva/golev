@@ -8,7 +8,6 @@ const PUBLIC_PATHS = [
   '/forgot-password',
   '/avaliacao',
   '/pricing',
-  '/features',
   '/blog',
   '/legal',
 ];
@@ -23,7 +22,10 @@ function isStaticAsset(pathname: string): boolean {
   return (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
-    pathname.includes('.') // files with extension (favicon.ico, logo.svg, etc.)
+    pathname.includes('.') || // files with extension (favicon.ico, logo.svg, etc.)
+    // rotas de metadata do Next, sem extensão (OG/twitter/apple-icon) — em route
+    // groups o Next adiciona um sufixo de hash (ex.: /opengraph-image-pwu6ef).
+    /\/(opengraph-image|twitter-image|apple-icon)(-[a-zA-Z0-9]+)?(\/|$)/.test(pathname)
   );
 }
 
