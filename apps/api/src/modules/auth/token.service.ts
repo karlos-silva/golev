@@ -31,15 +31,29 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  /**
+   * DB expiry is read straight from the refresh token's own `exp` claim. The JWT
+   * layer already parsed and applied JWT_REFRESH_EXPIRY when signing, so the DB
+   * row can never diverge from the token — single source of truth. Avoids the
+   * brittle hand-rolled duration parser that 500'd login on formats jsonwebtoken
+   * accepts but a naive regex did not (e.g. "7 days", "1w", or stray whitespace).
+   */
+  refreshExpiresAt(refreshToken: string): Date {
+    const decoded = this.jwtService.decode<{ exp?: number } | null>(
+      refreshToken,
+    );
+    if (!decoded?.exp) {
+      throw new Error('Refresh token is missing an exp claim');
+    }
+    return new Date(decoded.exp * 1000);
+  }
+
   async saveRefreshToken(userId: string, token: string) {
     const tokenHash = await argon2.hash(token);
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 1);
-
     await this.db.insert(refreshTokens).values({
       userId,
       tokenHash,
-      expiresAt,
+      expiresAt: this.refreshExpiresAt(token),
     });
   }
 
