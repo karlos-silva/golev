@@ -6,6 +6,7 @@ import './globals.css';
 import { QueryProvider } from '@/lib/query-client';
 import { SITE_URL } from '@/lib/site';
 import { JsonLd, organizationSchema, webSiteSchema } from '@/components/app/schema';
+import { PostHogProvider } from '@/lib/posthog-provider';
 
 const hanken = Hanken_Grotesk({
   subsets: ['latin'],
@@ -55,10 +56,12 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         <JsonLd data={[organizationSchema(), webSiteSchema()]} />
-        <ThemeProvider attribute="class" forcedTheme="light">
-          <QueryProvider>{children}</QueryProvider>
-          <Toaster richColors position="top-right" />
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider attribute="class" forcedTheme="light">
+            <QueryProvider>{children}</QueryProvider>
+            <Toaster richColors position="top-right" />
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

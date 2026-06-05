@@ -173,7 +173,11 @@ Auditoria do código apontou base ok mas com buracos. Tarefas (arquivos em `apps
       site-wide ✅ (verificado no HTML). Builders prontos: `breadcrumbSchema`, `faqPageSchema`. **Faltam**
       `Article`(com `author`/`reviewedBy`/`datePublished`/`dateModified`) + `MedicalWebPage` por página (0.10/0.7).
 - [ ] **Breadcrumbs visíveis** + `BreadcrumbList` nos hubs/spokes.
-- [ ] **OG images** dinâmicas via `next/og` (`opengraph-image.tsx` na (marketing) e no blog).
+- [x] **OG images** dinâmicas (`next/og`) ✅: padrão da marca em `(marketing)/opengraph-image.tsx` (cobre
+      home/blog/legal por herança) + uma própria da `/avaliacao` + `apple-icon`. Middleware ajustado p/ liberar
+      as rotas de metadata do Next (inclusive o sufixo de hash em route group). Verificado: home/twitter image 200.
+      Refinadas com o **brandbook**: fontes reais (Hanken Grotesk + Newsreader, buscadas em **TTF** no build — o
+      `next/og` não suporta woff2) e o **símbolo** (mark.svg). Helper em `lib/og.tsx`.
 - [x] **Metadata** em `/` ✅ e `/avaliacao` ✅ (viraram server wrappers c/ metadata+canonical; conteúdo
       client em `components/app/landing.tsx` e `avaliacao-funnel.tsx`). **Falta** resolver `/pricing` (redirect).
 - [x] **Títulos brand-first em todo o site** ✅ (template `Go Lev | %s` no root **e** no `(marketing)/layout`
@@ -183,8 +187,13 @@ Auditoria do código apontou base ok mas com buracos. Tarefas (arquivos em `apps
       absolutas via `SITE_URL`; `/pricing` fora; `robots.ts` referencia o sitemap + `host`. **`/blog`
       noindex** (e fora do sitemap) até conteúdo real da Fase 1; **`/features` REMOVIDO** (cruft do template
       SaaS, sem relação com o nicho). Slugs de blog/hubs entram quando o conteúdo existir.
-- [ ] **Analytics**: GSC (verificação), GA4 e/ou PostHog, eventos de funil (`/avaliacao` start →
-      eligible → lead). Hoje **não tem nada**.
+- [x] **Analytics** ✅: **PostHog** (cloud US, free) via `lib/posthog-provider.tsx` (init client-only,
+      `$pageview` manual no App Router, `person_profiles: 'identified_only'`). Funil instrumentado em
+      `avaliacao-funnel.tsx`: `avaliacao_iniciada` (mount) → `avaliacao_concluida` (`{elegivel, imc}`) →
+      `lead_capturado` (+ `identify(email)`). GA4 **descartado** (PostHog cobre pageview + funil num só
+      lugar). GSC já verificado pelo usuário. Verificado no browser: região US (config 200 / EU 401),
+      `POST /e/ → 200`, console limpo. **Prod (pendente do usuário):** pôr `NEXT_PUBLIC_POSTHOG_KEY` +
+      `NEXT_PUBLIC_POSTHOG_HOST` no Infisical (são inlinadas no build do front).
 - [x] `icons` no metadata (favicon `icon.svg`) + `robots: index,follow` (max-image-preview large). **(feito; apple-touch via next/og em 0.7)**
 
 **Core Web Vitals / render:**

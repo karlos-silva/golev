@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
+import posthog from 'posthog-js';
 import { Logo } from '@/components/app/logo';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -267,6 +268,22 @@ export function AvaliacaoFunnel() {
   const eligible = isSuccess && data ? data.eligible : preview.eligible;
   const reasons: Reason[] = isSuccess && data ? data.reasons : preview.reasons;
   const finalImc = isSuccess && data ? data.imc : (imc ?? preview.imc);
+
+  // PostHog — funil: início → resultado → lead (mede orgânico → avaliação → lead).
+  useEffect(() => {
+    posthog.capture('avaliacao_iniciada');
+  }, []);
+  useEffect(() => {
+    if (onResult) {
+      posthog.capture('avaliacao_concluida', { elegivel: eligible, imc: finalImc });
+    }
+  }, [onResult]);
+  useEffect(() => {
+    if (isSuccess && data) {
+      if (contact.email) posthog.identify(contact.email, { nome: contact.nome });
+      posthog.capture('lead_capturado', { elegivel: data.eligible, imc: data.imc });
+    }
+  }, [isSuccess, data]);
 
   function handleSubmit() {
     const payload = {
