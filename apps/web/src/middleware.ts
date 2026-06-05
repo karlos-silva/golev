@@ -1,23 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = [
-  '/',
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/avaliacao',
-  '/calculadora-imc',
-  '/pricing',
-  '/blog',
-  '/legal',
-];
-
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  );
-}
+const PORTAL_PUBLIC = ['/login', '/forgot-password'];
+const PORTAL_APP = ['/dashboard'];
+const MARKETING_PUBLIC = ['/', '/avaliacao', '/calculadora-imc', '/pricing', '/features', '/blog', '/legal'];
 
 function isStaticAsset(pathname: string): boolean {
   return (
@@ -30,22 +16,57 @@ function isStaticAsset(pathname: string): boolean {
   );
 }
 
+function matchesPath(pathname: string, paths: string[]): boolean {
+  return paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function requireAuth(request: NextRequest, pathname: string): NextResponse {
+  const token = request.cookies.get('access_token')?.value;
+  if (!token) {
+    const url = new URL('/login', request.url);
+    url.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get('host') ?? '';
 
-  if (isStaticAsset(pathname) || isPublicPath(pathname)) {
-    return NextResponse.next();
+  if (isStaticAsset(pathname)) return NextResponse.next();
+
+  const isDev = host.startsWith('localhost') || host.startsWith('127.');
+
+  // ── Portal interno (portal.golev.app.br) ───────────────────────────────
+  if (host.startsWith('portal.')) {
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    if (matchesPath(pathname, PORTAL_PUBLIC)) return NextResponse.next();
+    return requireAuth(request, pathname);
   }
 
-  const token = request.cookies.get('access_token')?.value;
-
-  if (!token) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+  // ── Dev (localhost) ─────────────────────────────────────────────────────
+  // Marketing e portal coexistem: tudo que é público (dos dois) é liberado,
+  // rotas protegidas do portal pedem auth. Sem hijack da landing.
+  if (isDev) {
+    if (matchesPath(pathname, [...MARKETING_PUBLIC, ...PORTAL_PUBLIC])) {
+      return NextResponse.next();
+    }
+    return requireAuth(request, pathname);
   }
 
-  return NextResponse.next();
+  // ── Domínio principal (golev.app.br) ────────────────────────────────────
+  // Rotas do portal não pertencem aqui — /login é reservado pro app do cliente.
+  if (matchesPath(pathname, [...PORTAL_PUBLIC, ...PORTAL_APP])) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (matchesPath(pathname, MARKETING_PUBLIC)) return NextResponse.next();
+
+  // Futuras rotas protegidas do app do cliente entram aqui
+  return requireAuth(request, pathname);
 }
 
 export const config = {

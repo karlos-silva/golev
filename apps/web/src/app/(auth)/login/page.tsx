@@ -8,7 +8,6 @@ import { useLogin } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function LoginPage() {
@@ -41,74 +40,90 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Bem-vindo de volta</CardTitle>
-        <CardDescription>
+    <div className="gl-in">
+      <div className="mb-8">
+        <h1
+          className="text-2xl font-bold tracking-tight"
+          style={{ color: 'var(--gl-ink)' }}
+        >
+          Bem-vindo de volta
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--gl-ink-2)' }}>
           Entre com suas credenciais para acessar sua conta
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="seu@email.com"
-              autoComplete="email"
-              autoFocus
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Senha</Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Esqueceu a senha?
-              </Link>
-            </div>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password}</p>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={login.isPending}>
-            {login.isPending ? <Spinner /> : null}
-            Entrar
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Não tem uma conta?{' '}
-            <Link href="/register" className="font-medium text-foreground hover:underline">
-              Criar conta
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="seu@email.com"
+            autoComplete="email"
+            autoFocus
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Senha</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs transition-colors"
+              style={{ color: 'var(--gl-ink-3)' }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = 'var(--gl-ink)')
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = 'var(--gl-ink-3)')
+              }
+            >
+              Esqueceu a senha?
             </Link>
-          </p>
-        </CardFooter>
+          </div>
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: 'var(--gl-ink-3)' }}
+              tabIndex={-1}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          {errors.password && (
+            <p className="text-xs text-destructive">{errors.password}</p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={login.isPending}
+        >
+          {login.isPending ? <Spinner /> : null}
+          Entrar
+        </Button>
       </form>
-    </Card>
+
+    </div>
   );
 }

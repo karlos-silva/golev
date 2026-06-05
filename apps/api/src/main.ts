@@ -23,24 +23,22 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ bodyLimit: resolveBodyLimitBytes() }),
-    {
-      cors: {
-        origin: (
-          origin: string | undefined,
-          cb: (err: Error | null, allow?: boolean) => void,
-        ) => {
-          if (origin === undefined || origin === '') {
-            cb(null, true);
-            return;
-          }
-          cb(null, allowedOrigins.includes(origin));
-        },
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-      },
-    },
   );
+
+  // CORS deve ser registrado antes do helmet para garantir que preflights
+  // OPTIONS sejam interceptados antes de qualquer outra lógica de rota.
+  app.enableCors({
+    origin: (
+      origin: string | undefined,
+      cb: (err: Error | null, allow: boolean) => void,
+    ) => {
+      if (!origin) { cb(null, true); return; }
+      cb(null, allowedOrigins.includes(origin));
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  });
 
   await app.register(helmet);
 

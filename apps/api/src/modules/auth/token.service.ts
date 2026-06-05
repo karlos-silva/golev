@@ -34,7 +34,7 @@ export class TokenService {
   async saveRefreshToken(userId: string, token: string) {
     const tokenHash = await argon2.hash(token);
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + 1);
 
     await this.db.insert(refreshTokens).values({
       userId,

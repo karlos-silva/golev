@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "patients_anamnese_id_unique" ON "patients" USING btree ("anamnese_id");

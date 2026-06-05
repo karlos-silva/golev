@@ -8,7 +8,7 @@ export default function NotFound() {
         Página não encontrada.
       </p>
       <Link
-        href="/"
+        href="/dashboard"
         className="mt-8 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
       >
         Voltar ao início

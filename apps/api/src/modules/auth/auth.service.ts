@@ -48,7 +48,7 @@ export class AuthService {
 
       const tokenHash = await argon2.hash(tokens.refreshToken);
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
+      expiresAt.setDate(expiresAt.getDate() + 1);
 
       await tx.insert(refreshTokens).values({
         userId: user!.id,

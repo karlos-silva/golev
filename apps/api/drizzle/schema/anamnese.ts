@@ -55,6 +55,12 @@ export const anamneseSubmissions = pgTable(
     utmCampaign: text('utm_campaign'),
     referrer: text('referrer'),
 
+    /**
+     * Pipeline de contato interno. Atualizado pela equipe no portal.
+     * Valores: 'novo' | 'contatado' | 'consulta_marcada' | 'descartado'
+     */
+    leadStatus: text('lead_status').notNull().default('novo'),
+
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

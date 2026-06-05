@@ -22,6 +22,41 @@
       "when": 1780597200569,
       "tag": "0002_chilly_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780655046429,
+      "tag": "0003_dizzy_cammi",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780656024456,
+      "tag": "0004_flowery_doctor_octopus",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780658711734,
+      "tag": "0005_busy_stardust",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780664941090,
+      "tag": "0006_ambiguous_phil_sheldon",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780666105071,
+      "tag": "0007_flaky_the_executioner",
+      "breakpoints": true
     }
   ]
 }

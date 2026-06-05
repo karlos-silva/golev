@@ -6,6 +6,10 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { AnamneseModule } from './modules/anamnese/anamnese.module';
+import { PatientsModule } from './modules/patients/patients.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AppointmentsModule } from './modules/appointments/appointments.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 
 @Module({
   imports: [
@@ -26,6 +30,10 @@ import { AnamneseModule } from './modules/anamnese/anamnese.module';
     AuthModule,
     BillingModule,
     AnamneseModule,
+    PatientsModule,
+    DashboardModule,
+    AppointmentsModule,
+    IntegrationsModule,
   ],
 })
 export class AppModule {}

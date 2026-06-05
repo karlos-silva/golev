@@ -1,0 +1,1 @@
+ALTER TABLE "anamnese_submissions" ADD COLUMN "lead_status" text DEFAULT 'novo' NOT NULL;

@@ -1,13 +1,23 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   computeEligibility,
   CONSENT_TEXT,
   type AnamneseInput,
   type AnamneseResponse,
 } from '@golev/shared';
-import { sql } from 'drizzle-orm';
+import { sql, desc, eq } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../database/database.module';
 import { anamneseSubmissions, users } from '../../../drizzle/schema';
+
+export type LeadStatus =
+  | 'novo'
+  | 'contatado'
+  | 'consulta_agendada'
+  | 'consulta_realizada'
+  | 'exames_enviados'
+  | 'aprovado'
+  | 'convertido'
+  | 'descartado';
 
 /**
  * Decisão de produto: persistimos apenas os elegíveis que concluem o fluxo.
@@ -18,6 +28,46 @@ const PERSIST_INELIGIBLE = false;
 @Injectable()
 export class AnamneseService {
   constructor(@Inject(DATABASE) private db: Database) {}
+
+  async findAll() {
+    return this.db.query.anamneseSubmissions.findMany({
+      orderBy: [desc(anamneseSubmissions.createdAt)],
+      columns: {
+        id: true,
+        leadStatus: true,
+        nome: true,
+        email: true,
+        whatsapp: true,
+        imc: true,
+        eligible: true,
+        idade: true,
+        pesoKg: true,
+        alturaCm: true,
+        sexo: true,
+        objetivos: true,
+        comorbidades: true,
+        contraindicacoes: true,
+        tentativas: true,
+        tratamentoPrevio: true,
+        medicacoes: true,
+        gravidaOuAmamentando: true,
+        reasons: true,
+        consentAt: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async updateLeadStatus(id: string, status: LeadStatus) {
+    const [row] = await this.db
+      .update(anamneseSubmissions)
+      .set({ leadStatus: status, updatedAt: new Date() })
+      .where(eq(anamneseSubmissions.id, id))
+      .returning({ id: anamneseSubmissions.id, leadStatus: anamneseSubmissions.leadStatus });
+
+    if (!row) throw new NotFoundException('Avaliação não encontrada');
+    return row;
+  }
 
   async create(input: AnamneseInput): Promise<AnamneseResponse> {
     const result = computeEligibility(input);

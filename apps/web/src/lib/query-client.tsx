@@ -9,6 +9,14 @@ function makeQueryClient() {
       queries: {
         staleTime: 60 * 1000,
         refetchOnWindowFocus: false,
+        // Não retentar em erros HTTP do cliente (4xx) — são falhas determinísticas
+        retry: (count, error) => {
+          if (error instanceof Error) {
+            const status = parseInt(error.message.replace(/\D/g, ''), 10);
+            if (status >= 400 && status < 500) return false;
+          }
+          return count < 2;
+        },
       },
     },
   });

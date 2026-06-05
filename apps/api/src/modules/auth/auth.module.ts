@@ -28,6 +28,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     JwtStrategy,
     JwtAuthGuard,
   ],
-  exports: [JwtAuthGuard, TokenService],
+  exports: [JwtAuthGuard, TokenService, PasswordService, JwtModule],
 })
 export class AuthModule {}
