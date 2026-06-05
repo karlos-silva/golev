@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { LegalDocumentNotice } from '@/components/app/legal-document-notice';
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso | Go Lev',
+  title: 'Termos de Uso',
   description: 'Termos e condições de uso da plataforma Go Lev.',
   alternates: {
     canonical: '/legal/terms',

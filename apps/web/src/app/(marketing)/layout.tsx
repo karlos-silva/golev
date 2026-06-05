@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/app/site-header';
 
 export const metadata: Metadata = {
-  title: 'Go Lev — emagrecimento com acompanhamento humano',
+  title: {
+    default: 'Go Lev — emagrecimento com acompanhamento médico',
+    template: 'Go Lev | %s',
+  },
   description:
     'A Go Lev acompanha você na jornada de emagrecimento com cuidado médico, sem julgamento e no seu ritmo.',
   openGraph: {

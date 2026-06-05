@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Blog | Go Lev',
+  title: 'Blog',
   description: 'Artigos sobre produto, tecnologia e boas práticas para SaaS.',
+  // noindex até termos conteúdo real (Fase 1). Remover quando publicar artigos.
+  robots: { index: false, follow: true },
+  alternates: { canonical: '/blog' },
   openGraph: {
     title: 'Blog | Go Lev',
     description: 'Artigos sobre produto, tecnologia e boas práticas para SaaS.',

@@ -20,8 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
 
   return {
-    title: `${post.title} | Blog | Go Lev`,
+    title: post.title,
     description: post.content.slice(0, 155),
+    // noindex até termos conteúdo real (Fase 1). Remover quando publicar artigos.
+    robots: { index: false, follow: true },
+    alternates: { canonical: `/blog/${slug}` },
     openGraph: {
       title: post.title,
       type: 'article',

@@ -1,22 +1,18 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/site';
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-
+/**
+ * Apenas páginas reais e indexáveis. O /blog está `noindex` até termos conteúdo
+ * real (Fase 1) — ao publicar artigos com revisão médica, incluir os slugs aqui.
+ * Hubs (/tratamentos/*, /emagrecimento, /caneta-emagrecedora) e a /calculadora-imc
+ * entram conforme forem criados.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPages = [
-    '',
-    '/pricing',
-    '/features',
-    '/blog',
-    '/legal/terms',
-    '/legal/privacy',
+  const now = new Date();
+  return [
+    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: 'weekly', priority: 1 },
+    { url: `${SITE_URL}/avaliacao`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${SITE_URL}/legal/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE_URL}/legal/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
-
-  return staticPages.map((route) => ({
-    url: `${BASE_URL}${route}`,
-    lastModified: new Date(),
-    changeFrequency: route === '' ? 'weekly' : 'monthly',
-    priority: route === '' ? 1 : 0.8,
-  }));
 }

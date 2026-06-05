@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { LegalDocumentNotice } from '@/components/app/legal-document-notice';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade | Go Lev',
+  title: 'Política de Privacidade',
   description: 'Saiba como a Go Lev coleta, utiliza e protege seus dados.',
   alternates: {
     canonical: '/legal/privacy',
