@@ -352,13 +352,20 @@ function ExplicaGLP() {
           </p>
         </ScrollReveal>
 
-        {/* Trilha: o fio se desenha conforme rola; cada passo surge em sequência */}
+        {/* Trilha: rail base sempre visível + fio que se desenha conforme rola.
+            O rail (CSS puro, sem JS) garante a linha mesmo se o whileInView não
+            disparar — caso comum no mobile (IntersectionObserver + barra de URL
+            dinâmica) que deixava a linha invisível. */}
         <div className="relative mt-14 sm:mt-16">
+          <div
+            aria-hidden
+            className="absolute left-[23px] top-6 bottom-10 w-0.5 rounded-full bg-gradient-to-b from-support/25 to-support/5"
+          />
           <motion.div
             aria-hidden
             initial={{ scaleY: 0 }}
             whileInView={{ scaleY: 1 }}
-            viewport={{ once: true, margin: '-100px' }}
+            viewport={{ once: true }}
             transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{ transformOrigin: 'top' }}
             className="absolute left-[23px] top-6 bottom-10 w-0.5 rounded-full bg-gradient-to-b from-support via-support to-support/10"
@@ -444,42 +451,6 @@ function Time() {
   );
 }
 
-/* ------------------------------------------------------ DEPOIMENTOS */
-const depo = [
-  { quote: 'Pela primeira vez senti que tinha alguém do meu lado — não me cobrando, mas torcendo por mim.', name: 'Ana, 34', meta: '3 meses com a Go Lev', img: 'https://i.pravatar.cc/120?img=47' },
-  { quote: 'Sem dieta maluca, sem culpa. Fui no meu ritmo e, quando vi, tinha mudado de verdade.', name: 'Rafael, 41', meta: '6 meses com a Go Lev', img: 'https://i.pravatar.cc/120?img=12' },
-];
-function Depoimentos() {
-  return (
-    <section className="border-t border-border bg-card/50">
-      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
-        <ScrollReveal>
-          <Kicker n="06" label="Histórias" />
-          <h2 className="max-w-[20ch] text-3xl font-bold tracking-tight sm:text-4xl">
-            Cada passo conta —{' '}
-            <span className="font-serif font-medium italic text-primary">e a gente celebra junto.</span>
-          </h2>
-        </ScrollReveal>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          {depo.map((d) => (
-            <blockquote key={d.name} className="group rounded-2xl border border-border border-l-2 border-l-brand bg-background p-8 transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-22px_rgba(31,59,76,0.18)]">
-              <p className="font-serif text-xl italic leading-relaxed text-foreground sm:text-2xl">“{d.quote}”</p>
-              <footer className="mt-6 flex items-center gap-3">
-                <Image src={d.img} alt={d.name} width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
-                <span>
-                  <span className="block text-sm font-semibold">{d.name}</span>
-                  <span className="block text-sm text-ink-3">{d.meta}</span>
-                </span>
-              </footer>
-            </blockquote>
-          ))}
-        </div>
-        <p className="mt-6 text-xs text-ink-3">Imagens ilustrativas. Resultados variam de pessoa para pessoa.</p>
-      </div>
-    </section>
-  );
-}
-
 /* ------------------------------------------------------ COMPARAÇÃO */
 const compareGolev = [
   'Acompanhamento médico contínuo',
@@ -499,14 +470,14 @@ function Comparacao() {
     <section className="border-t border-border">
       <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
         <ScrollReveal>
-          <Kicker n="07" label="A diferença" />
+          <Kicker n="06" label="A diferença" />
           <h2 className="max-w-[20ch] text-3xl font-bold tracking-tight sm:text-4xl">
             Fazer sozinho ou{' '}
             <span className="font-serif font-medium italic text-primary">com a Go&nbsp;Lev.</span>
           </h2>
         </ScrollReveal>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2">
+        <div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2">
           {/* Sozinho */}
           <div className="flex flex-col bg-card p-8 sm:p-10">
             <span className="text-xs font-semibold uppercase tracking-widest text-ink-3">Sozinho</span>
@@ -574,7 +545,7 @@ function Faq() {
     <section id="perguntas" className="scroll-mt-20 border-t border-border bg-card/50">
       <div className="mx-auto max-w-3xl px-6 py-24 sm:py-28">
         <ScrollReveal>
-          <Kicker n="08" label="Perguntas frequentes" />
+          <Kicker n="07" label="Perguntas frequentes" />
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">A gente te explica.</h2>
         </ScrollReveal>
         <div className="mt-10">
@@ -646,7 +617,6 @@ export default function HomePage() {
       <Tratamentos />
       <ExplicaGLP />
       <Time />
-      <Depoimentos />
       <Comparacao />
       <Faq />
       <CtaFinal />
