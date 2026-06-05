@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import { LegalDocumentNotice } from '@/components/app/legal-document-notice';
+import { JsonLd, breadcrumbSchema } from '@/components/app/schema';
 
 export const metadata: Metadata = {
   title: 'Termos de Uso',
@@ -12,6 +15,19 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <section className="mx-auto max-w-3xl px-6 py-24">
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: 'Início', url: '/' },
+          { name: 'Termos de Uso', url: '/legal/terms' },
+        ])}
+      />
+      <nav aria-label="Trilha" className="mb-8 flex items-center gap-1.5 text-sm text-ink-3">
+        <Link href="/" className="transition-colors hover:text-foreground">
+          Início
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+        <span className="text-ink-2">Termos de Uso</span>
+      </nav>
       <LegalDocumentNotice />
       <h1 className="text-4xl font-bold tracking-tight">Termos de Uso</h1>
       <p className="mt-4 text-muted-foreground">
