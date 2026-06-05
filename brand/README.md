@@ -18,7 +18,7 @@ Antes de criar **qualquer** peça (post, campanha, LP, e-mail, anúncio), leia a
 | [foundation/00-essencia.md](foundation/00-essencia.md) | Propósito, promessa, posicionamento, linhas vermelhas |
 | [foundation/01-tom-de-voz.md](foundation/01-tom-de-voz.md) | Como falamos — do/don't, vocabulário, teste de voz |
 | [foundation/02-cores.md](foundation/02-cores.md) | Paletas (⚠️ **decisão pendente** — fonte da verdade) |
-| [foundation/03-tipografia.md](foundation/03-tipografia.md) | Hanken Grotesque + Newsreader |
+| [foundation/03-tipografia.md](foundation/03-tipografia.md) | Hanken Grotesk + Newsreader |
 | [foundation/04-logo.md](foundation/04-logo.md) | A marca-pena (leveza/"Lev") + regras de uso |
 | [foundation/05-imagem.md](foundation/05-imagem.md) | Direção fotográfica e de ícones |
 | [foundation/06-publico.md](foundation/06-publico.md) | Persona / público (⚠️ rascunho a validar) |

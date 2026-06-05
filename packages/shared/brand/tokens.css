@@ -22,7 +22,7 @@
   /* ---- Famílias (fallback encadeado) ----
      No app, --font-hanken/--font-newsreader existem (next/font) → usa self-hosted.
      Nos HTMLs, não existem → cai no nome da família carregada via ./fonts.css (CDN). */
-  --gl-font-sans: var(--font-hanken, 'Hanken Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  --gl-font-sans: var(--font-hanken, 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   --gl-font-serif: var(--font-newsreader, 'Newsreader', Georgia, 'Times New Roman', serif);
 
   /* ---- Aliases p/ os HTMLs de marca (nomes legados → tokens canônicos) ---- */

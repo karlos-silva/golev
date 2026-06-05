@@ -27,7 +27,7 @@ A pena é o símbolo mais fiel ao que a Go Lev é. Em camadas:
 
 ## Lockup
 
-- **Wordmark:** "Go Lev" em Hanken Grotesque 700, tracking apertado (-0.03em).
+- **Wordmark:** "Go Lev" em Hanken Grotesk 700, tracking apertado (-0.03em).
 - **Símbolo + wordmark:** pena à esquerda, "Go Lev" à direita, alinhados ao centro vertical, gap ~10–12px.
 - A pena funciona **sozinha** (ícone/avatar/favicon) ou **com texto**.
 - Proporção do símbolo: **329 × 367** (mais alto que largo). Nunca distorcer para caber em caixa quadrada — preserve o aspect ratio.
