@@ -58,6 +58,9 @@ export default function MarketingLayout({
                 <Link href="/avaliacao" className="text-sm text-white/70 transition-colors hover:text-white">
                   Fazer avaliação
                 </Link>
+                <Link href="/calculadora-imc" className="text-sm text-white/70 transition-colors hover:text-white">
+                  Calculadora de IMC
+                </Link>
               </div>
               <div className="flex flex-col gap-3">
                 <span className="text-xs font-semibold uppercase tracking-widest text-white/45">

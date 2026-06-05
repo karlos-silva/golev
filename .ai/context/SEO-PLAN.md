@@ -195,6 +195,13 @@ Auditoria do código apontou base ok mas com buracos. Tarefas (arquivos em `apps
       `POST /e/ → 200`, console limpo. **Prod (pendente do usuário):** pôr `NEXT_PUBLIC_POSTHOG_KEY` +
       `NEXT_PUBLIC_POSTHOG_HOST` no Infisical (são inlinadas no build do front).
 - [x] `icons` no metadata (favicon `icon.svg`) + `robots: index,follow` (max-image-preview large). **(feito; apple-touch via next/og em 0.7)**
+- [x] **Calculadora de IMC** ✅ (`/calculadora-imc`): tool page SSR (H1 keyword, intro, tabela de faixas OMS,
+      "limites do IMC", FAQ) + island client (cálculo ao vivo via `computeBmi`, classificação OMS, CTA
+      condicional p/ `/avaliacao?utm_source=calculadora-imc&utm_medium=tool` quando IMC ≥ `MIN_BMI` (25);
+      abaixo disso, nota educativa sem CTA). JSON-LD `WebApplication` + `FAQPage` + `BreadcrumbList`,
+      canonical, breadcrumb visível, entrada no sitemap, link no footer, rota liberada no middleware.
+      Evento PostHog `imc_calculado` ({imc, faixa, elegivel}). Verificado no browser (cálculo, faixa, CTA
+      condicional 31,1→elegível / 20,8→não, console limpo). **Não** foi pra landing (decisão do usuário).
 
 **Core Web Vitals / render:**
 - [ ] Tornar páginas de conteúdo **Server Components** (home e /avaliacao são `'use client'` inteiras —

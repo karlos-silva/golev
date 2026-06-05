@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   '/register',
   '/forgot-password',
   '/avaliacao',
+  '/calculadora-imc',
   '/pricing',
   '/blog',
   '/legal',
