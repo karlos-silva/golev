@@ -35,3 +35,4 @@ export interface PaginationQuery {
 }
 
 export * from './anamnese';
+export * from './billing';
