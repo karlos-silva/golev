@@ -25,6 +25,9 @@ const PORTAL_ROUTES = [
 const MARKETING_PUBLIC = [
   '/',
   '/avaliacao',
+  // Pós-checkout: o paciente chega aqui DESLOGADO (a conta nasce no pagamento);
+  // a página faz o auto-login via session-from-payment.
+  '/pagamento',
   '/calculadora-imc',
   '/pricing',
   '/features',

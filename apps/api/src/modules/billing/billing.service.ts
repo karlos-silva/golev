@@ -8,31 +8,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import {
   ErrorCode,
+  type AuthResponse,
   type CheckoutResponse,
   type SubscriptionResponse,
 } from '@golev/shared';
 import { DATABASE, type Database } from '../../database/database.module';
 import { STRIPE_CLIENT } from './stripe.provider';
+import { PatientsService } from '../patients/patients.service';
+import { TokenService } from '../auth/token.service';
 import {
   anamneseSubmissions,
   customers,
   invoices,
+  patients,
   stripeWebhookEvents,
   subscriptions,
   users,
 } from '../../../drizzle/schema';
 
-type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
-
 /**
  * Sob `moduleResolution: node` o entry CJS do `stripe` expõe o construtor mas
- * não os tipos de recurso via `Stripe.X`. Derivamos tudo do tipo da instância
- * (`Stripe.Stripe`) — `StripeEvent` é a união discriminada de eventos, e cada
- * objeto de recurso sai do `data.object` do evento correspondente.
+ * não os tipos de recurso via `Stripe.X`. Derivamos tudo do tipo da instância.
  */
 type StripeClient = Stripe.Stripe;
 type StripeEvent = ReturnType<StripeClient['webhooks']['constructEvent']>;
@@ -55,6 +55,8 @@ export class BillingService {
     @Inject(DATABASE) private db: Database,
     @Inject(STRIPE_CLIENT) private stripe: StripeClient,
     private config: ConfigService,
+    private patients: PatientsService,
+    private tokenService: TokenService,
   ) {}
 
   private appUrl(): string {
@@ -62,9 +64,8 @@ export class BillingService {
   }
 
   /**
-   * Trava de segurança: enquanto `BILLING_ENABLED !== 'true'`, todo o caminho de
-   * pagamento fica inerte — mesmo com chaves Stripe presentes. Liga só quando
-   * for cobrar de verdade.
+   * Trava-mestra: enquanto `BILLING_ENABLED !== 'true'`, todo o caminho de
+   * pagamento fica inerte — mesmo com chaves Stripe presentes.
    */
   private assertBillingEnabled(): void {
     if (this.config.get<string>('BILLING_ENABLED') !== 'true') {
@@ -101,116 +102,43 @@ export class BillingService {
   }
 
   /**
-   * Garante um Stripe Customer para o usuário e a linha local correspondente.
-   * `idempotencyKey` determinístico evita customers duplicados em retries; a
-   * constraint UNIQUE(user_id) resolve corridas concorrentes.
+   * Checkout PÚBLICO a partir de uma anamnese elegível. A conta do paciente
+   * ainda NÃO existe — nasce no pagamento (webhook / session-from-payment).
    */
-  private async ensureCustomer(
-    userId: string,
-  ): Promise<{ id: string; stripeCustomerId: string }> {
-    const existing = await this.db.query.customers.findFirst({
-      where: eq(customers.userId, userId),
-    });
-    if (existing?.stripeCustomerId) {
-      return { id: existing.id, stripeCustomerId: existing.stripeCustomerId };
-    }
+  async createCheckoutSession(anamneseId: string): Promise<CheckoutResponse> {
+    this.assertBillingEnabled();
 
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
-      columns: { id: true, email: true, name: true },
+    const anamnese = await this.db.query.anamneseSubmissions.findFirst({
+      where: eq(anamneseSubmissions.id, anamneseId),
+      columns: { id: true, email: true, eligible: true },
     });
-    if (!user) {
+    if (!anamnese) {
       throw new NotFoundException({
-        code: ErrorCode.CUSTOMER_NOT_FOUND,
-        message: 'Usuário não encontrado.',
+        code: ErrorCode.NOT_ELIGIBLE,
+        message: 'Avaliação não encontrada.',
       });
     }
-
-    const stripeCustomer = await this.stripe.customers.create(
-      { email: user.email, name: user.name, metadata: { userId } },
-      { idempotencyKey: `cust:${userId}` },
-    );
-
-    const [row] = await this.db
-      .insert(customers)
-      .values({ userId, stripeCustomerId: stripeCustomer.id })
-      .onConflictDoUpdate({
-        target: customers.userId,
-        set: { stripeCustomerId: stripeCustomer.id },
-      })
-      .returning({
-        id: customers.id,
-        stripeCustomerId: customers.stripeCustomerId,
-      });
-
-    return { id: row!.id, stripeCustomerId: row!.stripeCustomerId! };
-  }
-
-  /** Gate clínico: só assina quem concluiu a avaliação como elegível. */
-  private async assertEligible(userId: string): Promise<void> {
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
-      columns: { email: true },
-    });
-    if (!user) {
-      throw new NotFoundException({
-        code: ErrorCode.CUSTOMER_NOT_FOUND,
-        message: 'Usuário não encontrado.',
-      });
-    }
-
-    const eligible = await this.db.query.anamneseSubmissions.findFirst({
-      where: and(
-        sql`lower(${anamneseSubmissions.email}) = ${user.email.toLowerCase()}`,
-        eq(anamneseSubmissions.eligible, true),
-      ),
-      columns: { id: true },
-    });
-
-    if (!eligible) {
+    if (!anamnese.eligible) {
       throw new ForbiddenException({
         code: ErrorCode.NOT_ELIGIBLE,
-        message: 'Conclua a avaliação de elegibilidade antes de assinar.',
+        message: 'Esta avaliação não é elegível para assinatura.',
       });
     }
-  }
 
-  // Statuses que representam uma assinatura "viva" — bloqueiam um novo checkout
-  // para evitar assinaturas duplicadas / cobrança em dobro.
-  private static readonly LIVE_SUBSCRIPTION_STATUSES = [
-    'active',
-    'trialing',
-    'past_due',
-  ];
-
-  async createCheckoutSession(userId: string): Promise<CheckoutResponse> {
-    this.assertBillingEnabled();
-    await this.assertEligible(userId);
-    const { id: customerRowId, stripeCustomerId } =
-      await this.ensureCustomer(userId);
-
-    // Impede dupla assinatura: se já existe uma viva, manda gerenciar no portal.
-    const existingLive = await this.db.query.subscriptions.findFirst({
-      where: and(
-        eq(subscriptions.customerId, customerRowId),
-        inArray(
-          subscriptions.status,
-          BillingService.LIVE_SUBSCRIPTION_STATUSES,
-        ),
-      ),
+    // Já convertido em paciente → já tem conta/assinatura: não cria de novo.
+    const converted = await this.db.query.patients.findFirst({
+      where: eq(patients.anamneseId, anamneseId),
       columns: { id: true },
     });
-    if (existingLive) {
+    if (converted) {
       throw new ConflictException({
         code: ErrorCode.ALREADY_SUBSCRIBED,
-        message: 'Você já possui uma assinatura ativa.',
+        message: 'Você já possui uma assinatura. Faça login para acessar.',
       });
     }
 
     const priceId = this.config.getOrThrow<string>('STRIPE_PRICE_ID');
     const appUrl = this.appUrl();
-    // Métodos configuráveis (a conta precisa ter a capability ativa de cada um).
-    // Default 'card'; ligue 'card,pix' quando o Pix estiver habilitado na conta.
     const methods = (this.config.get<string>('STRIPE_PAYMENT_METHODS') ?? 'card')
       .split(',')
       .map((m) => m.trim())
@@ -218,18 +146,18 @@ export class BillingService {
 
     const params: CheckoutCreateParams = {
       mode: 'subscription',
-      customer: stripeCustomerId,
+      customer_email: anamnese.email,
       line_items: [{ price: priceId, quantity: 1 }],
       payment_method_types:
         methods as NonNullable<CheckoutCreateParams['payment_method_types']>,
-      client_reference_id: userId,
-      subscription_data: { metadata: { userId } },
-      success_url: `${appUrl}/billing/processing?session_id={CHECKOUT_SESSION_ID}`,
+      // anamneseId é a chave que liga o pagamento à criação da conta.
+      client_reference_id: anamneseId,
+      metadata: { anamneseId },
+      subscription_data: { metadata: { anamneseId } },
+      success_url: `${appUrl}/pagamento/processando?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/avaliacao`,
     };
 
-    // Pix recorrente exige mandate. Parcelamento (card.installments) não se
-    // aplica a cobrança mensal recorrente.
     if (methods.includes('pix')) {
       const mandateAmount = Number.parseInt(
         this.config.getOrThrow<string>('STRIPE_PRICE_AMOUNT_CENTS'),
@@ -247,7 +175,7 @@ export class BillingService {
     }
 
     const session = await this.stripe.checkout.sessions.create(params, {
-      idempotencyKey: `checkout:${userId}:${priceId}`,
+      idempotencyKey: `checkout:${anamneseId}`,
     });
 
     if (!session.url) {
@@ -259,9 +187,53 @@ export class BillingService {
     return { url: session.url };
   }
 
+  /**
+   * "Pagou → entra direto": valida que a sessão foi paga, provisiona a conta
+   * (idempotente) e devolve tokens (auto-login). É o webhook que garante o
+   * provisionamento mesmo se o usuário fechar a aba.
+   */
+  async sessionFromPayment(sessionId: string): Promise<AuthResponse> {
+    this.assertBillingEnabled();
+
+    const session = await this.stripe.checkout.sessions
+      .retrieve(sessionId)
+      .catch(() => {
+        throw new NotFoundException({
+          code: ErrorCode.CHECKOUT_FAILED,
+          message: 'Sessão de pagamento não encontrada.',
+        });
+      });
+
+    if (session.payment_status !== 'paid') {
+      throw new ConflictException({
+        code: ErrorCode.PAYMENT_PENDING,
+        message: 'Pagamento ainda não confirmado.',
+      });
+    }
+
+    const anamneseId = session.metadata?.anamneseId ?? session.client_reference_id;
+    if (!anamneseId) {
+      throw new BadRequestException({
+        code: ErrorCode.CHECKOUT_FAILED,
+        message: 'Sessão sem referência da avaliação.',
+      });
+    }
+
+    const userId = await this.provisionOrGetUserId(anamneseId);
+    const stripeCustomerId =
+      typeof session.customer === 'string'
+        ? session.customer
+        : (session.customer?.id ?? null);
+    if (stripeCustomerId) {
+      await this.linkCustomer(userId, stripeCustomerId);
+    }
+
+    return this.issueSession(userId);
+  }
+
   async createPortalSession(userId: string): Promise<CheckoutResponse> {
     this.assertBillingEnabled();
-    const { stripeCustomerId } = await this.ensureCustomer(userId);
+    const stripeCustomerId = await this.getStripeCustomerId(userId);
     const session = await this.stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
       return_url: `${this.appUrl()}/assinatura`,
@@ -269,9 +241,100 @@ export class BillingService {
     return { url: session.url };
   }
 
+  private async getStripeCustomerId(userId: string): Promise<string> {
+    const customer = await this.db.query.customers.findFirst({
+      where: eq(customers.userId, userId),
+      columns: { stripeCustomerId: true },
+    });
+    if (!customer?.stripeCustomerId) {
+      throw new NotFoundException({
+        code: ErrorCode.CUSTOMER_NOT_FOUND,
+        message: 'Cliente Stripe não encontrado.',
+      });
+    }
+    return customer.stripeCustomerId;
+  }
+
+  /** Provisiona a conta do paciente (idempotente) e devolve o userId. */
+  private async provisionOrGetUserId(anamneseId: string): Promise<string> {
+    const existing = await this.db.query.patients.findFirst({
+      where: eq(patients.anamneseId, anamneseId),
+      columns: { userId: true },
+    });
+    if (existing) return existing.userId;
+
+    try {
+      const result = await this.patients.provisionPatientAccount(anamneseId);
+      return result.patient.userId;
+    } catch (err) {
+      // Corrida: outro evento provisionou em paralelo (uniqueIndex em
+      // patients.anamneseId). Re-busca; se ainda não houver, o erro é real.
+      const row = await this.db.query.patients.findFirst({
+        where: eq(patients.anamneseId, anamneseId),
+        columns: { userId: true },
+      });
+      if (row) return row.userId;
+      throw err;
+    }
+  }
+
+  private async linkCustomer(
+    userId: string,
+    stripeCustomerId: string,
+  ): Promise<string> {
+    const [row] = await this.db
+      .insert(customers)
+      .values({ userId, stripeCustomerId })
+      .onConflictDoUpdate({
+        target: customers.userId,
+        set: { stripeCustomerId },
+      })
+      .returning({ id: customers.id });
+    return row!.id;
+  }
+
+  private async issueSession(userId: string): Promise<AuthResponse> {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        mustResetPassword: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException({
+        code: ErrorCode.CUSTOMER_NOT_FOUND,
+        message: 'Conta não encontrada.',
+      });
+    }
+
+    const tokens = await this.tokenService.generateTokens({
+      userId: user.id,
+      role: user.role,
+      mustResetPassword: user.mustResetPassword,
+    });
+    await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        mustResetPassword: user.mustResetPassword,
+      },
+      tokens,
+    };
+  }
+
   /**
-   * Verifica a assinatura do evento (raw body), faz dedup por `stripe_event_id`
-   * e despacha o sync — tudo numa transação. Retorna 200 rápido.
+   * Verifica a assinatura do evento, faz dedup idempotente por `stripe_event_id`
+   * e despacha o sync. Provisionamento + sync rodam FORA de uma transação única
+   * (o provisionamento tem transação + e-mail próprios). Falha → não marca
+   * processado → a Stripe reentrega e reprocessamos (handlers idempotentes).
    */
   async handleWebhook(
     rawBody: Buffer | undefined,
@@ -289,118 +352,107 @@ export class BillingService {
     try {
       event = this.stripe.webhooks.constructEvent(rawBody, signature, secret);
     } catch {
-      // Falha de assinatura: 400 para a Stripe registrar a entrega como falha.
       throw new BadRequestException({
         code: ErrorCode.WEBHOOK_SIGNATURE_INVALID,
         message: 'Assinatura de webhook inválida.',
       });
     }
 
-    await this.db.transaction(async (tx) => {
-      const inserted = await tx
-        .insert(stripeWebhookEvents)
-        .values({ stripeEventId: event.id, type: event.type, payload: event })
-        .onConflictDoNothing({ target: stripeWebhookEvents.stripeEventId })
-        .returning({ id: stripeWebhookEvents.id });
+    const inserted = await this.db
+      .insert(stripeWebhookEvents)
+      .values({ stripeEventId: event.id, type: event.type, payload: event })
+      .onConflictDoNothing({ target: stripeWebhookEvents.stripeEventId })
+      .returning({ id: stripeWebhookEvents.id });
 
-      if (inserted.length === 0) {
-        // Já processado (retry/replay) — no-op idempotente.
-        return;
-      }
+    if (inserted.length === 0) {
+      const prior = await this.db.query.stripeWebhookEvents.findFirst({
+        where: eq(stripeWebhookEvents.stripeEventId, event.id),
+        columns: { processedAt: true },
+      });
+      // Já processado com sucesso → no-op. Senão (tentativa anterior falhou),
+      // cai para reprocessar.
+      if (prior?.processedAt) return { received: true };
+    }
 
-      await this.dispatch(tx, event);
+    await this.dispatch(event);
 
-      await tx
-        .update(stripeWebhookEvents)
-        .set({ processedAt: new Date() })
-        .where(eq(stripeWebhookEvents.stripeEventId, event.id));
-    });
+    await this.db
+      .update(stripeWebhookEvents)
+      .set({ processedAt: new Date() })
+      .where(eq(stripeWebhookEvents.stripeEventId, event.id));
 
     return { received: true };
   }
 
-  private async dispatch(tx: Tx, event: StripeEvent): Promise<void> {
+  private async dispatch(event: StripeEvent): Promise<void> {
     switch (event.type) {
       case 'checkout.session.completed':
-        await this.onCheckoutCompleted(tx, event.data.object);
+        await this.onCheckoutCompleted(event.data.object);
         break;
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
         await this.syncSubscription(
-          tx,
           event.data.object,
           new Date(event.created * 1000),
         );
         break;
       case 'invoice.paid':
       case 'invoice.payment_failed':
-        await this.syncInvoice(tx, event.data.object);
+        await this.syncInvoice(event.data.object);
         break;
       default:
-        // Registrado em stripe_webhook_events para auditoria; sem ação.
         break;
     }
   }
 
   private async onCheckoutCompleted(
-    tx: Tx,
     session: StripeCheckoutSession,
   ): Promise<void> {
-    const userId = session.client_reference_id ?? session.metadata?.userId;
+    const anamneseId =
+      session.metadata?.anamneseId ?? session.client_reference_id ?? null;
     const stripeCustomerId =
       typeof session.customer === 'string'
         ? session.customer
         : (session.customer?.id ?? null);
-    if (!userId || !stripeCustomerId) return;
+    if (!anamneseId || !stripeCustomerId) return;
 
-    const customer = await tx.query.customers.findFirst({
-      where: eq(customers.stripeCustomerId, stripeCustomerId),
-      columns: { userId: true },
-    });
-    if (!customer) {
-      this.logger.warn(
-        `checkout.session.completed: customer Stripe desconhecido — ignorado`,
-      );
-      return;
-    }
-    if (customer.userId !== userId) {
-      this.logger.warn(
-        `checkout.session.completed: client_reference_id diverge do customer — ignorado`,
-      );
-      return;
-    }
-    // O sync da assinatura vem de customer.subscription.created/updated.
+    // Pagamento confirmado → cria a conta do paciente e liga ao customer Stripe.
+    const userId = await this.provisionOrGetUserId(anamneseId);
+    await this.linkCustomer(userId, stripeCustomerId);
   }
 
   private async syncSubscription(
-    tx: Tx,
     sub: StripeSubscription,
     eventCreated: Date,
   ): Promise<void> {
     const stripeCustomerId =
       typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
 
-    const customer = await tx.query.customers.findFirst({
+    let customer = await this.db.query.customers.findFirst({
       where: eq(customers.stripeCustomerId, stripeCustomerId),
-      columns: { id: true, userId: true },
+      columns: { id: true },
     });
+
+    // Corrida: subscription.* chegou antes de checkout.session.completed →
+    // auto-provisiona a partir do anamneseId no metadata.
     if (!customer) {
-      this.logger.warn(`subscription: customer Stripe desconhecido — ignorado`);
-      return;
+      const anamneseId = sub.metadata?.anamneseId;
+      if (!anamneseId) {
+        this.logger.warn(
+          'subscription: customer desconhecido e sem anamneseId — ignorado',
+        );
+        return;
+      }
+      const userId = await this.provisionOrGetUserId(anamneseId);
+      const customerRowId = await this.linkCustomer(userId, stripeCustomerId);
+      customer = { id: customerRowId };
     }
 
-    const metaUserId = sub.metadata?.userId;
-    if (metaUserId && metaUserId !== customer.userId) {
-      this.logger.warn(`subscription: metadata.userId diverge — ignorado`);
-      return;
-    }
-
-    const existing = await tx.query.subscriptions.findFirst({
+    const existing = await this.db.query.subscriptions.findFirst({
       where: eq(subscriptions.stripeSubscriptionId, sub.id),
       columns: { id: true, lastStripeEventAt: true },
     });
-    // Guard de ordem: descarta eventos mais antigos que o último já aplicado.
     if (existing?.lastStripeEventAt && eventCreated <= existing.lastStripeEventAt) {
       return;
     }
@@ -420,7 +472,7 @@ export class BillingService {
       updatedAt: new Date(),
     };
 
-    await tx
+    await this.db
       .insert(subscriptions)
       .values({
         customerId: customer.id,
@@ -433,7 +485,7 @@ export class BillingService {
       });
   }
 
-  private async syncInvoice(tx: Tx, invoice: StripeInvoice): Promise<void> {
+  private async syncInvoice(invoice: StripeInvoice): Promise<void> {
     if (!invoice.id) return;
 
     const stripeCustomerId =
@@ -442,23 +494,30 @@ export class BillingService {
         : (invoice.customer?.id ?? null);
     if (!stripeCustomerId) return;
 
-    const customer = await tx.query.customers.findFirst({
+    let customer = await this.db.query.customers.findFirst({
       where: eq(customers.stripeCustomerId, stripeCustomerId),
       columns: { id: true },
     });
+    // Corrida: invoice.paid antes do provisionamento → auto-provisiona pelo
+    // anamneseId no snapshot de metadata da assinatura.
     if (!customer) {
-      this.logger.warn(`invoice: customer Stripe desconhecido — ignorado`);
-      return;
+      const anamneseId = invoice.parent?.subscription_details?.metadata?.anamneseId;
+      if (!anamneseId) {
+        this.logger.warn('invoice: customer desconhecido e sem anamneseId — ignorado');
+        return;
+      }
+      const userId = await this.provisionOrGetUserId(anamneseId);
+      const customerRowId = await this.linkCustomer(userId, stripeCustomerId);
+      customer = { id: customerRowId };
     }
 
-    // dahlia: o link da assinatura mora em parent.subscription_details.
     const subRef = invoice.parent?.subscription_details?.subscription ?? null;
     const stripeSubscriptionId =
       typeof subRef === 'string' ? subRef : (subRef?.id ?? null);
 
     let localSubscriptionId: string | null = null;
     if (stripeSubscriptionId) {
-      const sub = await tx.query.subscriptions.findFirst({
+      const sub = await this.db.query.subscriptions.findFirst({
         where: eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
         columns: { id: true },
       });
@@ -478,7 +537,7 @@ export class BillingService {
       paidAt,
     };
 
-    await tx
+    await this.db
       .insert(invoices)
       .values({
         customerId: customer.id,
@@ -489,8 +548,5 @@ export class BillingService {
         target: invoices.stripeInvoiceId,
         set,
       });
-
-    // O status da assinatura (active/past_due) é mantido pelos eventos
-    // customer.subscription.* — não o sobrescrevemos a partir da invoice.
   }
 }

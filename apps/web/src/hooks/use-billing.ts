@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/stores/auth';
 import type {
   AnamneseInput,
+  AnamneseResponse,
   AuthResponse,
   CheckoutResponse,
   SubscriptionResponse,
@@ -23,7 +24,7 @@ export function useSubscription(options?: {
   });
 }
 
-/** Abre o Stripe Billing Portal (gerenciar/cancelar assinatura). */
+/** Abre o Stripe Billing Portal (gerenciar/cancelar assinatura). Autenticado. */
 export function usePortal() {
   return useMutation({
     mutationFn: () =>
@@ -37,48 +38,24 @@ export function usePortal() {
   });
 }
 
-type SubscribeVars = {
-  anamnese: AnamneseInput;
-  name: string;
-  email: string;
-  password: string;
-};
-
 /**
- * Fluxo self-service do funil: grava o lead elegível → cria conta (ou faz login
- * se o e-mail já existe) → abre o Stripe Checkout. O token recém-salvo autentica
- * a chamada de checkout (api() lê o access_token do localStorage).
+ * Fluxo self-service ANÔNIMO do funil: grava o lead elegível → inicia o Stripe
+ * Checkout a partir do anamneseId. A conta do paciente só nasce no pagamento
+ * (webhook / session-from-payment).
  */
-export function useSubscribeFlow() {
-  const { setAccessToken } = useAuth();
-
+export function useStartCheckout() {
   return useMutation({
-    mutationFn: async ({ anamnese, name, email, password }: SubscribeVars) => {
-      await api('/anamnese', {
+    mutationFn: async (anamnese: AnamneseInput) => {
+      const lead = await api<AnamneseResponse>('/anamnese', {
         method: 'POST',
         body: JSON.stringify(anamnese),
       });
-
-      let auth: AuthResponse;
-      try {
-        auth = await api<AuthResponse>('/auth/register', {
-          method: 'POST',
-          body: JSON.stringify({ name, email, password }),
-        });
-      } catch {
-        // E-mail já cadastrado: tenta logar com as credenciais informadas.
-        auth = await api<AuthResponse>('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ email, password }),
-        });
+      if (!lead.id) {
+        throw new Error('Sua avaliação não é elegível para assinatura.');
       }
-
-      setAccessToken(auth.tokens.accessToken);
-      localStorage.setItem('refresh_token', auth.tokens.refreshToken);
-
       return api<CheckoutResponse>('/billing/checkout', {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({ anamneseId: lead.id }),
       });
     },
     onSuccess: ({ url }) => {
@@ -88,6 +65,26 @@ export function useSubscribeFlow() {
       toast.error(
         error.message || 'Não foi possível iniciar o pagamento. Tente novamente.',
       );
+    },
+  });
+}
+
+/**
+ * Pós-pagamento "entra direto": troca a sessão paga por uma sessão autenticada.
+ * Retorna 409 enquanto o pagamento não confirma (Pix) — a tela de processamento
+ * faz polling.
+ */
+export function useSessionFromPayment() {
+  const { setSession } = useAuth();
+  return useMutation({
+    mutationFn: (sessionId: string) =>
+      api<AuthResponse>('/billing/session-from-payment', {
+        method: 'POST',
+        body: JSON.stringify({ sessionId }),
+      }),
+    onSuccess: (data) => {
+      setSession({ user: data.user, accessToken: data.tokens.accessToken });
+      localStorage.setItem('refresh_token', data.tokens.refreshToken);
     },
   });
 }

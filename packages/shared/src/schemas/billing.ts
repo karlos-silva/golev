@@ -1,12 +1,19 @@
 import { z } from 'zod';
 
 /**
- * Body do POST /billing/checkout. O cliente nunca informa preço/valor — só a
- * chave do plano, resolvida server-side contra uma allowlist (env). Plano único
- * no MVP; o default cobre o caso de body vazio.
+ * Body do POST /billing/checkout (público): o checkout é iniciado a partir de
+ * uma anamnese elegível. A conta do paciente só nasce no pagamento (webhook /
+ * session-from-payment). O cliente nunca informa preço — é resolvido no servidor.
  */
 export const checkoutRequestSchema = z.object({
-  plan: z.enum(['acompanhamento_mensal']).default('acompanhamento_mensal'),
+  anamneseId: z.string().uuid(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutRequestSchema>;
+
+/** Body do POST /billing/session-from-payment: troca a sessão paga por tokens. */
+export const sessionFromPaymentSchema = z.object({
+  sessionId: z.string().min(1),
+});
+
+export type SessionFromPaymentInput = z.infer<typeof sessionFromPaymentSchema>;

@@ -22,16 +22,15 @@ import {
   computeEligibility,
   CONSENT_TEXT,
   EligibilityReason,
-  registerSchema,
   type EligibilityReason as Reason,
 } from '@golev/shared';
 import { maskPhoneBR } from '@/lib/format';
-import { useSubscribeFlow } from '@/hooks/use-billing';
+import { useStartCheckout } from '@/hooks/use-billing';
 import { useCreateAnamnese } from '@/hooks/use-anamnese';
 
-// Trava de produto: com pagamento desligado, o funil volta ao fluxo antigo
-// (captura o lead → "equipe entra em contato pelo WhatsApp"). Liga com
-// NEXT_PUBLIC_BILLING_ENABLED=true.
+// Trava de produto. Com pagamento LIGADO, o elegível vai direto ao checkout
+// (a conta nasce no pagamento). Desligado, o funil volta ao fluxo antigo
+// (captura o lead → "equipe entra em contato pelo WhatsApp").
 const BILLING_ENABLED = process.env.NEXT_PUBLIC_BILLING_ENABLED === 'true';
 
 /* ============================================================
@@ -187,12 +186,12 @@ export function AvaliacaoFunnel() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [answers, setAnswers] = useState<Answers>({});
-  const [contact, setContact] = useState({ nome: '', email: '', whatsapp: '', password: '', consent: false });
+  const [contact, setContact] = useState({ nome: '', email: '', whatsapp: '', consent: false });
   const [utm, setUtm] = useState<Record<string, string>>({});
-  const subscribe = useSubscribeFlow();
+  const startCheckout = useStartCheckout();
   const createAnamnese = useCreateAnamnese();
-  const isPending = BILLING_ENABLED ? subscribe.isPending : createAnamnese.isPending;
-  const isSuccess = BILLING_ENABLED ? subscribe.isSuccess : createAnamnese.isSuccess;
+  const isPending = BILLING_ENABLED ? startCheckout.isPending : createAnamnese.isPending;
+  const isSuccess = BILLING_ENABLED ? startCheckout.isSuccess : createAnamnese.isSuccess;
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -324,22 +323,13 @@ export function AvaliacaoFunnel() {
       return;
     }
 
-    if (!BILLING_ENABLED) {
+    if (BILLING_ENABLED) {
+      // Elegível → checkout. A conta nasce no pagamento (sem senha aqui).
+      startCheckout.mutate(parsed.data);
+    } else {
       // Fluxo antigo: só registra o lead elegível (contato via WhatsApp).
       createAnamnese.mutate(parsed.data);
-      return;
     }
-
-    if (!registerSchema.shape.password.safeParse(contact.password).success) {
-      toast('Crie uma senha com pelo menos 8 caracteres.');
-      return;
-    }
-    subscribe.mutate({
-      anamnese: parsed.data,
-      name: contact.nome,
-      email: contact.email,
-      password: contact.password,
-    });
   }
 
   return (
@@ -519,7 +509,7 @@ export function AvaliacaoFunnel() {
             onSubmit={handleSubmit}
             isPending={isPending}
             onBack={() => go(-1)}
-            requirePassword={BILLING_ENABLED}
+            paymentMode={BILLING_ENABLED}
           />
         ) : (
           <Ineligible reasons={reasons} onBack={() => go(-1)} />
@@ -535,21 +525,20 @@ const reveal = {
 };
 
 function ContactForm({
-  imc, contact, setContact, onSubmit, isPending, onBack, requirePassword,
+  imc, contact, setContact, onSubmit, isPending, onBack, paymentMode,
 }: {
   imc: number | null;
-  contact: { nome: string; email: string; whatsapp: string; password: string; consent: boolean };
-  setContact: React.Dispatch<React.SetStateAction<{ nome: string; email: string; whatsapp: string; password: string; consent: boolean }>>;
+  contact: { nome: string; email: string; whatsapp: string; consent: boolean };
+  setContact: React.Dispatch<React.SetStateAction<{ nome: string; email: string; whatsapp: string; consent: boolean }>>;
   onSubmit: () => void;
   isPending: boolean;
   onBack: () => void;
-  requirePassword: boolean;
+  paymentMode: boolean;
 }) {
   const nomeOk = anamneseFieldsSchema.shape.nome.safeParse(contact.nome).success;
   const emailOk = anamneseFieldsSchema.shape.email.safeParse(contact.email).success;
   const whatsappOk = anamneseFieldsSchema.shape.whatsapp.safeParse(contact.whatsapp).success;
-  const passwordOk = !requirePassword || contact.password.length >= 8;
-  const canSubmit = nomeOk && emailOk && whatsappOk && passwordOk && contact.consent && !isPending;
+  const canSubmit = nomeOk && emailOk && whatsappOk && contact.consent && !isPending;
 
   return (
     <motion.div key="contact" initial={{ opacity: 0, x: 48 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.34, ease: EASE }}>
@@ -563,8 +552,8 @@ function ContactForm({
         <span className="font-serif font-medium italic text-primary">caminhar junto.</span>
       </motion.h1>
       <motion.p custom={2} variants={reveal} initial="hidden" animate="show" className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-        {requirePassword
-          ? 'Com base nas suas respostas, a Go Lev pode te acompanhar. Crie sua conta para iniciar a assinatura do acompanhamento — o pagamento é processado com segurança pela Stripe.'
+        {paymentMode
+          ? 'Com base nas suas respostas, a Go Lev pode te acompanhar. Continue para o pagamento seguro pela Stripe — sua conta é criada automaticamente após a confirmação.'
           : 'Com base nas suas respostas, a Go Lev pode te acompanhar. Deixe seu contato que a nossa equipe fala com você para agendar a avaliação com a médica.'}
       </motion.p>
 
@@ -590,18 +579,6 @@ function ContactForm({
             className="gl-input"
           />
         </Field>
-        {requirePassword && (
-          <Field label="Crie uma senha">
-            <input
-              type="password"
-              autoComplete="new-password"
-              value={contact.password}
-              onChange={(e) => setContact((c) => ({ ...c, password: e.target.value }))}
-              placeholder="Mínimo 8 caracteres"
-              className="gl-input"
-            />
-          </Field>
-        )}
         <label className="mt-1 flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-muted-foreground">
           <input type="checkbox" checked={contact.consent} onChange={(e) => setContact((c) => ({ ...c, consent: e.target.checked }))} className="mt-0.5 h-4 w-4 accent-[var(--gl-primary)]" />
           {CONSENT_TEXT}{' '}
@@ -613,14 +590,14 @@ function ContactForm({
           className={buttonVariants({ size: 'lg', className: 'mt-2 disabled:opacity-50' })}
         >
           {isPending ? (
-            <>{requirePassword ? 'Indo para o pagamento' : 'Enviando'} <Loader2 className="h-4 w-4 animate-spin" /></>
+            <>{paymentMode ? 'Indo para o pagamento' : 'Enviando'} <Loader2 className="h-4 w-4 animate-spin" /></>
           ) : (
-            <>{requirePassword ? 'Continuar para o pagamento' : 'Quero fazer parte'} <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" /></>
+            <>{paymentMode ? 'Continuar para o pagamento' : 'Quero fazer parte'} <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" /></>
           )}
         </button>
         <p className="flex items-center gap-2 text-xs text-ink-3">
           <ShieldCheck className="h-4 w-4" />{' '}
-          {requirePassword
+          {paymentMode
             ? 'Pagamento seguro via Stripe. Seus dados são tratados com sigilo.'
             : 'Seus dados são tratados com sigilo. Avaliação sem compromisso.'}
         </p>
