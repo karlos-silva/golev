@@ -18,6 +18,7 @@
     "db:seed": "tsx drizzle/seed.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.0",
     "@fastify/helmet": "^13.0.1",
     "@golev/shared": "workspace:*",

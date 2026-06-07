@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import helmet from '@fastify/helmet';
+import fastifyCookie from '@fastify/cookie';
 import { AppModule } from './app.module';
 import { parseAllowedOrigins } from './config/allowed-origins';
 import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
@@ -46,6 +47,8 @@ async function bootstrap() {
   });
 
   await app.register(helmet);
+  // Cookies de sessão httpOnly (set + parse de request.cookies).
+  await app.register(fastifyCookie);
 
   app.useGlobalFilters(new ZodExceptionFilter(), new StripeExceptionFilter());
 

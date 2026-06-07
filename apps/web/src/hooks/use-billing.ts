@@ -83,8 +83,8 @@ export function useSessionFromPayment() {
         body: JSON.stringify({ sessionId }),
       }),
     onSuccess: (data) => {
-      setSession({ user: data.user, accessToken: data.tokens.accessToken });
-      localStorage.setItem('refresh_token', data.tokens.refreshToken);
+      // Tokens vêm como cookies httpOnly setados pela API; guardamos só o user.
+      setSession(data.user);
     },
   });
 }

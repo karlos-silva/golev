@@ -3,14 +3,9 @@ import type { AuthResponse } from '@golev/shared';
 
 export type AuthUser = AuthResponse['user'];
 
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires};path=/;SameSite=Lax`;
-}
-
-function deleteCookie(name: string) {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-}
+// Os tokens vivem em cookies httpOnly setados pela API (JS não os lê → imune a
+// roubo por XSS). O store guarda só o `user` (para a UI). O cookie `gl_role`
+// (legível, p/ middleware/UI) também é setado pela API.
 
 function readStoredUser(): AuthUser | null {
   if (typeof window === 'undefined') return null;
@@ -24,52 +19,36 @@ function readStoredUser(): AuthUser | null {
 }
 
 function persistUser(user: AuthUser | null) {
+  if (typeof window === 'undefined') return;
   if (user) {
     localStorage.setItem('auth_user', JSON.stringify(user));
-    // Cookie só com o role — o middleware usa para separar app do cliente x portal.
-    setCookie('gl_role', user.role, 7);
   } else {
     localStorage.removeItem('auth_user');
-    deleteCookie('gl_role');
   }
 }
 
+function deleteCookie(name: string) {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+}
+
 interface AuthState {
-  accessToken: string | null;
   user: AuthUser | null;
-  /** Login: grava token + usuário (localStorage + cookies lidos pelo middleware). */
-  setSession: (session: { user: AuthUser; accessToken: string }) => void;
-  /** Atualiza só o access token (usado no refresh em lib/api.ts). */
-  setAccessToken: (token: string | null) => void;
+  /** Após login/refresh: guarda o usuário (os tokens já vieram como cookies). */
+  setSession: (user: AuthUser) => void;
   setUser: (user: AuthUser | null) => void;
   /** Atualiza campos do usuário em memória + storage (ex.: mustResetPassword). */
   patchUser: (patch: Partial<AuthUser>) => void;
+  /** Limpeza LOCAL. Os cookies httpOnly são limpos pela API em /auth/logout. */
   logout: () => void;
 }
 
 export const useAuth = create<AuthState>((set, get) => ({
-  accessToken:
-    typeof window !== 'undefined'
-      ? localStorage.getItem('access_token')
-      : null,
   user: readStoredUser(),
 
-  setSession: ({ user, accessToken }) => {
-    localStorage.setItem('access_token', accessToken);
-    setCookie('access_token', accessToken, 1);
+  setSession: (user) => {
     persistUser(user);
-    set({ accessToken, user });
-  },
-
-  setAccessToken: (token) => {
-    if (token) {
-      localStorage.setItem('access_token', token);
-      setCookie('access_token', token, 1);
-    } else {
-      localStorage.removeItem('access_token');
-      deleteCookie('access_token');
-    }
-    set({ accessToken: token });
+    set({ user });
   },
 
   setUser: (user) => {
@@ -86,11 +65,9 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('auth_user');
-    deleteCookie('access_token');
+    persistUser(null);
+    // best-effort (cookie legível); os httpOnly são limpos pela API.
     deleteCookie('gl_role');
-    set({ accessToken: null, user: null });
+    set({ user: null });
   },
 }));

@@ -83,8 +83,7 @@ export function useLogin() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data) => {
-      setSession({ user: data.user, accessToken: data.tokens.accessToken });
-      localStorage.setItem('refresh_token', data.tokens.refreshToken);
+      setSession(data.user);
       const firstName = data.user.name.split(' ')[0];
       toast.success(`Que bom te ver, ${firstName}.`);
       // 1º acesso tem prioridade; senão respeita o ?redirect SE for da área do
@@ -111,8 +110,7 @@ export function useRegister() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data) => {
-      setSession({ user: data.user, accessToken: data.tokens.accessToken });
-      localStorage.setItem('refresh_token', data.tokens.refreshToken);
+      setSession(data.user);
       toast.success('Conta criada com sucesso!');
       router.push(destinationFor(data.user));
     },
@@ -139,8 +137,7 @@ export function useChangePassword(redirectTo?: string) {
     onSuccess: (data) => {
       // Backend revogou as sessões antigas e emitiu um par novo (sem a flag de
       // 1º acesso) — atualizamos a sessão para o app seguir sem interrupção.
-      setSession({ user: data.user, accessToken: data.tokens.accessToken });
-      localStorage.setItem('refresh_token', data.tokens.refreshToken);
+      setSession(data.user);
       toast.success('Senha definida. Tudo pronto.');
       if (redirectTo) router.push(redirectTo);
     },
@@ -175,8 +172,7 @@ export function useResetPassword() {
         body: JSON.stringify(data),
       }),
     onSuccess: (data) => {
-      setSession({ user: data.user, accessToken: data.tokens.accessToken });
-      localStorage.setItem('refresh_token', data.tokens.refreshToken);
+      setSession(data.user);
       toast.success('Senha definida. Tudo pronto.');
       router.push(destinationFor(data.user));
     },
@@ -187,16 +183,11 @@ export function useResetPassword() {
 
 export function useLogout() {
   const router = useRouter();
-  const { logout, accessToken } = useAuth();
+  const { logout } = useAuth();
 
   return useMutation({
-    mutationFn: () =>
-      api('/auth/logout', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }),
+    // O cookie httpOnly autentica e a API limpa os cookies de sessão.
+    mutationFn: () => api('/auth/logout', { method: 'POST' }),
     onSuccess: () => {
       logout();
       toast.success('Até logo!');

@@ -8,6 +8,7 @@ import {
   Post,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
@@ -17,6 +18,7 @@ import { BillingService } from './billing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { AuthCookieInterceptor } from '../auth/auth-cookie.interceptor';
 
 @Controller('billing')
 export class BillingController {
@@ -40,9 +42,10 @@ export class BillingController {
     return this.billingService.createCheckoutSession(anamneseId);
   }
 
-  // Público: troca a sessão paga por tokens (auto-login "pagou → entra direto").
+  // Público: troca a sessão paga por uma sessão autenticada (cookies httpOnly).
   @Public()
   @UseGuards(ThrottlerGuard)
+  @UseInterceptors(AuthCookieInterceptor)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('session-from-payment')
   @HttpCode(HttpStatus.OK)

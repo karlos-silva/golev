@@ -1,4 +1,4 @@
-import { useAuth } from '@/stores/auth';
+import { useAuth, type AuthUser } from '@/stores/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333';
 
@@ -6,34 +6,23 @@ type FetchOptions = RequestInit & {
   params?: Record<string, string>;
 };
 
-// Singleton: garante que múltiplas requisições com 401 simultâneas
-// só disparam um refresh, as outras aguardam o resultado.
-let refreshPromise: Promise<string> | null = null;
+// Singleton: múltiplos 401 simultâneos só disparam um refresh.
+let refreshPromise: Promise<void> | null = null;
 
-async function refreshAccessToken(): Promise<string> {
-  const refreshToken =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('refresh_token')
-      : null;
-
-  if (!refreshToken) throw new Error('no refresh token');
-
+async function refreshSession(): Promise<void> {
+  // O refresh token vem do cookie httpOnly; a API seta novos cookies na resposta
+  // (o JS nunca toca nos tokens).
   const res = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
+    credentials: 'include',
   });
-
   if (!res.ok) throw new Error('refresh failed');
-
-  const data = (await res.json()) as {
-    tokens: { accessToken: string; refreshToken: string };
-  };
-
-  useAuth.getState().setAccessToken(data.tokens.accessToken);
-  localStorage.setItem('refresh_token', data.tokens.refreshToken);
-
-  return data.tokens.accessToken;
+  try {
+    const data = (await res.json()) as { user?: AuthUser };
+    if (data.user) useAuth.getState().setSession(data.user);
+  } catch {
+    /* sem corpo de user — tudo bem, os cookies já foram renovados */
+  }
 }
 
 function clearSessionAndRedirect() {
@@ -54,38 +43,26 @@ export async function api<T>(
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
 
-  function buildHeaders(token: string | null): HeadersInit {
-    return {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    };
-  }
+  // credentials:'include' envia/recebe os cookies httpOnly de sessão.
+  const doFetch = () =>
+    fetch(url.toString(), {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      ...rest,
+    });
 
-  function getStoredToken(): string | null {
-    return typeof window !== 'undefined'
-      ? localStorage.getItem('access_token')
-      : null;
-  }
+  let response = await doFetch();
 
-  let response = await fetch(url.toString(), {
-    headers: buildHeaders(getStoredToken()),
-    ...rest,
-  });
-
-  // Token expirado → tenta refresh uma vez
+  // Access token expirado → tenta refresh (cookie) uma vez e repete.
   if (response.status === 401 && typeof window !== 'undefined') {
     try {
       if (!refreshPromise) {
-        refreshPromise = refreshAccessToken().finally(
-          () => { refreshPromise = null; },
-        );
+        refreshPromise = refreshSession().finally(() => {
+          refreshPromise = null;
+        });
       }
-      const newToken = await refreshPromise;
-      response = await fetch(url.toString(), {
-        headers: buildHeaders(newToken),
-        ...rest,
-      });
+      await refreshPromise;
+      response = await doFetch();
     } catch {
       clearSessionAndRedirect();
       throw new Error('Sessão expirada. Faça login novamente.');

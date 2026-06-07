@@ -13,11 +13,11 @@ import { isStaffRole, isPatientRole } from '@golev/shared';
  */
 export function StaffAuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { user, accessToken } = useAuth();
+  const user = useAuth((s) => s.user);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!accessToken || !user) {
+    if (!user) {
       router.replace('/login');
       return;
     }
@@ -34,7 +34,7 @@ export function StaffAuthGate({ children }: { children: ReactNode }) {
       return;
     }
     setReady(true);
-  }, [user, accessToken, router]);
+  }, [user, router]);
 
   if (!ready) {
     return (

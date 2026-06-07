@@ -13,12 +13,13 @@ import { isPatientRole, isStaffRole } from '@golev/shared';
  */
 export function ClientAuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { user, accessToken } = useAuth();
+  const user = useAuth((s) => s.user);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Fail-closed: sem token OU sem usuário hidratado → login (não libera a área).
-    if (!accessToken || !user) {
+    // Fail-closed: sem usuário hidratado → login (o cookie httpOnly é a verdade
+    // server-side; aqui é só guard de UX, o backend barra por role).
+    if (!user) {
       router.replace('/login');
       return;
     }
@@ -35,7 +36,7 @@ export function ClientAuthGate({ children }: { children: ReactNode }) {
       return;
     }
     setReady(true);
-  }, [user, accessToken, router]);
+  }, [user, router]);
 
   if (!ready) {
     return (
