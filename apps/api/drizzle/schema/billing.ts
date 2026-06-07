@@ -99,7 +99,9 @@ export const stripeWebhookEvents = pgTable('stripe_webhook_events', {
   id: uuid('id').primaryKey().defaultRandom(),
   stripeEventId: text('stripe_event_id').notNull().unique(),
   type: text('type').notNull(),
-  payload: jsonb('payload').notNull(),
+  // Nullable: o payload é nulificado após a janela de retenção (LGPD); a barreira
+  // de idempotência (stripe_event_id) + type/processedAt permanecem.
+  payload: jsonb('payload'),
   receivedAt: timestamp('received_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
