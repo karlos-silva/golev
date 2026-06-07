@@ -1,9 +1,36 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PORTAL_PUBLIC = ['/login', '/forgot-password'];
-const PORTAL_APP = ['/dashboard'];
-const MARKETING_PUBLIC = ['/', '/avaliacao', '/calculadora-imc', '/pricing', '/features', '/blog', '/legal'];
+// Páginas de autenticação públicas (login compartilhado entre app do cliente e portal).
+const AUTH_PAGES = ['/login', '/forgot-password', '/redefinir-senha'];
+// Rotas logadas do APP DO CLIENTE (paciente) — vivem no domínio principal.
+const CLIENT_ROUTES = [
+  '/inicio',
+  '/evolucao',
+  '/consultas',
+  '/plano',
+  '/conta',
+  '/definir-senha',
+];
+// Rotas logadas do PORTAL INTERNO (equipe) — vivem em portal.golev.app.br.
+const PORTAL_ROUTES = [
+  '/dashboard',
+  '/avaliacoes',
+  '/clients',
+  '/appointments',
+  '/settings',
+  '/billing',
+  '/solicitacoes',
+];
+const MARKETING_PUBLIC = [
+  '/',
+  '/avaliacao',
+  '/calculadora-imc',
+  '/pricing',
+  '/features',
+  '/blog',
+  '/legal',
+];
 
 function isStaticAsset(pathname: string): boolean {
   return (
@@ -43,29 +70,36 @@ export function middleware(request: NextRequest) {
     if (pathname === '/') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-    if (matchesPath(pathname, PORTAL_PUBLIC)) return NextResponse.next();
+    if (matchesPath(pathname, AUTH_PAGES)) return NextResponse.next();
     return requireAuth(request, pathname);
   }
 
   // ── Dev (localhost) ─────────────────────────────────────────────────────
-  // Marketing e portal coexistem: tudo que é público (dos dois) é liberado,
-  // rotas protegidas do portal pedem auth. Sem hijack da landing.
+  // Marketing, portal e app do cliente coexistem: tudo público é liberado,
+  // o resto (portal + cliente) pede auth.
   if (isDev) {
-    if (matchesPath(pathname, [...MARKETING_PUBLIC, ...PORTAL_PUBLIC])) {
+    if (matchesPath(pathname, [...MARKETING_PUBLIC, ...AUTH_PAGES])) {
       return NextResponse.next();
     }
     return requireAuth(request, pathname);
   }
 
-  // ── Domínio principal (golev.app.br) ────────────────────────────────────
-  // Rotas do portal não pertencem aqui — /login é reservado pro app do cliente.
-  if (matchesPath(pathname, [...PORTAL_PUBLIC, ...PORTAL_APP])) {
+  // ── Domínio principal (golev.app.br) — marketing + APP DO CLIENTE ───────
+  // Rotas do portal interno não pertencem aqui.
+  if (matchesPath(pathname, PORTAL_ROUTES)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  // Login/recuperação do cliente são públicos aqui.
+  if (matchesPath(pathname, AUTH_PAGES)) return NextResponse.next();
+
   if (matchesPath(pathname, MARKETING_PUBLIC)) return NextResponse.next();
 
-  // Futuras rotas protegidas do app do cliente entram aqui
+  // Rotas logadas do cliente (e qualquer outra) exigem auth.
+  if (matchesPath(pathname, CLIENT_ROUTES)) {
+    return requireAuth(request, pathname);
+  }
+
   return requireAuth(request, pathname);
 }
 

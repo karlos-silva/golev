@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Hanken_Grotesk, Newsreader } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
@@ -21,6 +21,13 @@ const newsreader = Newsreader({
   weight: ['400', '500', '600', '700'],
   variable: '--font-newsreader',
 });
+
+export const viewport: Viewport = {
+  // Permite que o conteúdo use a safe-area (notch/home indicator) — essencial p/
+  // a experiência de app no mobile. theme-color casa a barra do navegador com o app.
+  viewportFit: 'cover',
+  themeColor: '#F8F8F5',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

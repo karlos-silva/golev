@@ -2,6 +2,7 @@
 
 import { Menu } from 'lucide-react';
 import { AppSidebar } from '@/components/app/sidebar';
+import { StaffAuthGate } from '@/components/app/staff-auth-gate';
 import { Logo } from '@/components/app/logo';
 import { useSidebar } from '@/stores/sidebar';
 
@@ -13,6 +14,7 @@ export default function AppLayout({
   const { toggle } = useSidebar();
 
   return (
+    <StaffAuthGate>
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--gl-paper)' }}>
       <AppSidebar />
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
@@ -37,5 +39,6 @@ export default function AppLayout({
         </main>
       </div>
     </div>
+    </StaffAuthGate>
   );
 }
