@@ -15,12 +15,8 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=31536000; includeSubDomains',
   },
-  // CSP mínima e segura: bloqueia clickjacking, injeção de <base> e plugins,
-  // sem mexer em script/style/connect (que o Next/PostHog precisam).
-  {
-    key: 'Content-Security-Policy',
-    value: "base-uri 'self'; object-src 'none'; frame-ancestors 'self'",
-  },
+  // A CSP (híbrida: nonce nas rotas logadas, estática-friendly no marketing) é
+  // setada pelo middleware (src/middleware.ts), pois precisa ser por-requisição.
 ];
 
 const nextConfig: NextConfig = {

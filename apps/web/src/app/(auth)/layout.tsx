@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { Logo } from '@/components/app/logo';
 
+// Render dinâmico: permite o nonce da CSP (middleware) nos scripts. Páginas de
+// auth não são SEO, então sem custo.
+export const dynamic = 'force-dynamic';
+
 export default function AuthLayout({
   children,
 }: {

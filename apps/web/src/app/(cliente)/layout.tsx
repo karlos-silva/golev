@@ -3,6 +3,10 @@ import { MobileTopBar } from '@/components/client/mobile-topbar';
 import { MobileTabBar } from '@/components/client/mobile-tabbar';
 import { ClientAuthGate } from '@/components/client/auth-gate';
 
+// Render dinâmico: permite que o Next aplique o nonce da CSP (middleware) aos
+// scripts. Rota logada (não-SEO), então sem custo de SEO.
+export const dynamic = 'force-dynamic';
+
 export default function ClienteLayout({
   children,
 }: {
