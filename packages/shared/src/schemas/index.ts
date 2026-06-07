@@ -20,3 +20,4 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 
 export * from './anamnese';
+export * from './patient';
