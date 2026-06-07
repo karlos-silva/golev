@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "diet_plans_one_active_per_patient_idx" ON "diet_plans" USING btree ("patient_id") WHERE status = 'active';--> statement-breakpoint
+CREATE UNIQUE INDEX "consultation_requests_one_pending_per_patient_idx" ON "consultation_requests" USING btree ("patient_id") WHERE status = 'pendente';

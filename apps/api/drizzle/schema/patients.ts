@@ -7,7 +7,7 @@ import {
   index,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { users } from './auth';
 import { anamneseSubmissions } from './anamnese';
 
@@ -81,6 +81,49 @@ export const weightLogs = pgTable(
   ],
 );
 
+/**
+ * Plano alimentar do paciente — escrito pela equipe (texto/markdown) com anexo
+ * opcional (PDF). O paciente vê o plano `active` mais recente na área do cliente.
+ */
+export const dietPlans = pgTable(
+  'diet_plans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+
+    /** Profissional que montou o plano. */
+    doctorId: uuid('doctor_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+
+    title: text('title').notNull(),
+    /** Conteúdo em texto/markdown escrito pela equipe. */
+    content: text('content').notNull().default(''),
+    /** Anexo opcional (link do PDF do plano). */
+    fileUrl: text('file_url'),
+
+    /** active | archived */
+    status: text('status').notNull().default('active'),
+
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('diet_plans_patient_id_idx').on(t.patientId),
+    index('diet_plans_status_idx').on(t.status),
+    // No máximo um plano ativo por paciente (blinda a race do upsert).
+    uniqueIndex('diet_plans_one_active_per_patient_idx')
+      .on(t.patientId)
+      .where(sql`status = 'active'`),
+  ],
+);
+
 export const patientsRelations = relations(patients, ({ one, many }) => ({
   user: one(users, { fields: [patients.userId], references: [users.id] }),
   anamnese: one(anamneseSubmissions, {
@@ -89,11 +132,23 @@ export const patientsRelations = relations(patients, ({ one, many }) => ({
   }),
   doctor: one(users, { fields: [patients.doctorId], references: [users.id] }),
   weightLogs: many(weightLogs),
+  dietPlans: many(dietPlans),
 }));
 
 export const weightLogsRelations = relations(weightLogs, ({ one }) => ({
   patient: one(patients, {
     fields: [weightLogs.patientId],
     references: [patients.id],
+  }),
+}));
+
+export const dietPlansRelations = relations(dietPlans, ({ one }) => ({
+  patient: one(patients, {
+    fields: [dietPlans.patientId],
+    references: [patients.id],
+  }),
+  doctor: one(users, {
+    fields: [dietPlans.doctorId],
+    references: [users.id],
   }),
 }));
