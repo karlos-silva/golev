@@ -5,15 +5,16 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, eq, gte, lte, inArray, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, inArray, or } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../database/database.module';
 import {
   appointments,
   anamneseSubmissions,
   patients,
   users,
+  consultationRequests,
 } from '../../../drizzle/schema';
-import { STAFF_ROLES } from '../auth/roles.constants';
+import { STAFF_ROLES, isStaffRole } from '../auth/roles.constants';
 import {
   GoogleCalendarService,
   type EventInput,
@@ -117,6 +118,18 @@ export class AppointmentsService {
     }
   }
 
+  /** Garante que o doctorId atribuído pertence à equipe (admin/doctor). */
+  private async assertDoctorIsStaff(doctorId?: string): Promise<void> {
+    if (!doctorId) return;
+    const u = await this.db.query.users.findFirst({
+      where: eq(users.id, doctorId),
+      columns: { role: true },
+    });
+    if (!u || !isStaffRole(u.role)) {
+      throw new BadRequestException('Médico responsável inválido');
+    }
+  }
+
   /** Médicos/equipe atribuíveis a uma consulta. */
   async assignees() {
     return this.db
@@ -145,40 +158,47 @@ export class AppointmentsService {
     if (!input.anamneseId && !input.patientId) {
       throw new BadRequestException('Informe o lead ou o paciente da consulta');
     }
+    await this.assertDoctorIsStaff(input.doctorId);
 
-    const [row] = await this.db
-      .insert(appointments)
-      .values({
-        anamneseId: input.anamneseId ?? null,
-        patientId: input.patientId ?? null,
-        doctorId: input.doctorId ?? null,
-        scheduledAt: input.scheduledAt,
-        durationMin: input.durationMin ?? 30,
-        type: input.type ?? 'primeira',
-        notes: input.notes ?? null,
-      })
-      .returning();
+    // Persiste numa transação; o sync com o Google é best-effort e roda DEPOIS
+    // do commit (nunca deixa estado parcial se a sincronização falhar/reiniciar).
+    const row = await this.db.transaction(async (tx) => {
+      const [r] = await tx
+        .insert(appointments)
+        .values({
+          anamneseId: input.anamneseId ?? null,
+          patientId: input.patientId ?? null,
+          doctorId: input.doctorId ?? null,
+          scheduledAt: input.scheduledAt,
+          durationMin: input.durationMin ?? 30,
+          type: input.type ?? 'primeira',
+          notes: input.notes ?? null,
+        })
+        .returning();
 
-    // Ao agendar a partir de um lead, avança o pipeline.
-    if (input.anamneseId) {
-      await this.db
-        .update(anamneseSubmissions)
-        .set({ leadStatus: 'consulta_agendada', updatedAt: new Date() })
-        .where(
-          and(
-            eq(anamneseSubmissions.id, input.anamneseId),
-            // só avança se ainda estiver em estágios iniciais
-            or(
-              eq(anamneseSubmissions.leadStatus, 'novo'),
-              eq(anamneseSubmissions.leadStatus, 'contatado'),
+      // Ao agendar a partir de um lead, avança o pipeline.
+      if (input.anamneseId) {
+        await tx
+          .update(anamneseSubmissions)
+          .set({ leadStatus: 'consulta_agendada', updatedAt: new Date() })
+          .where(
+            and(
+              eq(anamneseSubmissions.id, input.anamneseId),
+              // só avança se ainda estiver em estágios iniciais
+              or(
+                eq(anamneseSubmissions.leadStatus, 'novo'),
+                eq(anamneseSubmissions.leadStatus, 'contatado'),
+              ),
             ),
-          ),
-        );
-    }
+          );
+      }
 
-    await this.syncAppointment(row!);
+      return r!;
+    });
 
-    return row!;
+    await this.syncAppointment(row);
+
+    return row;
   }
 
   async update(
@@ -190,6 +210,8 @@ export class AppointmentsService {
       notes?: string;
     },
   ) {
+    await this.assertDoctorIsStaff(input.doctorId);
+
     const [row] = await this.db
       .update(appointments)
       .set({ ...input, updatedAt: new Date() })
@@ -215,5 +237,96 @@ export class AppointmentsService {
 
     await this.db.delete(appointments).where(eq(appointments.id, id));
     return { id: existing.id };
+  }
+
+  /* ── Solicitações de consulta do paciente (a equipe confirma) ──────────── */
+
+  async listConsultationRequests(status?: string) {
+    return this.db.query.consultationRequests.findMany({
+      where: status
+        ? eq(consultationRequests.status, status)
+        : undefined,
+      orderBy: [desc(consultationRequests.createdAt)],
+      with: {
+        patient: {
+          columns: { id: true },
+          with: { user: { columns: { id: true, name: true } } },
+        },
+      },
+    });
+  }
+
+  /**
+   * Confirma uma solicitação: cria a consulta (retorno) e marca como confirmada.
+   * Tudo numa única transação — trava a solicitação com FOR UPDATE, insere a
+   * consulta e atualiza o status atomicamente. Isso elimina (a) a janela de
+   * appointment órfão se o processo falhar entre os passos e (b) a confirmação
+   * dupla concorrente (a 2ª transação espera o lock e vê status != 'pendente').
+   * O sync com o Google é best-effort e roda DEPOIS do commit.
+   */
+  async confirmConsultationRequest(
+    id: string,
+    input: {
+      scheduledAt: Date;
+      doctorId?: string;
+      durationMin?: number;
+      notes?: string;
+    },
+  ) {
+    await this.assertDoctorIsStaff(input.doctorId);
+
+    const appointment = await this.db.transaction(async (tx) => {
+      const [req] = await tx
+        .select({
+          patientId: consultationRequests.patientId,
+          status: consultationRequests.status,
+          notes: consultationRequests.notes,
+        })
+        .from(consultationRequests)
+        .where(eq(consultationRequests.id, id))
+        .for('update')
+        .limit(1);
+
+      if (!req) throw new NotFoundException('Solicitação não encontrada');
+      if (req.status !== 'pendente') {
+        throw new BadRequestException('Solicitação já foi tratada');
+      }
+
+      const [appt] = await tx
+        .insert(appointments)
+        .values({
+          patientId: req.patientId,
+          doctorId: input.doctorId ?? null,
+          scheduledAt: input.scheduledAt,
+          durationMin: input.durationMin ?? 30,
+          type: 'retorno',
+          notes: input.notes ?? req.notes ?? null,
+        })
+        .returning();
+
+      await tx
+        .update(consultationRequests)
+        .set({
+          status: 'confirmada',
+          appointmentId: appt!.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(consultationRequests.id, id));
+
+      return appt!;
+    });
+
+    await this.syncAppointment(appointment);
+    return appointment;
+  }
+
+  async rejectConsultationRequest(id: string) {
+    const [row] = await this.db
+      .update(consultationRequests)
+      .set({ status: 'recusada', updatedAt: new Date() })
+      .where(eq(consultationRequests.id, id))
+      .returning({ id: consultationRequests.id });
+    if (!row) throw new NotFoundException('Solicitação não encontrada');
+    return row;
   }
 }

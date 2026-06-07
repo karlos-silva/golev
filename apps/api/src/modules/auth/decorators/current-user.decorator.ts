@@ -4,6 +4,7 @@ import type { ExecutionContext } from '@nestjs/common';
 export type AuthenticatedUser = {
   userId: string;
   role: string;
+  mustResetPassword: boolean;
 };
 
 type RequestWithUser = { user?: AuthenticatedUser };
