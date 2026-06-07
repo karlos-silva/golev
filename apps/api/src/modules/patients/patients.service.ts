@@ -5,16 +5,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { eq, desc, asc } from 'drizzle-orm';
+import { and, eq, desc, asc } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../database/database.module';
 import {
   patients,
   weightLogs,
+  dietPlans,
   users,
   anamneseSubmissions,
 } from '../../../drizzle/schema';
 import { PasswordService } from '../auth/password.service';
+import { TokenService } from '../auth/token.service';
+import { MailService } from '../mail/mail.service';
 import { isStaffRole } from '../auth/roles.constants';
+import type { DietPlanUpsertInput } from '@golev/shared';
 
 export type PatientStatus = 'active' | 'paused' | 'discharged';
 
@@ -28,6 +32,8 @@ export class PatientsService {
   constructor(
     @Inject(DATABASE) private db: Database,
     private passwordService: PasswordService,
+    private tokenService: TokenService,
+    private mail: MailService,
   ) {}
 
   async findAll() {
@@ -61,12 +67,15 @@ export class PatientsService {
   }
 
   /**
-   * Converte um lead elegível em paciente:
-   * 1. Cria conta user (role=patient) com senha temporária
+   * Provisiona a conta do paciente a partir de um lead elegível. Idempotente: o
+   * uniqueIndex(patients.anamneseId) impede conversão dupla (seguro p/ ser
+   * chamado tanto pela equipe no portal quanto pelo webhook de pagamento).
+   * 1. Cria/reusa a conta user (role=patient) com senha temporária + mustReset
    * 2. Cria registro patients
    * 3. Marca anamnese como convertida
+   * 4. Para conta NOVA, envia o e-mail de boas-vindas com link de 1º acesso
    */
-  async convertFromAnamnese(anamneseId: string) {
+  async provisionPatientAccount(anamneseId: string) {
     const anamnese = await this.db.query.anamneseSubmissions.findFirst({
       where: eq(anamneseSubmissions.id, anamneseId),
       columns: { id: true, nome: true, email: true, eligible: true, userId: true },
@@ -117,6 +126,8 @@ export class PatientsService {
             name: anamnese.nome,
             passwordHash,
             role: 'patient',
+            // Senha temporária → paciente define a própria no 1º acesso.
+            mustResetPassword: true,
           })
           .returning({ id: users.id });
         userId = newUser!.id;
@@ -134,6 +145,20 @@ export class PatientsService {
 
       return patient!;
     });
+
+    // Conta nova → e-mail de boas-vindas com link mágico p/ definir a senha
+    // (não depende de a equipe repassar a senha temporária manualmente).
+    if (isNewAccount) {
+      const token = await this.tokenService.createPasswordResetToken(
+        result.userId,
+        60 * 24 * 7, // 7 dias para o 1º acesso
+      );
+      await this.mail.sendWelcome({
+        to: anamnese.email,
+        name: anamnese.nome,
+        token,
+      });
+    }
 
     return {
       patient: result,
@@ -221,5 +246,109 @@ export class PatientsService {
       where: eq(weightLogs.patientId, patientId),
       orderBy: [desc(weightLogs.measuredAt)],
     });
+  }
+
+  /* ── Plano alimentar (escrito pela equipe, lido pelo paciente) ─────────── */
+
+  async getDietPlan(patientId: string) {
+    const patient = await this.db.query.patients.findFirst({
+      where: eq(patients.id, patientId),
+      columns: { id: true },
+    });
+    if (!patient) throw new NotFoundException('Paciente não encontrado');
+
+    const plan = await this.db.query.dietPlans.findFirst({
+      where: and(
+        eq(dietPlans.patientId, patientId),
+        eq(dietPlans.status, 'active'),
+      ),
+      orderBy: [desc(dietPlans.updatedAt)],
+      with: { doctor: { columns: { id: true, name: true } } },
+    });
+    return plan ?? null;
+  }
+
+  /** Cria ou atualiza o plano alimentar ativo do paciente. */
+  async upsertDietPlan(
+    patientId: string,
+    doctorId: string,
+    input: DietPlanUpsertInput,
+  ) {
+    const patient = await this.db.query.patients.findFirst({
+      where: eq(patients.id, patientId),
+      columns: { id: true },
+    });
+    if (!patient) throw new NotFoundException('Paciente não encontrado');
+
+    const existing = await this.db.query.dietPlans.findFirst({
+      where: and(
+        eq(dietPlans.patientId, patientId),
+        eq(dietPlans.status, 'active'),
+      ),
+      orderBy: [desc(dietPlans.updatedAt)],
+      columns: { id: true },
+    });
+
+    const status = input.status ?? 'active';
+
+    if (existing) {
+      const [row] = await this.db
+        .update(dietPlans)
+        .set({
+          title: input.title,
+          content: input.content,
+          fileUrl: input.fileUrl ?? null,
+          status,
+          doctorId,
+          updatedAt: new Date(),
+        })
+        .where(eq(dietPlans.id, existing.id))
+        .returning();
+      return row!;
+    }
+
+    try {
+      const [row] = await this.db
+        .insert(dietPlans)
+        .values({
+          patientId,
+          doctorId,
+          title: input.title,
+          content: input.content,
+          fileUrl: input.fileUrl ?? null,
+          status,
+        })
+        .returning();
+      return row!;
+    } catch (e) {
+      // Corrida com o índice único parcial (um plano ativo por paciente):
+      // já existe um ativo — atualiza ele em vez de inserir.
+      if ((e as { code?: string }).code === '23505') {
+        const active = await this.db.query.dietPlans.findFirst({
+          where: and(
+            eq(dietPlans.patientId, patientId),
+            eq(dietPlans.status, 'active'),
+          ),
+          orderBy: [desc(dietPlans.updatedAt)],
+          columns: { id: true },
+        });
+        if (active) {
+          const [row] = await this.db
+            .update(dietPlans)
+            .set({
+              title: input.title,
+              content: input.content,
+              fileUrl: input.fileUrl ?? null,
+              status,
+              doctorId,
+              updatedAt: new Date(),
+            })
+            .where(eq(dietPlans.id, active.id))
+            .returning();
+          return row!;
+        }
+      }
+      throw e;
+    }
   }
 }

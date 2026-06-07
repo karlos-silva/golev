@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   boolean,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -14,6 +15,8 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   role: text('role').notNull().default('member'),
   isActive: boolean('is_active').notNull().default(true),
+  /** Conta nasceu com senha temporária (convert) e precisa definir uma nova no 1º acesso. */
+  mustResetPassword: boolean('must_reset_password').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -46,6 +49,31 @@ export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+/**
+ * Tokens de definição/redefinição de senha — usados tanto no e-mail de
+ * boas-vindas (1º acesso) quanto no "esqueci a senha". Guardamos só o HASH do
+ * token (sha256); o valor em claro só viaja no link do e-mail. Uso único + TTL.
+ */
+export const passwordResetTokens = pgTable(
+  'password_reset_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('password_reset_tokens_token_hash_idx').on(t.tokenHash),
+    index('password_reset_tokens_user_id_idx').on(t.userId),
+  ],
+);
 
 export const tokenBlocklist = pgTable('token_blocklist', {
   id: uuid('id').primaryKey().defaultRandom(),

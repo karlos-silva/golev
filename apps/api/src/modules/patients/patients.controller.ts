@@ -7,13 +7,16 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { dietPlanUpsertSchema } from '@golev/shared';
 import { PatientsService, type PatientStatus } from './patients.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { STAFF_ROLES } from '../auth/roles.constants';
 
 const convertSchema = z.object({
@@ -46,7 +49,7 @@ export class PatientsController {
   @HttpCode(HttpStatus.CREATED)
   async convert(@Body() body: unknown) {
     const { anamneseId } = convertSchema.parse(body);
-    return this.patientsService.convertFromAnamnese(anamneseId);
+    return this.patientsService.provisionPatientAccount(anamneseId);
   }
 
   @Get(':id')
@@ -75,5 +78,21 @@ export class PatientsController {
       measuredAt: data.measuredAt ? new Date(data.measuredAt) : new Date(),
       notes: data.notes,
     });
+  }
+
+  @Get(':id/diet-plan')
+  getDietPlan(@Param('id') id: string) {
+    return this.patientsService.getDietPlan(id);
+  }
+
+  @Put(':id/diet-plan')
+  @HttpCode(HttpStatus.OK)
+  upsertDietPlan(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @Body() body: unknown,
+  ) {
+    const data = dietPlanUpsertSchema.parse(body);
+    return this.patientsService.upsertDietPlan(id, userId, data);
   }
 }

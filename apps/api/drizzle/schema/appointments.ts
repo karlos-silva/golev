@@ -5,8 +5,9 @@ import {
   integer,
   timestamp,
   index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { users } from './auth';
 import { anamneseSubmissions } from './anamnese';
 import { patients } from './patients';
@@ -76,3 +77,62 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+/**
+ * Solicitação de consulta feita pelo PACIENTE no app. A equipe confirma (vira
+ * um `appointment`) ou recusa. Mantém o acompanhamento próximo: o paciente pede,
+ * a equipe agenda — sem expor a agenda dos médicos ao cliente.
+ */
+export const consultationRequests = pgTable(
+  'consultation_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+
+    /** manha | tarde | noite | qualquer */
+    preferredPeriod: text('preferred_period'),
+    /** Data preferida do paciente (opcional). */
+    preferredDate: timestamp('preferred_date', { withTimezone: true }),
+    reason: text('reason'),
+    notes: text('notes'),
+
+    /** pendente | confirmada | recusada | cancelada */
+    status: text('status').notNull().default('pendente'),
+
+    /** Consulta criada quando a equipe confirma a solicitação. */
+    appointmentId: uuid('appointment_id').references(() => appointments.id, {
+      onDelete: 'set null',
+    }),
+
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('consultation_requests_patient_id_idx').on(t.patientId),
+    index('consultation_requests_status_idx').on(t.status),
+    // No máximo uma solicitação pendente por paciente (blinda a race do dedup).
+    uniqueIndex('consultation_requests_one_pending_per_patient_idx')
+      .on(t.patientId)
+      .where(sql`status = 'pendente'`),
+  ],
+);
+
+export const consultationRequestsRelations = relations(
+  consultationRequests,
+  ({ one }) => ({
+    patient: one(patients, {
+      fields: [consultationRequests.patientId],
+      references: [patients.id],
+    }),
+    appointment: one(appointments, {
+      fields: [consultationRequests.appointmentId],
+      references: [appointments.id],
+    }),
+  }),
+);

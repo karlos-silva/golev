@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { LayoutDashboard, ClipboardList, Users, CalendarDays, CreditCard, Settings, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, CalendarDays, Inbox, CreditCard, Settings, LogOut, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
 import { useLogout } from '@/hooks/use-auth';
@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Avaliações', href: '/avaliacoes', icon: ClipboardList },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Consultas', href: '/appointments', icon: CalendarDays },
+  { name: 'Solicitações', href: '/solicitacoes', icon: Inbox },
   { name: 'Faturamento', href: '/billing', icon: CreditCard },
   { name: 'Configurações', href: '/settings', icon: Settings },
 ];

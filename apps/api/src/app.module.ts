@@ -10,6 +10,8 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { MeModule } from './modules/me/me.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
       },
     ]),
     DatabaseModule,
+    MailModule,
     AuthModule,
     BillingModule,
     AnamneseModule,
@@ -34,6 +37,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
     DashboardModule,
     AppointmentsModule,
     IntegrationsModule,
+    MeModule,
   ],
 })
 export class AppModule {}

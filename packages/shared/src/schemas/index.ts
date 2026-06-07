@@ -21,3 +21,4 @@ export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 
 export * from './anamnese';
 export * from './billing';
+export * from './patient';

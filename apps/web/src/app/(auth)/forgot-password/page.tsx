@@ -2,100 +2,97 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { z } from 'zod';
-import { toast } from 'sonner';
+import { ArrowLeft, MailCheck } from 'lucide-react';
+import { forgotPasswordSchema } from '@golev/shared';
+import { useForgotPassword } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Email inválido'),
-});
+import { Spinner } from '@/components/ui/spinner';
 
 export default function ForgotPasswordPage() {
+  const forgot = useForgotPassword();
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
-
     const formData = new FormData(e.currentTarget);
     const result = forgotPasswordSchema.safeParse({
       email: formData.get('email'),
     });
-
     if (!result.success) {
-      setError(result.error.issues[0]?.message ?? 'Email inválido');
+      setError(result.error.issues[0]?.message ?? 'E-mail inválido');
       return;
     }
-
-    setSent(true);
-    toast.success('Email de recuperação enviado!');
+    forgot.mutate(result.data, { onSuccess: () => setSent(true) });
   }
 
   if (sent) {
     return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-            <span className="text-xl">✉️</span>
-          </div>
-          <CardTitle className="text-2xl">Email enviado</CardTitle>
-          <CardDescription>
-            Se o email estiver cadastrado, você receberá um link para redefinir sua senha.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Link href="/login" className="w-full">
-            <Button variant="outline" className="w-full">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para login
-            </Button>
-          </Link>
-        </CardFooter>
-      </Card>
+      <div className="gl-in">
+        <div
+          className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl"
+          style={{ background: 'var(--gl-support-tint)', color: 'var(--gl-primary)' }}
+        >
+          <MailCheck className="h-6 w-6" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--gl-ink)' }}>
+          Confira seu e-mail
+        </h1>
+        <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
+          Se houver uma conta com esse e-mail, enviamos um link para você criar uma nova senha. Pode levar alguns minutinhos para chegar.
+        </p>
+        <Link
+          href="/login"
+          className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
+          style={{ color: 'var(--gl-primary)' }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar para entrar
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Recuperar senha</CardTitle>
-        <CardDescription>
-          Informe seu email e enviaremos um link para redefinir sua senha
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="seu@email.com"
-              autoComplete="email"
-              autoFocus
-            />
-            {error && <p className="text-xs text-destructive">{error}</p>}
-          </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full">
-            Enviar link de recuperação
-          </Button>
-          <Link
-            href="/login"
-            className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            Voltar para login
-          </Link>
-        </CardFooter>
+    <div className="gl-in">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--gl-ink)' }}>
+          Esqueceu a senha?
+        </h1>
+        <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
+          Sem problema. Informe seu e-mail e a gente envia um link para você criar uma nova.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">E-mail</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="seu@email.com"
+            autoComplete="email"
+            autoFocus
+          />
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+
+        <Button type="submit" className="w-full" disabled={forgot.isPending}>
+          {forgot.isPending ? <Spinner /> : null}
+          Enviar link
+        </Button>
+
+        <Link
+          href="/login"
+          className="flex items-center justify-center gap-1.5 text-sm transition-colors"
+          style={{ color: 'var(--gl-ink-3)' }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar para entrar
+        </Link>
       </form>
-    </Card>
+    </div>
   );
 }
