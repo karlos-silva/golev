@@ -186,7 +186,7 @@ export function AvaliacaoFunnel() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [answers, setAnswers] = useState<Answers>({});
-  const [contact, setContact] = useState({ nome: '', email: '', whatsapp: '', consent: false });
+  const [contact, setContact] = useState({ nome: '', email: '', whatsapp: '', cupom: '', consent: false });
   const [utm, setUtm] = useState<Record<string, string>>({});
   const startCheckout = useStartCheckout();
   const createAnamnese = useCreateAnamnese();
@@ -325,7 +325,10 @@ export function AvaliacaoFunnel() {
 
     if (BILLING_ENABLED) {
       // Elegível → checkout. A conta nasce no pagamento (sem senha aqui).
-      startCheckout.mutate(parsed.data);
+      startCheckout.mutate({
+        anamnese: parsed.data,
+        couponCode: contact.cupom.trim() || undefined,
+      });
     } else {
       // Fluxo antigo: só registra o lead elegível (contato via WhatsApp).
       createAnamnese.mutate(parsed.data);
@@ -528,8 +531,8 @@ function ContactForm({
   imc, contact, setContact, onSubmit, isPending, onBack, paymentMode,
 }: {
   imc: number | null;
-  contact: { nome: string; email: string; whatsapp: string; consent: boolean };
-  setContact: React.Dispatch<React.SetStateAction<{ nome: string; email: string; whatsapp: string; consent: boolean }>>;
+  contact: { nome: string; email: string; whatsapp: string; cupom: string; consent: boolean };
+  setContact: React.Dispatch<React.SetStateAction<{ nome: string; email: string; whatsapp: string; cupom: string; consent: boolean }>>;
   onSubmit: () => void;
   isPending: boolean;
   onBack: () => void;
@@ -579,6 +582,17 @@ function ContactForm({
             className="gl-input"
           />
         </Field>
+        {paymentMode && (
+          <Field label="Cupom (opcional)">
+            <input
+              value={contact.cupom}
+              onChange={(e) => setContact((c) => ({ ...c, cupom: e.target.value.toUpperCase() }))}
+              placeholder="Tem um cupom? Digite aqui"
+              autoCapitalize="characters"
+              className="gl-input"
+            />
+          </Field>
+        )}
         <label className="mt-1 flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-muted-foreground">
           <input type="checkbox" checked={contact.consent} onChange={(e) => setContact((c) => ({ ...c, consent: e.target.checked }))} className="mt-0.5 h-4 w-4 accent-[var(--gl-primary)]" />
           {CONSENT_TEXT}{' '}

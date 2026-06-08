@@ -105,7 +105,10 @@ export class BillingService {
    * Checkout PÚBLICO a partir de uma anamnese elegível. A conta do paciente
    * ainda NÃO existe — nasce no pagamento (webhook / session-from-payment).
    */
-  async createCheckoutSession(anamneseId: string): Promise<CheckoutResponse> {
+  async createCheckoutSession(
+    anamneseId: string,
+    couponCode?: string,
+  ): Promise<CheckoutResponse> {
     this.assertBillingEnabled();
 
     const anamnese = await this.db.query.anamneseSubmissions.findFirst({
@@ -174,8 +177,28 @@ export class BillingService {
       };
     }
 
+    // Cupom opcional: valida no Stripe e aplica o desconto. O cliente nunca
+    // determina o valor — o Stripe calcula/impõe (limite de usos, validade). Com
+    // 100% off o total fica R$0 → 'if_required' dispensa o cartão ("de graça").
+    if (couponCode) {
+      const promos = await this.stripe.promotionCodes.list({
+        code: couponCode.trim().toUpperCase(),
+        active: true,
+        limit: 1,
+      });
+      const promo = promos.data[0];
+      if (!promo) {
+        throw new BadRequestException({
+          code: ErrorCode.COUPON_INVALID,
+          message: 'Cupom inválido ou expirado.',
+        });
+      }
+      params.discounts = [{ promotion_code: promo.id }];
+      params.payment_method_collection = 'if_required';
+    }
+
     const session = await this.stripe.checkout.sessions.create(params, {
-      idempotencyKey: `checkout:${anamneseId}`,
+      idempotencyKey: `checkout:${anamneseId}:${couponCode ?? ''}`,
     });
 
     if (!session.url) {

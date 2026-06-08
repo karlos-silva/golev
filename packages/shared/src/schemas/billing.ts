@@ -7,6 +7,9 @@ import { z } from 'zod';
  */
 export const checkoutRequestSchema = z.object({
   anamneseId: z.string().uuid(),
+  // Cupom opcional — validado e aplicado server-side via Stripe (o cliente nunca
+  // determina o desconto; só informa o código).
+  couponCode: z.string().trim().min(1).max(64).optional(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutRequestSchema>;

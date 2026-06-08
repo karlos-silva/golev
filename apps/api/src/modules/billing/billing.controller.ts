@@ -38,8 +38,8 @@ export class BillingController {
   @Post('checkout')
   @HttpCode(HttpStatus.OK)
   async checkout(@Body() body: unknown) {
-    const { anamneseId } = checkoutRequestSchema.parse(body);
-    return this.billingService.createCheckoutSession(anamneseId);
+    const { anamneseId, couponCode } = checkoutRequestSchema.parse(body);
+    return this.billingService.createCheckoutSession(anamneseId, couponCode);
   }
 
   // Público: troca a sessão paga por uma sessão autenticada (cookies httpOnly).

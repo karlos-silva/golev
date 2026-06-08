@@ -45,7 +45,13 @@ export function usePortal() {
  */
 export function useStartCheckout() {
   return useMutation({
-    mutationFn: async (anamnese: AnamneseInput) => {
+    mutationFn: async ({
+      anamnese,
+      couponCode,
+    }: {
+      anamnese: AnamneseInput;
+      couponCode?: string;
+    }) => {
       const lead = await api<AnamneseResponse>('/anamnese', {
         method: 'POST',
         body: JSON.stringify(anamnese),
@@ -55,7 +61,10 @@ export function useStartCheckout() {
       }
       return api<CheckoutResponse>('/billing/checkout', {
         method: 'POST',
-        body: JSON.stringify({ anamneseId: lead.id }),
+        body: JSON.stringify({
+          anamneseId: lead.id,
+          ...(couponCode ? { couponCode } : {}),
+        }),
       });
     },
     onSuccess: ({ url }) => {
