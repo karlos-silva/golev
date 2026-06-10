@@ -13,6 +13,9 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   passwordHash: text('password_hash').notNull(),
   role: text('role').notNull().default('member'),
+  // Atende consultas (aparece como médico na agenda). Independente do `role`:
+  // alguém pode ser admin E médica (ex.: Eloise), ou médico sem ser admin.
+  isDoctor: boolean('is_doctor').notNull().default(false),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
