@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { permissionForPath, hasPermission, portalHome } from '@golev/shared';
 
 // Páginas de autenticação públicas (login compartilhado entre app do cliente e portal).
 const AUTH_PAGES = ['/login', '/forgot-password', '/redefinir-senha'];
@@ -92,17 +93,30 @@ function authRedirect(request: NextRequest, pathname: string): URL | null {
     return null;
   };
 
+  // Portão por capability: cada área do portal exige uma permission (mapa único
+  // em @golev/shared). Sem a capability, o usuário é levado à sua home de portal.
+  // `gl_role` é o cookie legível setado no login. Defesa real vive na API.
+  const permissionGate = (): URL | null => {
+    const required = permissionForPath(pathname);
+    if (!required) return null;
+    const role = request.cookies.get('gl_role')?.value;
+    if (!hasPermission(role, required)) {
+      return new URL(portalHome(role), request.url);
+    }
+    return null;
+  };
+
   // Portal interno (portal.golev.app.br)
   if (host.startsWith('portal.')) {
     if (pathname === '/') return new URL('/login', request.url);
     if (matchesPath(pathname, AUTH_PAGES)) return null;
-    return needsAuth();
+    return needsAuth() ?? permissionGate();
   }
 
   // Dev (localhost): público liberado, resto pede auth.
   if (isDev) {
     if (matchesPath(pathname, [...MARKETING_PUBLIC, ...AUTH_PAGES])) return null;
-    return needsAuth();
+    return needsAuth() ?? permissionGate();
   }
 
   // Domínio principal: rotas do portal não pertencem aqui.
@@ -135,6 +149,11 @@ export function middleware(request: NextRequest) {
   if (!isStrict) {
     const res = NextResponse.next();
     res.headers.set('Content-Security-Policy', buildCsp(null));
+    // /pagamento carrega o session_id do Stripe na URL (?session_id=…). Sem
+    // referer, ele não vaza p/ recursos externos nem para o histórico de proxies.
+    if (pathname.startsWith('/pagamento')) {
+      res.headers.set('Referrer-Policy', 'no-referrer');
+    }
     return res;
   }
 

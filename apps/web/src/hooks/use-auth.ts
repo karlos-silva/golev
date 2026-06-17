@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { useAuth, type AuthUser } from '@/stores/auth';
-import { isPatientRole, isStaffRole } from '@golev/shared';
+import {
+  isPatientRole,
+  isStaffRole,
+  permissionForPath,
+  hasPermission,
+  portalHome,
+} from '@golev/shared';
 import type {
   AuthResponse,
   LoginInput,
@@ -36,7 +42,8 @@ function startsWithAny(path: string, prefixes: string[]): boolean {
 function destinationFor(user: AuthUser): string {
   if (user.mustResetPassword) return '/definir-senha';
   if (isPatientRole(user.role)) return '/inicio';
-  return '/dashboard';
+  // Home do portal pela capability: admin → /dashboard, doctor → /clients.
+  return portalHome(user.role);
 }
 
 function safeRedirectParam(): string | null {
@@ -67,6 +74,11 @@ function redirectForRole(user: AuthUser): string | null {
     return null;
   }
   if (isStaffRole(user.role) && startsWithAny(redirect, CLIENT_PREFIXES)) {
+    return null;
+  }
+  // Staff sem a capability da área de destino não é levado a ela via ?redirect.
+  const required = permissionForPath(redirect);
+  if (isStaffRole(user.role) && required && !hasPermission(user.role, required)) {
     return null;
   }
   return redirect;

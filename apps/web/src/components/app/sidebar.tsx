@@ -8,21 +8,27 @@ import { cn } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
 import { useLogout } from '@/hooks/use-auth';
 import { useSidebar } from '@/stores/sidebar';
+import { useAuth } from '@/stores/auth';
+import { hasPermission, Permission } from '@golev/shared';
 
+// Cada área declara a capability que exige (RBAC). O menu deriva da matriz
+// papel→permissões em @golev/shared — mesma fonte do middleware e da API.
 const navigation = [
-  { name: 'Visão Geral', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Avaliações', href: '/avaliacoes', icon: ClipboardList },
-  { name: 'Clientes', href: '/clients', icon: Users },
-  { name: 'Consultas', href: '/appointments', icon: CalendarDays },
-  { name: 'Solicitações', href: '/solicitacoes', icon: Inbox },
-  { name: 'Faturamento', href: '/billing', icon: CreditCard },
-  { name: 'Configurações', href: '/settings', icon: Settings },
+  { name: 'Visão Geral', href: '/dashboard', icon: LayoutDashboard, permission: Permission.VIEW_DASHBOARD },
+  { name: 'Avaliações', href: '/avaliacoes', icon: ClipboardList, permission: Permission.VIEW_LEADS },
+  { name: 'Clientes', href: '/clients', icon: Users, permission: Permission.VIEW_PATIENTS },
+  { name: 'Consultas', href: '/appointments', icon: CalendarDays, permission: Permission.MANAGE_APPOINTMENTS },
+  { name: 'Solicitações', href: '/solicitacoes', icon: Inbox, permission: Permission.MANAGE_REQUESTS },
+  { name: 'Faturamento', href: '/billing', icon: CreditCard, permission: Permission.MANAGE_BILLING },
+  { name: 'Configurações', href: '/settings', icon: Settings, permission: Permission.MANAGE_SETTINGS },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const logout = useLogout();
   const { isOpen, close } = useSidebar();
+  const role = useAuth((s) => s.user?.role);
+  const items = navigation.filter((item) => hasPermission(role, item.permission));
 
   // Fecha a gaveta ao trocar de rota (mobile).
   useEffect(() => {
@@ -65,7 +71,7 @@ export function AppSidebar() {
 
         {/* Navegação */}
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
-          {navigation.map((item) => {
+          {items.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link
