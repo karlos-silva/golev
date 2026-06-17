@@ -213,7 +213,10 @@ export class MeService {
       weightKg: Number(l.weightKg),
       measuredAt: l.measuredAt.toISOString(),
       source: l.source,
-      notes: l.notes,
+      // Só a observação do PRÓPRIO paciente (source='patient_app') é visível.
+      // notes de pesagens lançadas pela equipe no portal são internas — nunca
+      // voltam ao paciente.
+      notes: l.source === 'patient_app' ? l.notes : null,
     }));
   }
 
