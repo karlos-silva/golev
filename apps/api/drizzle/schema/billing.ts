@@ -107,3 +107,20 @@ export const stripeWebhookEvents = pgTable('stripe_webhook_events', {
     .defaultNow(),
   processedAt: timestamp('processed_at', { withTimezone: true }),
 });
+
+/**
+ * Sessões de Checkout já trocadas por uma sessão autenticada (auto-login pós-
+ * pagamento). O resgate é ÚNICO: `stripe_session_id` é a chave de idempotência —
+ * uma segunda troca do mesmo session_id (ex.: link vazado por Referer/histórico/
+ * logs) colide no índice único e é recusada. Fecha o vetor de account-takeover.
+ */
+export const redeemedCheckoutSessions = pgTable('redeemed_checkout_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  stripeSessionId: text('stripe_session_id').notNull().unique(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  redeemedAt: timestamp('redeemed_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

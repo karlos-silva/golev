@@ -25,6 +25,7 @@ import {
   customers,
   invoices,
   patients,
+  redeemedCheckoutSessions,
   stripeWebhookEvents,
   subscriptions,
   users,
@@ -243,6 +244,29 @@ export class BillingService {
     }
 
     const userId = await this.provisionOrGetUserId(anamneseId);
+
+    // Resgate ÚNICO: a primeira troca deste session_id por uma sessão registra a
+    // redenção; uma segunda (link vazado/reutilizado por Referer, histórico ou
+    // logs) colide no índice único → recusada. Sem isso, quem capturasse o
+    // session_id assumiria a conta do comprador (account-takeover). O fluxo
+    // legítimo troca uma vez e segue para /inicio; o webhook já garante a conta,
+    // então recusar um reuso não tem custo (no máximo, login manual).
+    try {
+      await this.db.insert(redeemedCheckoutSessions).values({
+        stripeSessionId: sessionId,
+        userId,
+      });
+    } catch (e) {
+      if ((e as { code?: string }).code === '23505') {
+        throw new ForbiddenException({
+          code: ErrorCode.CHECKOUT_FAILED,
+          message:
+            'Esta sessão de pagamento já foi utilizada. Faça login para acessar sua conta.',
+        });
+      }
+      throw e;
+    }
+
     const stripeCustomerId =
       typeof session.customer === 'string'
         ? session.customer
