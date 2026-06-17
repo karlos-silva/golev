@@ -5,6 +5,9 @@
  *
  * - admin/doctor → STAFF_ROLES (portal interno, deny-by-default p/ os demais)
  * - patient      → cliente final (acessa apenas os próprios dados via /me)
+ *
+ * Para autorização granular do portal (admin vs doctor), use as CAPABILITIES de
+ * `@golev/shared` (Permission/hasPermission) com o PermissionsGuard, não papéis.
  */
 export {
   AppRole,

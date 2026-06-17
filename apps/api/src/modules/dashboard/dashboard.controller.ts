@@ -1,13 +1,15 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Permission } from '@golev/shared';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { STAFF_ROLES } from '../auth/roles.constants';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
+// Métricas de negócio (conversão, funil de leads, números do mês) exigem a
+// capability VIEW_DASHBOARD — hoje só do admin (ver ROLE_PERMISSIONS em @golev/shared).
 @Controller('dashboard')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(...STAFF_ROLES)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequirePermissions(Permission.VIEW_DASHBOARD)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
