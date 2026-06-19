@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -182,6 +182,11 @@ function fieldError(field: NumberField, raw: string): string | null {
   return res.success ? null : (res.error.issues[0]?.message ?? 'Valor inválido');
 }
 
+// Rascunho do funil salvo localmente — permite retomar de onde parou (mesmo
+// navegador). O consent NÃO é persistido (LGPD: precisa ser re-afirmado).
+const DRAFT_KEY = 'golev_avaliacao_v1';
+const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function AvaliacaoFunnel() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
@@ -205,6 +210,55 @@ export function AvaliacaoFunnel() {
     if (document.referrer) next.referrer = document.referrer;
     setUtm(next);
   }, []);
+
+  // Retoma o rascunho salvo (mesmo navegador). Consent é resetado (LGPD).
+  const hydrated = useRef(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as {
+          answers?: Answers;
+          contact?: { nome?: string; email?: string; whatsapp?: string; cupom?: string };
+          step?: number;
+          savedAt?: number;
+        };
+        if (saved && Date.now() - (saved.savedAt ?? 0) < DRAFT_TTL_MS) {
+          if (saved.answers) setAnswers(saved.answers);
+          if (saved.contact) setContact((c) => ({ ...c, ...saved.contact, consent: false }));
+          if (typeof saved.step === 'number') setStep(saved.step);
+        } else {
+          localStorage.removeItem(DRAFT_KEY);
+        }
+      }
+    } catch {
+      /* rascunho corrompido — ignora */
+    }
+    hydrated.current = true;
+  }, []);
+
+  // Salva o rascunho conforme o usuário preenche (sem o consent).
+  useEffect(() => {
+    if (!hydrated.current) return;
+    try {
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          answers,
+          contact: {
+            nome: contact.nome,
+            email: contact.email,
+            whatsapp: contact.whatsapp,
+            cupom: contact.cupom,
+          },
+          step,
+          savedAt: Date.now(),
+        }),
+      );
+    } catch {
+      /* storage indisponível — ignora */
+    }
+  }, [answers, contact, step]);
 
   const visibleQuestions = useMemo(
     () => QUESTIONS.filter((q) => !q.when || q.when(answers)),
@@ -295,6 +349,8 @@ export function AvaliacaoFunnel() {
         elegivel: true,
         imc: finalImc,
       });
+      // Concluiu → limpa o rascunho local.
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignora */ }
     }
   }, [isSuccess]);
 

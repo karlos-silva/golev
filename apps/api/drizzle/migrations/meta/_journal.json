@@ -71,6 +71,13 @@
       "when": 1781892306762,
       "tag": "0009_dashing_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1781912123168,
+      "tag": "0010_awesome_black_widow",
+      "breakpoints": true
     }
   ]
 }

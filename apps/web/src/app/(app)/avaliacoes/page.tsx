@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   CheckCircle2, XCircle, Phone, Mail, Scale,
-  X, User, Activity, ClipboardCheck, Target, ChevronDown, UserPlus, Copy,
+  X, User, Activity, ClipboardCheck, Target, ChevronDown, UserPlus, Copy, CreditCard,
 } from 'lucide-react';
 import {
   type LeadStatus,
@@ -46,6 +46,7 @@ interface Avaliacao {
   gravidaOuAmamentando: boolean | null;
   reasons: string[];
   consentAt: string;
+  checkoutStartedAt: string | null;
   createdAt: string;
 }
 
@@ -137,6 +138,19 @@ function AvaliacaoModal({ a, onClose }: { a: Avaliacao; onClose: () => void }) {
       void qc.invalidateQueries({ queryKey: ['patients'] });
     },
   });
+
+  // Recuperação de checkout: gera um link de pagamento (mesmo endpoint do funil,
+  // a partir do anamneseId existente) para a equipe enviar no WhatsApp.
+  const [payUrl, setPayUrl] = useState<string | null>(null);
+  const payLinkMutation = useMutation({
+    mutationFn: () =>
+      api<{ url: string }>('/billing/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ anamneseId: a.id }),
+      }),
+    onSuccess: ({ url }) => setPayUrl(url),
+  });
+
   const comorbidades = a.comorbidades.filter(c => c !== 'nenhuma');
   const contraindicacoes = a.contraindicacoes.filter(c => c !== 'nenhuma');
   const imc = parseFloat(a.imc);
@@ -318,6 +332,52 @@ function AvaliacaoModal({ a, onClose }: { a: Avaliacao; onClose: () => void }) {
                   <p className="text-xs" style={{ color: 'var(--gl-ink-3)' }}>
                     Peça ao paciente para alterar a senha no primeiro acesso.
                   </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Gerar link de pagamento (recuperação de checkout abandonado) */}
+          {a.eligible && leadStatus !== 'convertido' && leadStatus !== 'descartado' && (
+            <div className="rounded-xl p-4 space-y-3"
+              style={{ background: 'var(--gl-support-tint)', border: '1px solid var(--gl-line)' }}>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--gl-primary)' }}>
+                    Link de pagamento
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--gl-ink-2)' }}>
+                    {a.checkoutStartedAt
+                      ? 'Já chegou ao pagamento e não concluiu — bom alvo para recuperar no WhatsApp.'
+                      : 'Gere o link de cobrança e mande no WhatsApp — ele paga sem preencher de novo.'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => payLinkMutation.mutate()}
+                  disabled={payLinkMutation.isPending}
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-80 disabled:opacity-50 whitespace-nowrap ml-4"
+                  style={{ background: 'var(--gl-primary)', color: 'var(--gl-paper)' }}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  {payLinkMutation.isPending ? 'Gerando…' : 'Gerar link de pagamento'}
+                </button>
+              </div>
+              {payLinkMutation.isError && (
+                <p className="text-xs" style={{ color: 'var(--color-destructive)' }}>
+                  {payLinkMutation.error?.message ?? 'Não foi possível gerar o link.'}
+                </p>
+              )}
+              {payUrl && (
+                <div className="rounded-lg p-3 flex items-center justify-between gap-2"
+                  style={{ background: 'var(--gl-surface)', border: '1px solid var(--gl-line)' }}>
+                  <span className="text-xs font-mono truncate" style={{ color: 'var(--gl-ink)' }}>{payUrl}</span>
+                  <button
+                    onClick={() => { void navigator.clipboard.writeText(payUrl); }}
+                    className="flex items-center gap-1 text-xs rounded px-2 py-1 flex-shrink-0 transition-colors"
+                    style={{ color: 'var(--gl-primary)' }}
+                  >
+                    <Copy className="h-3 w-3" /> Copiar link
+                  </button>
                 </div>
               )}
             </div>

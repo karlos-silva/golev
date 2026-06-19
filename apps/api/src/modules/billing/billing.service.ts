@@ -208,6 +208,13 @@ export class BillingService {
         message: 'Não foi possível iniciar o checkout.',
       });
     }
+
+    // Carimba que o lead chegou ao pagamento (recuperação de checkout abandonado).
+    await this.db
+      .update(anamneseSubmissions)
+      .set({ checkoutStartedAt: new Date() })
+      .where(eq(anamneseSubmissions.id, anamneseId));
+
     return { url: session.url };
   }
 

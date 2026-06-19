@@ -1,0 +1,1 @@
+ALTER TABLE "anamnese_submissions" ADD COLUMN "checkout_started_at" timestamp with time zone;
