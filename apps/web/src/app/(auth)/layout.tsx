@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { Logo } from '@/components/app/logo';
 
+// Render dinâmico: permite o nonce da CSP (middleware) nos scripts. Páginas de
+// auth não são SEO, então sem custo.
+export const dynamic = 'force-dynamic';
+
 export default function AuthLayout({
   children,
 }: {
@@ -22,10 +26,10 @@ export default function AuthLayout({
             className="text-2xl leading-snug mb-3 font-serif italic"
             style={{ color: 'var(--gl-paper)' }}
           >
-            Cuide de quem<br />confia em você.
+            A gente caminha<br />com você.
           </p>
           <p className="text-sm" style={{ color: 'var(--gl-support)' }}>
-            Portal interno · Go Lev
+            Go Lev · sua jornada de saúde
           </p>
         </div>
 

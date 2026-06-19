@@ -7,6 +7,7 @@ import { TokenService } from './token.service';
 import { PasswordService } from './password.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthCookieInterceptor } from './auth-cookie.interceptor';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     PasswordService,
     JwtStrategy,
     JwtAuthGuard,
+    AuthCookieInterceptor,
   ],
-  exports: [JwtAuthGuard, TokenService, PasswordService, JwtModule],
+  exports: [JwtAuthGuard, TokenService, PasswordService, JwtModule, AuthCookieInterceptor],
 })
 export class AuthModule {}

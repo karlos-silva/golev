@@ -9,6 +9,8 @@ export interface AuthResponse {
     email: string;
     name: string;
     role: string;
+    /** true quando a conta ainda usa senha temporária e precisa definir uma nova. */
+    mustResetPassword: boolean;
   };
   tokens: AuthTokens;
 }
@@ -35,3 +37,5 @@ export interface PaginationQuery {
 }
 
 export * from './anamnese';
+export * from './billing';
+export * from './patient';

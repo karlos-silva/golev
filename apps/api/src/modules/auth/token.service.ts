@@ -3,12 +3,19 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { eq, and, isNull, gt } from 'drizzle-orm';
 import * as argon2 from 'argon2';
+import { createHash, randomBytes } from 'node:crypto';
 import { DATABASE, type Database } from '../../database/database.module';
-import { refreshTokens, users } from '../../../drizzle/schema';
+import {
+  refreshTokens,
+  users,
+  passwordResetTokens,
+} from '../../../drizzle/schema';
 
 interface JwtPayload {
   userId: string;
   role: string;
+  /** Conta com senha temporária — bloqueia o app até definir uma nova senha. */
+  mustResetPassword?: boolean;
 }
 
 @Injectable()
@@ -57,6 +64,42 @@ export class TokenService {
     });
   }
 
+  /* ── Tokens de definição/redefinição de senha (e-mail) ─────────────────── */
+
+  private hashResetToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
+  /** Cria um token de senha (uso único, com TTL). Retorna o valor em claro p/ o link. */
+  async createPasswordResetToken(
+    userId: string,
+    ttlMinutes: number,
+  ): Promise<string> {
+    const token = randomBytes(32).toString('base64url');
+    await this.db.insert(passwordResetTokens).values({
+      userId,
+      tokenHash: this.hashResetToken(token),
+      expiresAt: new Date(Date.now() + ttlMinutes * 60_000),
+    });
+    return token;
+  }
+
+  /** Valida e consome (marca usado) um token de senha. Retorna o userId dono. */
+  async consumePasswordResetToken(token: string): Promise<string> {
+    const tokenHash = this.hashResetToken(token);
+    const row = await this.db.query.passwordResetTokens.findFirst({
+      where: eq(passwordResetTokens.tokenHash, tokenHash),
+    });
+    if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedException('Link inválido ou expirado');
+    }
+    await this.db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokens.id, row.id));
+    return row.userId;
+  }
+
   async rotateRefreshToken(token: string) {
     let payload: JwtPayload;
     try {
@@ -102,6 +145,7 @@ export class TokenService {
     const tokens = await this.generateTokens({
       userId: user.id,
       role: user.role,
+      mustResetPassword: user.mustResetPassword,
     });
 
     await this.saveRefreshToken(user.id, tokens.refreshToken);
@@ -112,6 +156,7 @@ export class TokenService {
         email: user.email,
         name: user.name,
         role: user.role,
+        mustResetPassword: user.mustResetPassword,
       },
       tokens,
     };

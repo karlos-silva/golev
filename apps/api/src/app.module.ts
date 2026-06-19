@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { resolve } from 'path';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -10,6 +11,8 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { MeModule } from './modules/me/me.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -26,7 +29,9 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
         limit: 60,
       },
     ]),
+    ScheduleModule.forRoot(),
     DatabaseModule,
+    MailModule,
     AuthModule,
     BillingModule,
     AnamneseModule,
@@ -34,6 +39,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
     DashboardModule,
     AppointmentsModule,
     IntegrationsModule,
+    MeModule,
   ],
 })
 export class AppModule {}

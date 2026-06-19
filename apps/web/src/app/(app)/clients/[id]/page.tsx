@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { ArrowLeft, Scale, TrendingDown, Activity, Plus } from 'lucide-react';
+import { ArrowLeft, Scale, TrendingDown, Activity, Plus, Salad } from 'lucide-react';
 import { WeightChart } from '@/components/app/weight-chart';
 import {
   type PatientStatus,
@@ -146,6 +146,115 @@ export default function PatientDetailPage() {
             </Card>
           )}
           <NotesCard id={id} initial={data.notes ?? ''} />
+        </div>
+      </div>
+
+      <DietPlanEditor id={id} />
+    </div>
+  );
+}
+
+/* ── Plano alimentar (editor da equipe; o paciente lê na área dele) ──────── */
+interface DietPlan {
+  id: string;
+  title: string;
+  content: string;
+  fileUrl: string | null;
+  status: string;
+  updatedAt: string;
+}
+
+function DietPlanEditor({ id }: { id: string }) {
+  const qc = useQueryClient();
+  const { data: plan } = useQuery<DietPlan | null>({
+    queryKey: ['patient-diet', id],
+    queryFn: () => api(`/patients/${id}/diet-plan`),
+  });
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [fileUrl, setFileUrl] = useState('');
+
+  useEffect(() => {
+    if (plan) {
+      setTitle(plan.title);
+      setContent(plan.content);
+      setFileUrl(plan.fileUrl ?? '');
+    } else if (plan === null) {
+      setTitle('Plano alimentar');
+    }
+  }, [plan]);
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      api(`/patients/${id}/diet-plan`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: title.trim() || 'Plano alimentar',
+          content,
+          fileUrl: fileUrl.trim() || null,
+        }),
+      }),
+    onSuccess: () => {
+      toast.success('Plano salvo — já visível para o paciente');
+      void qc.invalidateQueries({ queryKey: ['patient-diet', id] });
+    },
+    onError: (e: Error) => toast.error(e.message || 'Erro ao salvar plano'),
+  });
+
+  return (
+    <div className="gl-in flex-shrink-0" style={{ animationDelay: '160ms' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'var(--gl-surface)', border: '1px solid var(--gl-line)' }}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--gl-line)' }}>
+          <div className="flex items-center gap-2">
+            <Salad className="h-4 w-4" style={{ color: 'var(--gl-primary)' }} />
+            <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gl-ink-2)' }}>
+              Plano alimentar
+            </h2>
+          </div>
+          <span className="text-xs" style={{ color: 'var(--gl-ink-3)' }}>
+            {plan ? `Atualizado em ${format(new Date(plan.updatedAt), "d MMM", { locale: ptBR })}` : 'Ainda não criado'}
+          </span>
+        </div>
+        <div className="p-4 space-y-3">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Título do plano"
+            className="w-full rounded-lg px-3 py-2 text-sm font-medium outline-none"
+            style={{ border: '1px solid var(--gl-line)', background: 'var(--gl-paper)', color: 'var(--gl-ink)' }}
+          />
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Escreva o plano (suporta markdown: ## título, - itens, > observação). O paciente lê este conteúdo na área dele."
+            className="w-full resize-none rounded-lg p-3 text-sm outline-none min-h-48"
+            style={{ border: '1px solid var(--gl-line)', background: 'var(--gl-paper)', color: 'var(--gl-ink)' }}
+          />
+          <input
+            value={fileUrl}
+            onChange={(e) => setFileUrl(e.target.value)}
+            placeholder="Link de um PDF anexo (opcional)"
+            className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+            style={{ border: '1px solid var(--gl-line)', background: 'var(--gl-paper)', color: 'var(--gl-ink)' }}
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                const link = fileUrl.trim();
+                if (link && !/^https?:\/\//i.test(link)) {
+                  toast.error('O link do PDF precisa começar com http(s)');
+                  return;
+                }
+                mutation.mutate();
+              }}
+              disabled={mutation.isPending}
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--gl-primary)', color: 'var(--gl-paper)' }}
+            >
+              {mutation.isPending ? 'Salvando…' : 'Salvar plano'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
