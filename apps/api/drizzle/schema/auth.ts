@@ -14,6 +14,9 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   passwordHash: text('password_hash').notNull(),
   role: text('role').notNull().default('member'),
+  // Atende consultas (aparece como médico na agenda). Independente do `role`:
+  // alguém pode ser admin E médica (ex.: Eloise), ou médico sem ser admin.
+  isDoctor: boolean('is_doctor').notNull().default(false),
   isActive: boolean('is_active').notNull().default(true),
   /** Conta nasceu com senha temporária (convert) e precisa definir uma nova no 1º acesso. */
   mustResetPassword: boolean('must_reset_password').notNull().default(false),

@@ -1,1 +1,0 @@
-ALTER TABLE "stripe_webhook_events" ALTER COLUMN "payload" DROP NOT NULL;

@@ -5,7 +5,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, gte, lte, inArray, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, or } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../database/database.module';
 import {
   appointments,
@@ -14,7 +14,7 @@ import {
   users,
   consultationRequests,
 } from '../../../drizzle/schema';
-import { STAFF_ROLES, isStaffRole } from '../auth/roles.constants';
+import { isStaffRole } from '../auth/roles.constants';
 import {
   GoogleCalendarService,
   type EventInput,
@@ -132,10 +132,11 @@ export class AppointmentsService {
 
   /** Médicos/equipe atribuíveis a uma consulta. */
   async assignees() {
+    // Só quem atende consultas (médicos) — não todo staff.
     return this.db
       .select({ id: users.id, name: users.name, role: users.role })
       .from(users)
-      .where(inArray(users.role, [...STAFF_ROLES]));
+      .where(and(eq(users.isDoctor, true), eq(users.isActive, true)));
   }
 
   async findAll(range?: { from?: Date; to?: Date }) {
