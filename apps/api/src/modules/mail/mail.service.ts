@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
-import { LOGO_PNG_BASE64 } from './logo-asset';
-
-const LOGO_CID = 'golev-logo';
 
 /* ============================================================================
    Envio de e-mails transacionais (Resend). Tom acolhedor da Go Lev.
@@ -29,11 +26,12 @@ function layout(opts: {
   intro: string;
   cta: { label: string; url: string };
   note: string;
+  logoUrl: string;
 }): string {
   return `<!doctype html>
 <html lang="pt-BR"><body style="margin:0;background:${BRAND.paper};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${BRAND.ink};">
   <div style="max-width:520px;margin:0 auto;padding:32px 20px;">
-    <img src="cid:${LOGO_CID}" alt="Go Lev" width="104" height="37" style="height:37px;width:auto;display:block;margin-bottom:24px;border:0;outline:none;text-decoration:none;" />
+    <img src="${opts.logoUrl}" alt="Go Lev" width="104" height="37" style="height:37px;width:auto;display:block;margin-bottom:24px;border:0;outline:none;text-decoration:none;" />
 
     <div style="background:${BRAND.surface};border:1px solid ${BRAND.line};border-radius:16px;padding:32px;">
       <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:${BRAND.ink};">${opts.heading}</h1>
@@ -83,14 +81,6 @@ export class MailService {
         to,
         subject,
         html,
-        attachments: [
-          {
-            filename: 'go-lev.png',
-            content: LOGO_PNG_BASE64,
-            contentType: 'image/png',
-            contentId: LOGO_CID,
-          },
-        ],
       });
       if (error) {
         this.logger.error(
@@ -121,6 +111,7 @@ export class MailService {
       intro: `Oi, ${first}. Recebemos um pedido para redefinir a senha da sua conta Go Lev. É só clicar no botão abaixo — o link vale por 1 hora.`,
       cta: { label: 'Criar nova senha', url },
       note: 'Se você não pediu isso, pode ignorar este e-mail com tranquilidade — sua senha continua a mesma.',
+      logoUrl: `${this.appUrl}/email/logo-golev.png`,
     });
     await this.send(input.to, 'Redefinir sua senha — Go Lev', html);
   }
@@ -140,6 +131,7 @@ export class MailService {
       intro: `Oi, ${first}. Sua conta está pronta — a partir daqui a gente caminha junto, no seu ritmo. Crie sua senha para acessar o seu acompanhamento.`,
       cta: { label: 'Criar minha senha', url },
       note: 'Por segurança, este link expira em alguns dias. Se precisar de um novo, é só usar a opção "Esqueci a senha" na tela de entrada.',
+      logoUrl: `${this.appUrl}/email/logo-golev.png`,
     });
     await this.send(input.to, 'Bem-vindo(a) à Go Lev — crie sua senha', html);
   }
