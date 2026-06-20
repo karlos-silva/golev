@@ -53,6 +53,7 @@ export class AnamneseService {
         gravidaOuAmamentando: true,
         reasons: true,
         consentAt: true,
+        checkoutStartedAt: true,
         createdAt: true,
       },
     });

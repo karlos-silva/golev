@@ -61,6 +61,12 @@ export const anamneseSubmissions = pgTable(
      */
     leadStatus: text('lead_status').notNull().default('novo'),
 
+    /**
+     * Carimbo de quando o lead chegou ao pagamento (gerou/abriu o checkout).
+     * Null = nunca chegou ao billing. Usado para recuperar checkout abandonado.
+     */
+    checkoutStartedAt: timestamp('checkout_started_at', { withTimezone: true }),
+
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
