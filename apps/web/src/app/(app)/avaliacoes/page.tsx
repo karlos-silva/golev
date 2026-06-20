@@ -24,6 +24,8 @@ import {
 } from '@/lib/anamnese';
 import { Select } from '@/components/ui/select';
 import { FilterBar, FilterSlot } from '@/components/ui/filter-bar';
+import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/clipboard';
 
 interface Avaliacao {
   id: string;
@@ -322,7 +324,11 @@ function AvaliacaoModal({ a, onClose }: { a: Avaliacao; onClose: () => void }) {
                       {convertResult.email} / {convertResult.tempPassword}
                     </span>
                     <button
-                      onClick={() => { void navigator.clipboard.writeText(`Login: ${convertResult.email}\nSenha temporária: ${convertResult.tempPassword}`); }}
+                      onClick={() => {
+                        void copyToClipboard(`Login: ${convertResult.email}\nSenha temporária: ${convertResult.tempPassword}`).then((ok) =>
+                          ok ? toast.success('Copiado!') : toast.error('Não foi possível copiar.'),
+                        );
+                      }}
                       className="flex items-center gap-1 text-xs rounded px-2 py-1 transition-colors"
                       style={{ color: 'var(--gl-primary)' }}
                     >
@@ -372,7 +378,11 @@ function AvaliacaoModal({ a, onClose }: { a: Avaliacao; onClose: () => void }) {
                   style={{ background: 'var(--gl-surface)', border: '1px solid var(--gl-line)' }}>
                   <span className="text-xs font-mono truncate" style={{ color: 'var(--gl-ink)' }}>{payUrl}</span>
                   <button
-                    onClick={() => { void navigator.clipboard.writeText(payUrl); }}
+                    onClick={() => {
+                      void copyToClipboard(payUrl).then((ok) =>
+                        ok ? toast.success('Link copiado!') : toast.error('Selecione e copie manualmente.'),
+                      );
+                    }}
                     className="flex items-center gap-1 text-xs rounded px-2 py-1 flex-shrink-0 transition-colors"
                     style={{ color: 'var(--gl-primary)' }}
                   >
