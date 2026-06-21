@@ -97,6 +97,7 @@ erDiagram
     array comorbidities
     array medications
     array contraindications
+    timestamp profile_confirmed_at "null = paciente não revisou o perfil"
     timestamp started_at
     text notes
   }
@@ -298,8 +299,10 @@ erDiagram
   quando existir UI de edição de perfil pela equipe — aí o portal lê de
   `patients` e entram os schemas Zod de edição.
 - **`birth_date` é aproximado** (ano, derivado de `idade`) nos pacientes
-  backfillados e nas conversões — o funil de anamnese ainda coleta `idade`, não
-  data. Para data exata em leads novos, o form precisa coletar a data.
+  backfillados e nas conversões. **Mitigado** pelo card de confirmação no
+  `/inicio` (coluna `profile_confirmed_at`), que pede a data real ao paciente
+  enquanto ele não revisou. Falta ainda o funil de anamnese coletar a data de
+  nascimento (hoje só `idade`).
 
 ---
 
