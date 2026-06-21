@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 import { Field } from '@/components/client/primitives';
 import { useUpdateMeProfile } from '@/hooks/use-me';
+import { maskPhoneBR, unmaskPhone } from '@/lib/format';
 import type { MeProfile } from '@golev/shared';
 
 /**
@@ -18,7 +19,7 @@ export function ProfileConfirmCard({ profile }: { profile: MeProfile }) {
   const [heightCm, setHeightCm] = useState(
     profile.alturaCm != null ? String(profile.alturaCm) : '',
   );
-  const [phone, setPhone] = useState(profile.phone ?? '');
+  const [phone, setPhone] = useState(maskPhoneBR(profile.phone ?? ''));
   const update = useUpdateMeProfile();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -32,7 +33,7 @@ export function ProfileConfirmCard({ profile }: { profile: MeProfile }) {
     update.mutate({
       birthDate,
       heightCm: heightCm ? Number(heightCm) : undefined,
-      phone: phone.trim() || undefined,
+      phone: unmaskPhone(phone) || undefined,
     });
   }
 
@@ -94,8 +95,9 @@ export function ProfileConfirmCard({ profile }: { profile: MeProfile }) {
             id="pc-phone"
             inputMode="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="(11) 9…"
+            onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
+            placeholder="(11) 99999-0000"
+            maxLength={15}
             className="gl-input w-full"
           />
         </Field>
