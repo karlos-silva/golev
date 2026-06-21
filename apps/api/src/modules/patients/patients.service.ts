@@ -78,7 +78,25 @@ export class PatientsService {
   async provisionPatientAccount(anamneseId: string) {
     const anamnese = await this.db.query.anamneseSubmissions.findFirst({
       where: eq(anamneseSubmissions.id, anamneseId),
-      columns: { id: true, nome: true, email: true, eligible: true, userId: true },
+      columns: {
+        id: true,
+        nome: true,
+        email: true,
+        eligible: true,
+        userId: true,
+        // Snapshot do lead → copiado pro perfil do paciente na conversão.
+        sexo: true,
+        idade: true,
+        alturaCm: true,
+        pesoKg: true,
+        whatsapp: true,
+        objetivos: true,
+        comorbidades: true,
+        medicacoes: true,
+        contraindicacoes: true,
+        consentAt: true,
+        createdAt: true,
+      },
     });
 
     if (!anamnese) throw new NotFoundException('Avaliação não encontrada');
@@ -133,10 +151,33 @@ export class PatientsService {
         userId = newUser!.id;
       }
 
+      // Snapshot do lead vira o perfil do paciente — a partir daqui ele vive em
+      // `patients` e o lead pode ser purgado sem perder o perfil clínico.
+      // birthDate é aproximado do ano (o lead só tem `idade`); equipe ajusta depois.
+      const birthYear = anamnese.createdAt.getFullYear() - anamnese.idade;
       const [patient] = await tx
         .insert(patients)
-        .values({ userId, anamneseId })
+        .values({
+          userId,
+          anamneseId,
+          sex: anamnese.sexo,
+          birthDate: `${birthYear}-01-01`,
+          heightCm: anamnese.alturaCm,
+          phone: anamnese.whatsapp,
+          goals: anamnese.objetivos,
+          comorbidities: anamnese.comorbidades,
+          medications: anamnese.medicacoes,
+          contraindications: anamnese.contraindicacoes,
+        })
         .returning();
+
+      // Peso da avaliação inicial entra como o 1º ponto da série de pesagens.
+      await tx.insert(weightLogs).values({
+        patientId: patient!.id,
+        weightKg: anamnese.pesoKg,
+        measuredAt: anamnese.consentAt ?? anamnese.createdAt,
+        source: 'anamnese',
+      });
 
       await tx
         .update(anamneseSubmissions)

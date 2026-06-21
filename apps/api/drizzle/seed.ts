@@ -134,12 +134,29 @@ async function seed() {
       })
       .returning({ id: schema.anamneseSubmissions.id });
 
-    await db.insert(schema.patients).values({
-      userId: marcosUser!.id,
-      anamneseId: marcosAnamnese!.id,
-      doctorId: doctor.id,
-      status: 'active',
-      startedAt: daysAgo(2),
+    const [marcosPatient] = await db
+      .insert(schema.patients)
+      .values({
+        userId: marcosUser!.id,
+        anamneseId: marcosAnamnese!.id,
+        doctorId: doctor.id,
+        status: 'active',
+        startedAt: daysAgo(2),
+        sex: 'masculino',
+        birthDate: '1981-01-01',
+        heightCm: 178,
+        phone: '11988887777',
+        goals: ['saude_geral'],
+        comorbidities: ['hipertensao'],
+        contraindications: ['nenhuma'],
+      })
+      .returning({ id: schema.patients.id });
+
+    await db.insert(schema.weightLogs).values({
+      patientId: marcosPatient!.id,
+      weightKg: '104.0',
+      measuredAt: daysAgo(3),
+      source: 'anamnese',
     });
 
     const [anamnese] = await db
@@ -177,10 +194,18 @@ async function seed() {
         doctorId: doctor.id,
         status: 'active',
         startedAt: daysAgo(70),
+        sex: 'feminino',
+        birthDate: '1988-01-01',
+        heightCm: 168,
+        phone: '11999990000',
+        goals: ['saude_geral', 'energia'],
+        comorbidities: ['pre_diabetes'],
+        contraindications: ['nenhuma'],
       })
       .returning({ id: schema.patients.id });
 
     await db.insert(schema.weightLogs).values([
+      { patientId: patient!.id, weightKg: '92.0', measuredAt: daysAgo(72), source: 'anamnese' },
       { patientId: patient!.id, weightKg: '90.4', measuredAt: daysAgo(56), source: 'portal' },
       { patientId: patient!.id, weightKg: '89.1', measuredAt: daysAgo(42), source: 'portal' },
       { patientId: patient!.id, weightKg: '88.0', measuredAt: daysAgo(28), source: 'patient_app' },

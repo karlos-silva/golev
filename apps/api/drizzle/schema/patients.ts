@@ -3,6 +3,8 @@ import {
   uuid,
   text,
   numeric,
+  integer,
+  date,
   timestamp,
   index,
   uniqueIndex,
@@ -33,6 +35,39 @@ export const patients = pgTable(
 
     /** active | paused | discharged */
     status: text('status').notNull().default('active'),
+
+    /* ── Perfil clínico do paciente ────────────────────────────────────────
+     * Mora aqui (não na anamnese/lead): é o estado ATUAL, editável pela equipe,
+     * e não some se o lead for purgado. A `anamnese_submissions` fica só com o
+     * snapshot imutável da avaliação. Backfillado a partir do lead na migration. */
+    /** feminino | masculino | outro */
+    sex: text('sex'),
+    /** Data de nascimento — idade é derivada (substitui o `idade` int do lead). */
+    birthDate: date('birth_date'),
+    /** Altura em cm — estável, base do cálculo de IMC. */
+    heightCm: integer('height_cm'),
+    /** Telefone/WhatsApp de contato do paciente. */
+    phone: text('phone'),
+    /** Objetivos do acompanhamento. */
+    goals: text('goals')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Comorbidades atuais (estado vivo, editável pela equipe). */
+    comorbidities: text('comorbidities')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Medicações em uso (estado vivo, editável pela equipe). */
+    medications: text('medications')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Contraindicações conhecidas. */
+    contraindications: text('contraindications')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
 
     startedAt: timestamp('started_at', { withTimezone: true })
       .notNull()
