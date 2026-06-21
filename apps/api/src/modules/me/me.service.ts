@@ -24,6 +24,7 @@ import type {
   MeConsultationRequest,
   SelfWeightLogInput,
   ConsultationRequestCreateInput,
+  MeProfileUpdateInput,
 } from '@golev/shared';
 
 type AppointmentWithDoctor = typeof appointments.$inferSelect & {
@@ -52,7 +53,9 @@ export class MeService {
         sex: true,
         birthDate: true,
         heightCm: true,
+        phone: true,
         goals: true,
+        profileConfirmedAt: true,
       },
       with: {
         user: { columns: { name: true, email: true } },
@@ -162,7 +165,10 @@ export class MeService {
       sexo: patient.sex ?? null,
       idade: ageFromBirthDate(patient.birthDate),
       alturaCm,
+      birthDate: patient.birthDate ?? null,
+      phone: patient.phone ?? null,
       objetivos: patient.goals ?? [],
+      profileConfirmed: patient.profileConfirmedAt != null,
     };
 
     const journey: MeJourney = {
@@ -189,6 +195,25 @@ export class MeService {
       hasDietPlan: !!hasDietPlan,
       pendingConsultationRequest: !!pendingRequest,
     };
+  }
+
+  /** Paciente confirma/atualiza o próprio perfil (nascimento, altura, telefone). */
+  async updateProfile(
+    userId: string,
+    input: MeProfileUpdateInput,
+  ): Promise<{ ok: true }> {
+    const patient = await this.requirePatient(userId);
+    await this.db
+      .update(patients)
+      .set({
+        birthDate: input.birthDate,
+        ...(input.heightCm != null ? { heightCm: input.heightCm } : {}),
+        ...(input.phone != null ? { phone: input.phone } : {}),
+        profileConfirmedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(patients.id, patient.id));
+    return { ok: true };
   }
 
   async listWeightLogs(userId: string): Promise<MeWeightLog[]> {

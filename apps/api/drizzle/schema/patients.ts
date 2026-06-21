@@ -69,6 +69,15 @@ export const patients = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
 
+    /**
+     * Quando o paciente revisou/confirmou o próprio perfil (data de nascimento
+     * etc.). Null = ainda não confirmou → o app pede a confirmação no /inicio.
+     * Necessário porque o `birth_date` backfillado é aproximado (só o ano).
+     */
+    profileConfirmedAt: timestamp('profile_confirmed_at', {
+      withTimezone: true,
+    }),
+
     startedAt: timestamp('started_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

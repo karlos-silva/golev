@@ -33,6 +33,33 @@ export const selfWeightLogSchema = z.object({
 });
 export type SelfWeightLogInput = z.infer<typeof selfWeightLogSchema>;
 
+/**
+ * Confirmação/edição do perfil pelo próprio paciente (app cliente). Usado no
+ * card do /inicio que pede a data de nascimento real (o `birth_date`
+ * backfillado a partir do lead é só uma aproximação do ano).
+ */
+export const meProfileUpdateSchema = z.object({
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Informe a data de nascimento')
+    .refine((s) => {
+      const d = new Date(`${s}T00:00:00`);
+      return (
+        !Number.isNaN(d.getTime()) &&
+        d <= new Date() &&
+        d.getFullYear() >= 1900
+      );
+    }, 'Data de nascimento inválida'),
+  heightCm: z.coerce
+    .number()
+    .int()
+    .min(100, 'Confira a altura')
+    .max(250, 'Confira a altura')
+    .optional(),
+  phone: z.string().trim().min(8, 'Confira o telefone').max(20).optional(),
+});
+export type MeProfileUpdateInput = z.infer<typeof meProfileUpdateSchema>;
+
 /** Solicitação de consulta feita pelo paciente (a equipe confirma). */
 export const consultationRequestCreateSchema = z.object({
   preferredPeriod: z.enum(CONSULTATION_PERIOD_VALUES).optional(),

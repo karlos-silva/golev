@@ -4,12 +4,14 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import {
   selfWeightLogSchema,
   consultationRequestCreateSchema,
+  meProfileUpdateSchema,
 } from '@golev/shared';
 import { MeService } from './me.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -33,6 +35,12 @@ export class MeController {
   @Get()
   getOverview(@CurrentUser('userId') userId: string) {
     return this.me.getOverview(userId);
+  }
+
+  @Patch('profile')
+  updateProfile(@CurrentUser('userId') userId: string, @Body() body: unknown) {
+    const data = meProfileUpdateSchema.parse(body);
+    return this.me.updateProfile(userId, data);
   }
 
   @Get('weight-logs')
