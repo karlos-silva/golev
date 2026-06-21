@@ -25,13 +25,8 @@ interface PatientUser {
 
 interface PatientAnamnese {
   id: string;
+  /** IMC da avaliação inicial (snapshot do lead). */
   imc: string;
-  pesoKg: string;
-  alturaCm: number;
-  idade: number;
-  sexo: string;
-  comorbidades: string[];
-  whatsapp: string;
 }
 
 interface Patient {
@@ -40,6 +35,9 @@ interface Patient {
   startedAt: string;
   notes: string | null;
   createdAt: string;
+  /** Perfil vivo (reflete edições do paciente), vindo de patients. */
+  phone: string | null;
+  comorbidities: string[];
   user: PatientUser;
   anamnese: PatientAnamnese | null;
 }
@@ -128,7 +126,7 @@ export default function ClientsPage() {
 
           {filtered.map((p, i) => {
             const statusCfg = PATIENT_STATUS_CONFIG[p.status];
-            const comorbidades = p.anamnese?.comorbidades.filter(c => c !== 'nenhuma') ?? [];
+            const comorbidades = p.comorbidities.filter(c => c !== 'nenhuma');
 
             return (
               <Link key={p.id} href={`/clients/${p.id}`}
@@ -174,10 +172,10 @@ export default function ClientsPage() {
 
                 {/* WhatsApp */}
                 <div className="w-32">
-                  {p.anamnese ? (
+                  {p.phone ? (
                     <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--gl-ink-2)' }}>
                       <Phone className="h-3 w-3 flex-shrink-0" />
-                      {formatWhatsapp(p.anamnese.whatsapp)}
+                      {formatWhatsapp(p.phone)}
                     </span>
                   ) : (
                     <span className="text-xs" style={{ color: 'var(--gl-ink-3)' }}>—</span>

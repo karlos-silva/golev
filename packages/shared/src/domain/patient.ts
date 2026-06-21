@@ -18,13 +18,40 @@ export const PatientStatus = {
 export type PatientStatus = (typeof PatientStatus)[keyof typeof PatientStatus];
 export const PATIENT_STATUS_VALUES = values(PatientStatus);
 
-/** Origem de uma pesagem. */
+/** Origem de uma pesagem. `anamnese` = peso da avaliação inicial (1º ponto da série). */
 export const WeightLogSource = {
   PATIENT_APP: 'patient_app',
   PORTAL: 'portal',
+  ANAMNESE: 'anamnese',
 } as const;
 export type WeightLogSource =
   (typeof WeightLogSource)[keyof typeof WeightLogSource];
+
+/** Sexo informado pelo paciente. */
+export const Sex = {
+  FEMININO: 'feminino',
+  MASCULINO: 'masculino',
+  OUTRO: 'outro',
+} as const;
+export type Sex = (typeof Sex)[keyof typeof Sex];
+export const SEX_VALUES = values(Sex);
+
+/**
+ * Idade em anos derivada da data de nascimento — substitui o `idade` (int)
+ * congelado do lead: agora atualiza sozinha. Retorna null se ausente/inválida.
+ */
+export function ageFromBirthDate(
+  birthDate: string | Date | null | undefined,
+): number | null {
+  if (!birthDate) return null;
+  const d = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age -= 1;
+  return age >= 0 ? age : null;
+}
 
 /** Período preferido do paciente ao solicitar uma consulta. */
 export const ConsultationPeriod = {

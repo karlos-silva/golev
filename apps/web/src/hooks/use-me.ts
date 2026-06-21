@@ -11,6 +11,7 @@ import type {
   MeConsultationRequest,
   SelfWeightLogInput,
   ConsultationRequestCreateInput,
+  MeProfileUpdateInput,
 } from '@golev/shared';
 
 const meKeys = {
@@ -87,5 +88,18 @@ export function useCreateConsultationRequest() {
       toast.success('Pedido enviado. A gente entra em contato em breve.');
     },
     onError: (e: Error) => toast.error(e.message || 'Não foi possível enviar'),
+  });
+}
+
+export function useUpdateMeProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: MeProfileUpdateInput) =>
+      api('/me/profile', { method: 'PATCH', body: JSON.stringify(input) }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: meKeys.overview });
+      toast.success('Perfil confirmado. Obrigado!');
+    },
+    onError: (e: Error) => toast.error(e.message || 'Não foi possível salvar'),
   });
 }

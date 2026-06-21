@@ -1,0 +1,1 @@
+ALTER TABLE "anamnese_submissions" ADD COLUMN "birth_date" date;

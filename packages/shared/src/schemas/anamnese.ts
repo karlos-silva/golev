@@ -13,6 +13,7 @@ import {
   TratamentoPrevio,
   EligibilityReason,
 } from '../domain/anamnese';
+import { ageFromBirthDate } from '../domain/patient';
 
 /** Texto de consentimento (LGPD) exibido no front e gravado como snapshot no back. */
 export const CONSENT_TEXT =
@@ -32,11 +33,17 @@ export const anamneseFieldsSchema = z.object({
     .array(z.enum(OBJETIVO_VALUES))
     .min(1, 'Selecione ao menos um objetivo'),
   sexo: z.enum(SEXO_VALUES),
-  idade: z.coerce
-    .number({ invalid_type_error: 'Informe sua idade' })
-    .int('Use um número inteiro')
-    .min(18, 'É necessário ter 18 anos ou mais')
-    .max(99, 'Confira a idade informada'),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Informe sua data de nascimento')
+    .refine((s) => {
+      const d = new Date(`${s}T00:00:00`);
+      return !Number.isNaN(d.getTime()) && d <= new Date() && d.getFullYear() >= 1900;
+    }, 'Data de nascimento inválida')
+    .refine((s) => {
+      const age = ageFromBirthDate(s);
+      return age != null && age >= 18;
+    }, 'É necessário ter 18 anos ou mais'),
   alturaCm: z.coerce
     .number({ invalid_type_error: 'Informe sua altura' })
     .int('Use a altura em centímetros (ex.: 168)')

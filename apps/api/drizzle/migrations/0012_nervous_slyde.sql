@@ -1,0 +1,1 @@
+ALTER TABLE "patients" ADD COLUMN "profile_confirmed_at" timestamp with time zone;

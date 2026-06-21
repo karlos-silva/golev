@@ -78,6 +78,27 @@
       "when": 1781912123168,
       "tag": "0010_awesome_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782067773476,
+      "tag": "0011_dazzling_randall",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782069842256,
+      "tag": "0012_nervous_slyde",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1782075963931,
+      "tag": "0013_unknown_shadow_king",
+      "breakpoints": true
     }
   ]
 }

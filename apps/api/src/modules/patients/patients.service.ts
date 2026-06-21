@@ -43,16 +43,12 @@ export class PatientsService {
         user: {
           columns: { id: true, name: true, email: true, isActive: true },
         },
+        // Só o IMC da avaliação inicial (snapshot). O perfil vivo (telefone,
+        // comorbidades) vem das colunas de patients — reflete edições do paciente.
         anamnese: {
           columns: {
             id: true,
             imc: true,
-            pesoKg: true,
-            alturaCm: true,
-            idade: true,
-            sexo: true,
-            comorbidades: true,
-            whatsapp: true,
           },
         },
       },
@@ -62,6 +58,8 @@ export class PatientsService {
         startedAt: true,
         notes: true,
         createdAt: true,
+        phone: true,
+        comorbidities: true,
       },
     });
   }
@@ -78,7 +76,26 @@ export class PatientsService {
   async provisionPatientAccount(anamneseId: string) {
     const anamnese = await this.db.query.anamneseSubmissions.findFirst({
       where: eq(anamneseSubmissions.id, anamneseId),
-      columns: { id: true, nome: true, email: true, eligible: true, userId: true },
+      columns: {
+        id: true,
+        nome: true,
+        email: true,
+        eligible: true,
+        userId: true,
+        // Snapshot do lead → copiado pro perfil do paciente na conversão.
+        sexo: true,
+        idade: true,
+        birthDate: true,
+        alturaCm: true,
+        pesoKg: true,
+        whatsapp: true,
+        objetivos: true,
+        comorbidades: true,
+        medicacoes: true,
+        contraindicacoes: true,
+        consentAt: true,
+        createdAt: true,
+      },
     });
 
     if (!anamnese) throw new NotFoundException('Avaliação não encontrada');
@@ -133,10 +150,35 @@ export class PatientsService {
         userId = newUser!.id;
       }
 
+      // Snapshot do lead vira o perfil do paciente — a partir daqui ele vive em
+      // `patients` e o lead pode ser purgado sem perder o perfil clínico.
+      // Usa a data de nascimento exata do funil; lead antigo (sem ela) cai no
+      // fallback aproximado do ano (1º de janeiro).
+      const birthYear = anamnese.createdAt.getFullYear() - anamnese.idade;
+      const birthDate = anamnese.birthDate ?? `${birthYear}-01-01`;
       const [patient] = await tx
         .insert(patients)
-        .values({ userId, anamneseId })
+        .values({
+          userId,
+          anamneseId,
+          sex: anamnese.sexo,
+          birthDate,
+          heightCm: anamnese.alturaCm,
+          phone: anamnese.whatsapp,
+          goals: anamnese.objetivos,
+          comorbidities: anamnese.comorbidades,
+          medications: anamnese.medicacoes,
+          contraindications: anamnese.contraindicacoes,
+        })
         .returning();
+
+      // Peso da avaliação inicial entra como o 1º ponto da série de pesagens.
+      await tx.insert(weightLogs).values({
+        patientId: patient!.id,
+        weightKg: anamnese.pesoKg,
+        measuredAt: anamnese.consentAt ?? anamnese.createdAt,
+        source: 'anamnese',
+      });
 
       await tx
         .update(anamneseSubmissions)
@@ -177,12 +219,21 @@ export class PatientsService {
         startedAt: true,
         notes: true,
         createdAt: true,
+        sex: true,
+        birthDate: true,
+        heightCm: true,
+        phone: true,
+        goals: true,
+        comorbidities: true,
+        medications: true,
+        contraindications: true,
       },
       with: {
         user: {
           columns: { id: true, name: true, email: true, isActive: true },
         },
-        anamnese: true,
+        // Perfil clínico vem das colunas de patients acima; o peso inicial é o
+        // 1º weight_log (source='anamnese'). A anamnese não é mais lida aqui.
         weightLogs: {
           orderBy: [asc(weightLogs.measuredAt)],
         },

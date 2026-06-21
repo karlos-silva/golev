@@ -51,7 +51,13 @@ export function SiteHeader() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-5 sm:gap-6">
+          <Link
+            href="/login"
+            className="text-sm font-medium text-ink-2 transition-colors hover:text-foreground"
+          >
+            Entrar
+          </Link>
           <Link href="/avaliacao" className={buttonVariants({ size: 'sm', className: 'group/btn' })}>
             Começar
             <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />

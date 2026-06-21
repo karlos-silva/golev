@@ -13,7 +13,7 @@ import {
   dietPlans,
   consultationRequests,
 } from '../../../drizzle/schema';
-import { computeBmi } from '@golev/shared';
+import { ageFromBirthDate, computeBmi } from '@golev/shared';
 import type {
   MeOverview,
   MeProfile,
@@ -24,6 +24,7 @@ import type {
   MeConsultationRequest,
   SelfWeightLogInput,
   ConsultationRequestCreateInput,
+  MeProfileUpdateInput,
 } from '@golev/shared';
 
 type AppointmentWithDoctor = typeof appointments.$inferSelect & {
@@ -48,22 +49,17 @@ export class MeService {
         id: true,
         status: true,
         startedAt: true,
-        anamneseId: true,
         doctorId: true,
+        sex: true,
+        birthDate: true,
+        heightCm: true,
+        phone: true,
+        goals: true,
+        profileConfirmedAt: true,
       },
       with: {
         user: { columns: { name: true, email: true } },
         doctor: { columns: { id: true, name: true } },
-        anamnese: {
-          columns: {
-            pesoKg: true,
-            alturaCm: true,
-            imc: true,
-            idade: true,
-            sexo: true,
-            objetivos: true,
-          },
-        },
       },
     });
 
@@ -118,9 +114,11 @@ export class MeService {
       columns: { id: true },
     });
 
-    const a = patient.anamnese;
-    const alturaCm = a?.alturaCm ?? null;
-    const initialWeightKg = a?.pesoKg != null ? Number(a.pesoKg) : null;
+    const alturaCm = patient.heightCm ?? null;
+    // Peso inicial = 1º ponto da série. A pesagem da avaliação é persistida como
+    // source='anamnese' (backfill/conversão), então não depende mais do lead.
+    const firstLog = logs.at(0);
+    const initialWeightKg = firstLog ? Number(firstLog.weightKg) : null;
 
     const lastLog = logs.at(-1);
     const currentWeightKg = lastLog ? Number(lastLog.weightKg) : initialWeightKg;
@@ -135,11 +133,9 @@ export class MeService {
         : null;
 
     const initialBmi =
-      a?.imc != null
-        ? Number(a.imc)
-        : initialWeightKg != null && alturaCm != null
-          ? computeBmi(initialWeightKg, alturaCm)
-          : null;
+      initialWeightKg != null && alturaCm != null
+        ? computeBmi(initialWeightKg, alturaCm)
+        : null;
     const currentBmi =
       currentWeightKg != null && alturaCm != null
         ? computeBmi(currentWeightKg, alturaCm)
@@ -151,15 +147,11 @@ export class MeService {
       Math.floor((Date.now() - startedAt.getTime()) / 86_400_000),
     );
 
-    const chart = [
-      ...(initialWeightKg != null
-        ? [{ measuredAt: startedAt.toISOString(), weightKg: initialWeightKg }]
-        : []),
-      ...logs.map((l) => ({
-        measuredAt: l.measuredAt.toISOString(),
-        weightKg: Number(l.weightKg),
-      })),
-    ];
+    // A série já inclui o peso inicial como 1º log — sem ponto sintético.
+    const chart = logs.map((l) => ({
+      measuredAt: l.measuredAt.toISOString(),
+      weightKg: Number(l.weightKg),
+    }));
 
     const profile: MeProfile = {
       patientId: patient.id,
@@ -170,10 +162,13 @@ export class MeService {
       doctor: patient.doctor
         ? { id: patient.doctor.id, name: patient.doctor.name }
         : null,
-      sexo: a?.sexo ?? null,
-      idade: a?.idade ?? null,
+      sexo: patient.sex ?? null,
+      idade: ageFromBirthDate(patient.birthDate),
       alturaCm,
-      objetivos: a?.objetivos ?? [],
+      birthDate: patient.birthDate ?? null,
+      phone: patient.phone ?? null,
+      objetivos: patient.goals ?? [],
+      profileConfirmed: patient.profileConfirmedAt != null,
     };
 
     const journey: MeJourney = {
@@ -200,6 +195,25 @@ export class MeService {
       hasDietPlan: !!hasDietPlan,
       pendingConsultationRequest: !!pendingRequest,
     };
+  }
+
+  /** Paciente confirma/atualiza o próprio perfil (nascimento, altura, telefone). */
+  async updateProfile(
+    userId: string,
+    input: MeProfileUpdateInput,
+  ): Promise<{ ok: true }> {
+    const patient = await this.requirePatient(userId);
+    await this.db
+      .update(patients)
+      .set({
+        birthDate: input.birthDate,
+        ...(input.heightCm != null ? { heightCm: input.heightCm } : {}),
+        ...(input.phone != null ? { phone: input.phone } : {}),
+        profileConfirmedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(patients.id, patient.id));
+    return { ok: true };
   }
 
   async listWeightLogs(userId: string): Promise<MeWeightLog[]> {

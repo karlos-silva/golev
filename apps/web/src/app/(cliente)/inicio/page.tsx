@@ -21,6 +21,7 @@ import {
   CenteredMessage,
 } from '@/components/client/primitives';
 import { WeighInForm } from '@/components/client/weigh-in-form';
+import { ProfileConfirmCard } from '@/components/client/profile-confirm-card';
 import { useMeOverview } from '@/hooks/use-me';
 import { useAuth } from '@/stores/auth';
 import { imcClass } from '@/lib/anamnese';
@@ -54,6 +55,10 @@ export default function InicioPage() {
           </>
         }
       />
+
+      {!data.profile.profileConfirmed && (
+        <ProfileConfirmCard profile={data.profile} />
+      )}
 
       {/* Métricas da jornada */}
       <div className="gl-in grid grid-cols-2 gap-4 lg:grid-cols-4" style={{ animationDelay: '40ms' }}>

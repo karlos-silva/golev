@@ -20,7 +20,7 @@ function validInput(over: Record<string, unknown> = {}) {
   return {
     objetivos: [Objetivo.SAUDE_GERAL],
     sexo: Sexo.MASCULINO,
-    idade: 35,
+    birthDate: '1990-01-01',
     alturaCm: 165,
     pesoKg: 95,
     tentativas: Tentativas.ALGUMAS,
@@ -141,11 +141,11 @@ describe('anamneseSubmissionSchema', () => {
     }
   });
 
-  it('rejeita idade com texto, decimal ou menor de idade', () => {
-    expect(anamneseFieldsSchema.shape.idade.safeParse('abc').success).toBe(false);
-    expect(anamneseFieldsSchema.shape.idade.safeParse(25.5).success).toBe(false);
-    expect(anamneseFieldsSchema.shape.idade.safeParse(17).success).toBe(false);
-    expect(anamneseFieldsSchema.shape.idade.safeParse(35).success).toBe(true);
+  it('rejeita data inválida, formato errado ou menor de idade', () => {
+    expect(anamneseFieldsSchema.shape.birthDate.safeParse('abc').success).toBe(false);
+    expect(anamneseFieldsSchema.shape.birthDate.safeParse('01/01/1990').success).toBe(false);
+    expect(anamneseFieldsSchema.shape.birthDate.safeParse('2015-01-01').success).toBe(false);
+    expect(anamneseFieldsSchema.shape.birthDate.safeParse('1990-01-01').success).toBe(true);
   });
 
   it('rejeita altura em metros e peso absurdo/negativo', () => {

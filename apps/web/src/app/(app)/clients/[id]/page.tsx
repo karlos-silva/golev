@@ -18,6 +18,7 @@ import {
   formatWhatsapp,
   imcClass,
 } from '@/lib/anamnese';
+import { ageFromBirthDate } from '@golev/shared';
 
 interface WeightLog {
   id: string;
@@ -31,18 +32,15 @@ interface PatientDetail {
   status: PatientStatus;
   startedAt: string;
   notes: string | null;
+  sex: string | null;
+  birthDate: string | null;
+  heightCm: number | null;
+  phone: string | null;
+  goals: string[];
+  comorbidities: string[];
+  medications: string[];
+  contraindications: string[];
   user: { id: string; name: string; email: string; isActive: boolean };
-  anamnese: {
-    id: string;
-    pesoKg: string;
-    alturaCm: number;
-    imc: string;
-    idade: number;
-    sexo: string;
-    objetivos: string[];
-    comorbidades: string[];
-    whatsapp: string;
-  } | null;
   weightLogs: WeightLog[];
 }
 
@@ -59,23 +57,23 @@ export default function PatientDetailPage() {
   if (isLoading) return <Centered text="Carregando…" />;
   if (error || !data) return <Centered text="Paciente não encontrado." />;
 
-  const a = data.anamnese;
-  const altura = a ? a.alturaCm / 100 : null;
-  const pesoInicial = a ? parseFloat(a.pesoKg) : null;
+  const altura = data.heightCm != null ? data.heightCm / 100 : null;
+  const idade = ageFromBirthDate(data.birthDate);
   const logs = [...data.weightLogs].sort((x, y) => +new Date(x.measuredAt) - +new Date(y.measuredAt));
+  // Peso inicial = 1º ponto da série (o weight_log source='anamnese' da avaliação).
+  const pesoInicial = logs[0] ? parseFloat(logs[0].weightKg) : null;
   const lastLog = logs[logs.length - 1];
-  const pesoAtual = lastLog ? parseFloat(lastLog.weightKg) : pesoInicial;
+  const pesoAtual = lastLog ? parseFloat(lastLog.weightKg) : null;
   // Variação assinada: negativa = perdeu peso (bom). Evita ambiguidade do "perdido".
   const variacao = pesoInicial !== null && pesoAtual !== null ? pesoAtual - pesoInicial : null;
   const pctVariacao = variacao !== null && pesoInicial ? (variacao / pesoInicial) * 100 : null;
   const imcAtual = altura && pesoAtual ? pesoAtual / (altura * altura) : null;
   const signed = (n: number, unit: string) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(1)}${unit}`;
 
-  // Pontos do gráfico: peso inicial (na anamnese) + cada pesagem registrada.
-  const chartPoints = [
-    ...(pesoInicial !== null ? [{ t: +new Date(data.startedAt), w: pesoInicial }] : []),
-    ...logs.map((l) => ({ t: +new Date(l.measuredAt), w: parseFloat(l.weightKg) })),
-  ].sort((x, y) => x.t - y.t);
+  // A série de pesagens já inclui o peso inicial (1º weight_log).
+  const chartPoints = logs
+    .map((l) => ({ t: +new Date(l.measuredAt), w: parseFloat(l.weightKg) }))
+    .sort((x, y) => x.t - y.t);
 
   return (
     <div className="flex flex-col flex-1 gap-6">
@@ -89,7 +87,7 @@ export default function PatientDetailPage() {
             <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--gl-ink)' }}>{data.user.name}</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--gl-ink-3)' }}>
               {data.user.email}
-              {a && <> · {formatWhatsapp(a.whatsapp)}</>}
+              {data.phone && <> · {formatWhatsapp(data.phone)}</>}
               {' · '}Início em {format(new Date(data.startedAt), "d 'de' MMM yyyy", { locale: ptBR })}
             </p>
           </div>
@@ -125,26 +123,24 @@ export default function PatientDetailPage() {
 
         {/* Direita: dados clínicos + notas */}
         <div className="flex flex-col gap-4 min-h-0">
-          {a && (
-            <Card title="Perfil clínico">
-              <div className="space-y-3 px-4 py-3">
-                <Row label="Altura" value={`${a.alturaCm} cm`} />
-                <Row label="Idade" value={`${a.idade} anos`} />
-                <Row label="Objetivos" value={
+          <Card title="Perfil clínico">
+            <div className="space-y-3 px-4 py-3">
+              <Row label="Altura" value={data.heightCm != null ? `${data.heightCm} cm` : '—'} />
+              <Row label="Idade" value={idade != null ? `${idade} anos` : '—'} />
+              <Row label="Objetivos" value={
+                <div className="flex flex-wrap gap-1 justify-end">
+                  {data.goals.map((o) => <Tag key={o} label={OBJETIVO_LABELS[o] ?? o} />)}
+                </div>
+              } />
+              {data.comorbidities.filter((c) => c !== 'nenhuma').length > 0 && (
+                <Row label="Comorbidades" value={
                   <div className="flex flex-wrap gap-1 justify-end">
-                    {a.objetivos.map((o) => <Tag key={o} label={OBJETIVO_LABELS[o] ?? o} />)}
+                    {data.comorbidities.filter((c) => c !== 'nenhuma').map((c) => <Tag key={c} label={COMORBIDADE_LABELS[c] ?? c} accent />)}
                   </div>
                 } />
-                {a.comorbidades.filter((c) => c !== 'nenhuma').length > 0 && (
-                  <Row label="Comorbidades" value={
-                    <div className="flex flex-wrap gap-1 justify-end">
-                      {a.comorbidades.filter((c) => c !== 'nenhuma').map((c) => <Tag key={c} label={COMORBIDADE_LABELS[c] ?? c} accent />)}
-                    </div>
-                  } />
-                )}
-              </div>
-            </Card>
-          )}
+              )}
+            </div>
+          </Card>
           <NotesCard id={id} initial={data.notes ?? ''} />
         </div>
       </div>

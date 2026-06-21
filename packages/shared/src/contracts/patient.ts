@@ -21,7 +21,13 @@ export interface MeProfile {
   sexo: string | null;
   idade: number | null;
   alturaCm: number | null;
+  /** Data de nascimento (YYYY-MM-DD) p/ pré-preencher o form de confirmação. */
+  birthDate: string | null;
+  /** Telefone/WhatsApp p/ pré-preencher o form de confirmação. */
+  phone: string | null;
   objetivos: string[];
+  /** Paciente já revisou o próprio perfil? Falso → app pede a confirmação. */
+  profileConfirmed: boolean;
 }
 
 /** Uma consulta na visão do paciente. */
