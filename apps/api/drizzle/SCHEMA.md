@@ -293,11 +293,10 @@ erDiagram
 
 ### O que ficou pra depois (dívida conhecida)
 
-- **Portal ainda lê o snapshot do lead.** `patients.service.ts` (`findAll`/
-  `findOne`) continua mostrando `imc`/`altura`/etc da `anamnese` (a avaliação
-  inicial). É seguro: o perfil vivo já está em `patients` (backfillado). Migrar
-  quando existir UI de edição de perfil pela equipe — aí o portal lê de
-  `patients` e entram os schemas Zod de edição.
+- ✅ **Portal lê o perfil de `patients`** (`patients.service` `findAll`/`findOne`):
+  telefone, altura, idade, objetivos e comorbidades vêm do perfil vivo; só o IMC
+  da avaliação inicial segue da `anamnese` (snapshot). Fecha a divergência com o
+  card — paciente edita o perfil e o portal reflete na hora.
 - **`birth_date` é aproximado** (ano, derivado de `idade`) nos pacientes
   backfillados e nas conversões. **Mitigado** pelo card de confirmação no
   `/inicio` (coluna `profile_confirmed_at`), que pede a data real ao paciente

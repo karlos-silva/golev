@@ -43,16 +43,12 @@ export class PatientsService {
         user: {
           columns: { id: true, name: true, email: true, isActive: true },
         },
+        // Só o IMC da avaliação inicial (snapshot). O perfil vivo (telefone,
+        // comorbidades) vem das colunas de patients — reflete edições do paciente.
         anamnese: {
           columns: {
             id: true,
             imc: true,
-            pesoKg: true,
-            alturaCm: true,
-            idade: true,
-            sexo: true,
-            comorbidades: true,
-            whatsapp: true,
           },
         },
       },
@@ -62,6 +58,8 @@ export class PatientsService {
         startedAt: true,
         notes: true,
         createdAt: true,
+        phone: true,
+        comorbidities: true,
       },
     });
   }
@@ -218,12 +216,21 @@ export class PatientsService {
         startedAt: true,
         notes: true,
         createdAt: true,
+        sex: true,
+        birthDate: true,
+        heightCm: true,
+        phone: true,
+        goals: true,
+        comorbidities: true,
+        medications: true,
+        contraindications: true,
       },
       with: {
         user: {
           columns: { id: true, name: true, email: true, isActive: true },
         },
-        anamnese: true,
+        // Perfil clínico vem das colunas de patients acima; o peso inicial é o
+        // 1º weight_log (source='anamnese'). A anamnese não é mais lida aqui.
         weightLogs: {
           orderBy: [asc(weightLogs.measuredAt)],
         },
