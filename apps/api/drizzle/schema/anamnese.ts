@@ -5,6 +5,7 @@ import {
   integer,
   numeric,
   boolean,
+  date,
   timestamp,
   index,
 } from 'drizzle-orm/pg-core';
@@ -28,6 +29,8 @@ export const anamneseSubmissions = pgTable(
     objetivos: text('objetivos').array().notNull(),
     sexo: text('sexo').notNull(),
     idade: integer('idade').notNull(),
+    /** Data de nascimento (fonte exata; `idade` é derivada). Nullable p/ leads antigos. */
+    birthDate: date('birth_date'),
     alturaCm: integer('altura_cm').notNull(),
     pesoKg: numeric('peso_kg', { precision: 5, scale: 1 }).notNull(),
     tentativas: text('tentativas').notNull(),

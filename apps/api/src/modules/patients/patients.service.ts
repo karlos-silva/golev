@@ -85,6 +85,7 @@ export class PatientsService {
         // Snapshot do lead → copiado pro perfil do paciente na conversão.
         sexo: true,
         idade: true,
+        birthDate: true,
         alturaCm: true,
         pesoKg: true,
         whatsapp: true,
@@ -151,15 +152,17 @@ export class PatientsService {
 
       // Snapshot do lead vira o perfil do paciente — a partir daqui ele vive em
       // `patients` e o lead pode ser purgado sem perder o perfil clínico.
-      // birthDate é aproximado do ano (o lead só tem `idade`); equipe ajusta depois.
+      // Usa a data de nascimento exata do funil; lead antigo (sem ela) cai no
+      // fallback aproximado do ano (1º de janeiro).
       const birthYear = anamnese.createdAt.getFullYear() - anamnese.idade;
+      const birthDate = anamnese.birthDate ?? `${birthYear}-01-01`;
       const [patient] = await tx
         .insert(patients)
         .values({
           userId,
           anamneseId,
           sex: anamnese.sexo,
-          birthDate: `${birthYear}-01-01`,
+          birthDate,
           heightCm: anamnese.alturaCm,
           phone: anamnese.whatsapp,
           goals: anamnese.objetivos,

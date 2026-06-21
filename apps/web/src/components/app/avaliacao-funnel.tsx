@@ -16,6 +16,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import {
+  ageFromBirthDate,
   anamneseFieldsSchema,
   anamneseSubmissionSchema,
   computeBmi,
@@ -40,14 +41,15 @@ const BILLING_ENABLED = process.env.NEXT_PUBLIC_BILLING_ENABLED === 'true';
    ============================================================ */
 
 type Choice = { value: string; label: string };
-type NumberField = 'idade' | 'alturaCm' | 'pesoKg';
+type NumberField = 'alturaCm' | 'pesoKg';
 type Answers = Record<string, string | string[]>;
 
 type BaseQ = { id: string; title: string; help?: string; when?: (a: Answers) => boolean };
 type Question =
   | (BaseQ & { kind: 'single'; choices: Choice[] })
   | (BaseQ & { kind: 'multi'; choices: Choice[]; noneValue?: string })
-  | (BaseQ & { kind: 'number'; field: NumberField; unit: string; placeholder?: string });
+  | (BaseQ & { kind: 'number'; field: NumberField; unit: string; placeholder?: string })
+  | (BaseQ & { kind: 'date'; field: 'birthDate' });
 
 const QUESTIONS: Question[] = [
   {
@@ -75,7 +77,7 @@ const QUESTIONS: Question[] = [
       { value: 'na', label: 'Prefiro não dizer' },
     ],
   },
-  { id: 'idade', kind: 'number', field: 'idade', title: 'Quantos anos você tem?', unit: 'anos', placeholder: '32' },
+  { id: 'birthDate', kind: 'date', field: 'birthDate', title: 'Qual a sua data de nascimento?', help: 'Para confirmar que você tem 18+ e para o seu cadastro.' },
   { id: 'alturaCm', kind: 'number', field: 'alturaCm', title: 'Qual a sua altura?', unit: 'cm', placeholder: '168' },
   {
     id: 'pesoKg',
@@ -176,7 +178,7 @@ const stepVariants = {
   exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -48 : 48 }),
 };
 
-function fieldError(field: NumberField, raw: string): string | null {
+function fieldError(field: NumberField | 'birthDate', raw: string): string | null {
   if (raw.trim() === '') return null;
   const res = anamneseFieldsSchema.shape[field].safeParse(raw);
   return res.success ? null : (res.error.issues[0]?.message ?? 'Valor inválido');
@@ -310,10 +312,13 @@ export function AvaliacaoFunnel() {
     });
   }
 
-  const numErr = q && q.kind === 'number' ? fieldError(q.field, str(q.id)) : null;
+  const numErr =
+    q && (q.kind === 'number' || q.kind === 'date')
+      ? fieldError(q.field, str(q.id))
+      : null;
   const canContinue =
     !onResult && q
-      ? q.kind === 'number'
+      ? q.kind === 'number' || q.kind === 'date'
         ? str(q.id).trim() !== '' && numErr === null
         : q.kind === 'multi'
           ? list(q.id).length > 0
@@ -321,7 +326,7 @@ export function AvaliacaoFunnel() {
       : false;
 
   const previewInput = {
-    idade: Number(str('idade')),
+    idade: ageFromBirthDate(str('birthDate')) ?? 0,
     alturaCm: Number(str('alturaCm')),
     pesoKg: Number(str('pesoKg')),
     contraindicacoes: list('contraindicacoes'),
@@ -358,7 +363,7 @@ export function AvaliacaoFunnel() {
     const payload = {
       objetivos: list('objetivos'),
       sexo: str('sexo'),
-      idade: str('idade'),
+      birthDate: str('birthDate'),
       alturaCm: str('alturaCm'),
       pesoKg: str('pesoKg'),
       tentativas: str('tentativas'),
@@ -545,8 +550,34 @@ export function AvaliacaoFunnel() {
               </motion.div>
             )}
 
+            {q.kind === 'date' && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.4, ease: EASE }}>
+                <div
+                  className="mt-9 flex max-w-xs items-center rounded-xl border px-5 py-4 transition-colors focus-within:border-primary"
+                  style={{ background: 'var(--gl-surface)', borderColor: numErr ? 'var(--gl-accent-strong)' : 'var(--gl-line)' }}
+                >
+                  <input
+                    type="date"
+                    autoFocus
+                    max={new Date().toISOString().slice(0, 10)}
+                    value={str(q.id)}
+                    onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && canContinue) go(1); }}
+                    className="w-full bg-transparent text-2xl font-bold tracking-tight outline-none"
+                  />
+                </div>
+                <AnimatePresence>
+                  {numErr && (
+                    <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-2 text-sm font-medium text-brand">
+                      {numErr}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
             <AnimatePresence>
-              {(q.kind === 'number' || q.kind === 'multi') && canContinue && (
+              {(q.kind === 'number' || q.kind === 'date' || q.kind === 'multi') && canContinue && (
                 <motion.button
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   whileTap={{ scale: 0.97 }}

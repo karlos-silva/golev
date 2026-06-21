@@ -72,6 +72,7 @@ erDiagram
     text whatsapp
     text sexo
     int idade
+    date birth_date
     int altura_cm
     numeric peso_kg
     array comorbidades
@@ -297,11 +298,11 @@ erDiagram
   telefone, altura, idade, objetivos e comorbidades vêm do perfil vivo; só o IMC
   da avaliação inicial segue da `anamnese` (snapshot). Fecha a divergência com o
   card — paciente edita o perfil e o portal reflete na hora.
-- **`birth_date` é aproximado** (ano, derivado de `idade`) nos pacientes
-  backfillados e nas conversões. **Mitigado** pelo card de confirmação no
-  `/inicio` (coluna `profile_confirmed_at`), que pede a data real ao paciente
-  enquanto ele não revisou. Falta ainda o funil de anamnese coletar a data de
-  nascimento (hoje só `idade`).
+- **`birth_date`**: leads novos vêm com a data exata — o funil de anamnese
+  coleta data de nascimento → `anamnese_submissions.birth_date` → conversão usa
+  direto. Leads antigos (sem ela) têm a data aproximada do ano (derivada de
+  `idade`), mitigada pelo card de confirmação no `/inicio`
+  (`profile_confirmed_at`). `idade` na anamnese passou a ser derivada.
 
 ---
 

@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
+  ageFromBirthDate,
   computeEligibility,
   CONSENT_TEXT,
   type AnamneseInput,
@@ -71,7 +72,10 @@ export class AnamneseService {
   }
 
   async create(input: AnamneseInput): Promise<AnamneseResponse> {
-    const result = computeEligibility(input);
+    // Idade derivada da data de nascimento (fonte exata) — alimenta a regra dos
+    // 18+ e mantém a coluna `idade` preenchida.
+    const idade = ageFromBirthDate(input.birthDate) ?? 0;
+    const result = computeEligibility({ ...input, idade });
 
     if (!result.eligible && !PERSIST_INELIGIBLE) {
       return {
@@ -95,7 +99,8 @@ export class AnamneseService {
         userId: existingUser?.id ?? null,
         objetivos: input.objetivos,
         sexo: input.sexo,
-        idade: input.idade,
+        idade,
+        birthDate: input.birthDate,
         alturaCm: input.alturaCm,
         pesoKg: String(input.pesoKg),
         tentativas: input.tentativas,
