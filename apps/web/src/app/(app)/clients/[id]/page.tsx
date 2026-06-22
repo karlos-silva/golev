@@ -8,11 +8,13 @@ import { api } from '@/lib/api';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { ArrowLeft, Scale, TrendingDown, Activity, Plus, Salad } from 'lucide-react';
+import { ArrowLeft, Scale, TrendingDown, Activity, Salad, FlaskConical } from 'lucide-react';
 import { WeightChart } from '@/components/app/weight-chart';
 import {
   type PatientStatus,
+  type ExamsStatus,
   PATIENT_STATUS_CONFIG,
+  EXAMS_STATUS_CONFIG,
   OBJETIVO_LABELS,
   COMORBIDADE_LABELS,
   formatWhatsapp,
@@ -40,6 +42,8 @@ interface PatientDetail {
   comorbidities: string[];
   medications: string[];
   contraindications: string[];
+  examsStatus: ExamsStatus;
+  examsStatusAt: string | null;
   user: { id: string; name: string; email: string; isActive: boolean };
   weightLogs: WeightLog[];
 }
@@ -47,7 +51,6 @@ interface PatientDetail {
 export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
-  const qc = useQueryClient();
 
   const { data, isLoading, error } = useQuery<PatientDetail>({
     queryKey: ['patient', id],
@@ -118,11 +121,12 @@ export default function PatientDetailPage() {
               <WeightChart points={chartPoints} />
             </div>
           </Card>
-          <WeighInForm patientId={id} onSaved={() => { void qc.invalidateQueries({ queryKey: ['patient', id] }); }} logs={logs} />
+          <PesagensList logs={logs} />
         </div>
 
-        {/* Direita: dados clínicos + notas */}
+        {/* Direita: exames + dados clínicos + notas */}
         <div className="flex flex-col gap-4 min-h-0">
+          <ExamsCard id={id} status={data.examsStatus} at={data.examsStatusAt} />
           <Card title="Perfil clínico">
             <div className="space-y-3 px-4 py-3">
               <Row label="Altura" value={data.heightCm != null ? `${data.heightCm} cm` : '—'} />
@@ -257,53 +261,15 @@ function DietPlanEditor({ id }: { id: string }) {
   );
 }
 
-/* ── Registrar pesagem ──────────────────────────────────────────────────── */
-function WeighInForm({ patientId, onSaved, logs }: { patientId: string; onSaved: () => void; logs: WeightLog[] }) {
-  const [weight, setWeight] = useState('');
-
-  const mutation = useMutation({
-    mutationFn: (weightKg: number) =>
-      api(`/patients/${patientId}/weight-logs`, { method: 'POST', body: JSON.stringify({ weightKg }) }),
-    onSuccess: () => {
-      setWeight('');
-      toast.success('Pesagem registrada');
-      onSaved();
-    },
-    onError: (e: Error) => toast.error(e.message || 'Erro ao registrar'),
-  });
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const n = parseFloat(weight.replace(',', '.'));
-    if (!Number.isFinite(n) || n <= 0) {
-      toast.error('Informe um peso válido');
-      return;
-    }
-    mutation.mutate(n);
-  }
-
+/* ── Pesagens (só leitura — o peso é registrado pelo paciente no app) ─────── */
+function PesagensList({ logs }: { logs: WeightLog[] }) {
   return (
     <Card title="Pesagens" className="flex-1 min-h-0 flex flex-col">
-      <form onSubmit={submit} className="flex items-center gap-2 px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--gl-line)' }}>
-        <div className="relative flex-1">
-          <input
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            inputMode="decimal"
-            placeholder="Peso em kg"
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-            style={{ border: '1px solid var(--gl-line)', background: 'var(--gl-paper)', color: 'var(--gl-ink)' }}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={mutation.isPending}
-          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-80 disabled:opacity-50 whitespace-nowrap"
-          style={{ background: 'var(--gl-primary)', color: 'var(--gl-paper)' }}
-        >
-          <Plus className="h-4 w-4" /> Registrar
-        </button>
-      </form>
+      <div className="px-4 py-2.5 flex-shrink-0" style={{ borderBottom: '1px solid var(--gl-line)' }}>
+        <p className="text-xs" style={{ color: 'var(--gl-ink-3)' }}>
+          O paciente registra o peso pelo app.
+        </p>
+      </div>
       <div className="flex-1 overflow-y-auto">
         {logs.length === 0 ? (
           <p className="text-sm text-center py-8" style={{ color: 'var(--gl-ink-3)' }}>Nenhuma pesagem ainda</p>
@@ -332,6 +298,76 @@ function WeighInForm({ patientId, onSaved, logs }: { patientId: string; onSaved:
             })}
           </ul>
         )}
+      </div>
+    </Card>
+  );
+}
+
+/* ── Exames (etapa do onboarding) ───────────────────────────────────────── */
+const EXAMS_FLOW: Record<
+  ExamsStatus,
+  { next?: ExamsStatus; nextLabel?: string; back?: ExamsStatus; backLabel?: string; hint: string }
+> = {
+  nao_solicitado: { next: 'solicitado', nextLabel: 'Solicitar exames', hint: 'Peça os exames ao paciente — aparece como tarefa no app dele.' },
+  solicitado: { next: 'recebido', nextLabel: 'Marcar como recebidos', back: 'nao_solicitado', backLabel: 'Cancelar solicitação', hint: 'Aguardando o paciente enviar (pelo WhatsApp).' },
+  recebido: { next: 'revisado', nextLabel: 'Marcar como revisados', back: 'solicitado', backLabel: 'Voltar', hint: 'Exames recebidos — revise para dar início ao tratamento.' },
+  revisado: { back: 'recebido', backLabel: 'Reabrir', hint: 'Exames revisados. Tudo pronto para o tratamento.' },
+};
+
+function ExamsCard({ id, status, at }: { id: string; status: ExamsStatus; at: string | null }) {
+  const qc = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (s: ExamsStatus) => api(`/patients/${id}`, { method: 'PATCH', body: JSON.stringify({ examsStatus: s }) }),
+    onSuccess: () => {
+      toast.success('Etapa de exames atualizada');
+      void qc.invalidateQueries({ queryKey: ['patient', id] });
+    },
+    onError: (e: Error) => toast.error(e.message || 'Erro ao atualizar'),
+  });
+
+  const cfg = EXAMS_STATUS_CONFIG[status];
+  const flow = EXAMS_FLOW[status];
+
+  return (
+    <Card title="Exames">
+      <div className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ background: cfg.bg, color: cfg.color }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: cfg.dot }} />
+            {cfg.label}
+          </span>
+          {at && (
+            <span className="text-xs" style={{ color: 'var(--gl-ink-3)' }}>
+              {format(new Date(at), "d MMM", { locale: ptBR })}
+            </span>
+          )}
+        </div>
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--gl-ink-3)' }}>
+          <FlaskConical className="mr-1 inline h-3.5 w-3.5 align-[-2px]" style={{ color: 'var(--gl-primary)' }} />
+          {flow.hint}
+        </p>
+        <div className="flex items-center gap-3">
+          {flow.next && flow.nextLabel && (
+            <button
+              onClick={() => mutation.mutate(flow.next!)}
+              disabled={mutation.isPending}
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--gl-primary)', color: 'var(--gl-paper)' }}
+            >
+              {flow.nextLabel}
+            </button>
+          )}
+          {flow.back && flow.backLabel && (
+            <button
+              onClick={() => mutation.mutate(flow.back!)}
+              disabled={mutation.isPending}
+              className="text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-50"
+              style={{ color: 'var(--gl-ink-3)' }}
+            >
+              {flow.backLabel}
+            </button>
+          )}
+        </div>
       </div>
     </Card>
   );

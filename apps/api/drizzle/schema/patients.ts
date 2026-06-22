@@ -48,6 +48,12 @@ export const patients = pgTable(
     heightCm: integer('height_cm'),
     /** Telefone/WhatsApp de contato do paciente. */
     phone: text('phone'),
+    /**
+     * Foto de perfil — data URL de uma imagem PEQUENA (redimensionada no client
+     * p/ ~256px, ~20-30KB). Tamanho limitado na borda (Zod) p/ não inchar a base.
+     * Null = sem foto (app mostra as iniciais).
+     */
+    avatarDataUrl: text('avatar_data_url'),
     /** Objetivos do acompanhamento. */
     goals: text('goals')
       .array()
@@ -77,6 +83,15 @@ export const patients = pgTable(
     profileConfirmedAt: timestamp('profile_confirmed_at', {
       withTimezone: true,
     }),
+
+    /**
+     * Etapa dos exames no onboarding (a médica pede → paciente envia pelo
+     * WhatsApp → equipe marca recebido → médica revisa e inicia o tratamento):
+     * nao_solicitado | solicitado | recebido | revisado. Sem arquivo aqui — os
+     * exames chegam pelo WhatsApp; isto só rastreia o ESTÁGIO p/ a equipe.
+     */
+    examsStatus: text('exams_status').notNull().default('nao_solicitado'),
+    examsStatusAt: timestamp('exams_status_at', { withTimezone: true }),
 
     startedAt: timestamp('started_at', { withTimezone: true })
       .notNull()

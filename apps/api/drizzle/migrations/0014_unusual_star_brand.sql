@@ -1,0 +1,1 @@
+ALTER TABLE "patients" ADD COLUMN "avatar_data_url" text;

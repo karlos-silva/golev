@@ -25,6 +25,7 @@ import type {
   SelfWeightLogInput,
   ConsultationRequestCreateInput,
   MeProfileUpdateInput,
+  MeAvatarUpdateInput,
 } from '@golev/shared';
 
 type AppointmentWithDoctor = typeof appointments.$inferSelect & {
@@ -54,7 +55,9 @@ export class MeService {
         birthDate: true,
         heightCm: true,
         phone: true,
+        avatarDataUrl: true,
         goals: true,
+        examsStatus: true,
         profileConfirmedAt: true,
       },
       with: {
@@ -168,6 +171,8 @@ export class MeService {
       birthDate: patient.birthDate ?? null,
       phone: patient.phone ?? null,
       objetivos: patient.goals ?? [],
+      avatarUrl: patient.avatarDataUrl ?? null,
+      examsStatus: patient.examsStatus,
       profileConfirmed: patient.profileConfirmedAt != null,
     };
 
@@ -212,6 +217,19 @@ export class MeService {
         profileConfirmedAt: new Date(),
         updatedAt: new Date(),
       })
+      .where(eq(patients.id, patient.id));
+    return { ok: true };
+  }
+
+  /** Define ou remove (null) a foto de perfil do paciente. */
+  async updateAvatar(
+    userId: string,
+    input: MeAvatarUpdateInput,
+  ): Promise<{ ok: true }> {
+    const patient = await this.requirePatient(userId);
+    await this.db
+      .update(patients)
+      .set({ avatarDataUrl: input.avatarDataUrl, updatedAt: new Date() })
       .where(eq(patients.id, patient.id));
     return { ok: true };
   }

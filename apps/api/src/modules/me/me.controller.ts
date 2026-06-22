@@ -6,12 +6,14 @@ import {
   HttpStatus,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import {
   selfWeightLogSchema,
   consultationRequestCreateSchema,
   meProfileUpdateSchema,
+  meAvatarUpdateSchema,
 } from '@golev/shared';
 import { MeService } from './me.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -41,6 +43,12 @@ export class MeController {
   updateProfile(@CurrentUser('userId') userId: string, @Body() body: unknown) {
     const data = meProfileUpdateSchema.parse(body);
     return this.me.updateProfile(userId, data);
+  }
+
+  @Put('avatar')
+  updateAvatar(@CurrentUser('userId') userId: string, @Body() body: unknown) {
+    const data = meAvatarUpdateSchema.parse(body);
+    return this.me.updateAvatar(userId, data);
   }
 
   @Get('weight-logs')

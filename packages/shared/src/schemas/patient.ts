@@ -60,6 +60,21 @@ export const meProfileUpdateSchema = z.object({
 });
 export type MeProfileUpdateInput = z.infer<typeof meProfileUpdateSchema>;
 
+/**
+ * Foto de perfil do paciente (app cliente). A imagem é redimensionada no client
+ * (~256px) e enviada como data URL base64. O teto de tamanho protege o banco —
+ * uma foto pequena fica em ~20-30KB; recusamos acima de ~90KB. `null` = remover.
+ */
+export const MAX_AVATAR_DATA_URL_LEN = 120_000;
+export const meAvatarUpdateSchema = z.object({
+  avatarDataUrl: z
+    .string()
+    .regex(/^data:image\/(png|jpe?g|webp);base64,/, 'Imagem inválida')
+    .max(MAX_AVATAR_DATA_URL_LEN, 'Imagem muito grande — escolha uma menor')
+    .nullable(),
+});
+export type MeAvatarUpdateInput = z.infer<typeof meAvatarUpdateSchema>;
+
 /** Solicitação de consulta feita pelo paciente (a equipe confirma). */
 export const consultationRequestCreateSchema = z.object({
   preferredPeriod: z.enum(CONSULTATION_PERIOD_VALUES).optional(),

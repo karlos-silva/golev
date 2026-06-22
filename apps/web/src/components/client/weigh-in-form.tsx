@@ -6,6 +6,15 @@ import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 import { useAddWeightLog } from '@/hooks/use-me';
 
+/** Aceita só número + uma vírgula decimal (1 casa), até 3 dígitos inteiros. */
+function sanitizeWeight(raw: string): string {
+  const cleaned = raw.replace(/[^\d.,]/g, '').replace(/\./g, ',');
+  const [intPart = '', ...rest] = cleaned.split(',');
+  const intCapped = intPart.slice(0, 3);
+  if (rest.length === 0) return intCapped;
+  return `${intCapped},${rest.join('').slice(0, 1)}`;
+}
+
 /** Registro rápido de pesagem pelo paciente (grava com source=patient_app). */
 export function WeighInForm({ onSaved }: { onSaved?: () => void }) {
   const [weight, setWeight] = useState('');
@@ -33,7 +42,7 @@ export function WeighInForm({ onSaved }: { onSaved?: () => void }) {
     <form onSubmit={submit} className="flex items-center gap-2">
       <input
         value={weight}
-        onChange={(e) => setWeight(e.target.value)}
+        onChange={(e) => setWeight(sanitizeWeight(e.target.value))}
         inputMode="decimal"
         placeholder="Seu peso hoje, em kg"
         aria-label="Peso em quilos"

@@ -85,3 +85,16 @@ export const DietPlanStatus = {
 export type DietPlanStatus =
   (typeof DietPlanStatus)[keyof typeof DietPlanStatus];
 export const DIET_PLAN_STATUS_VALUES = values(DietPlanStatus);
+
+/**
+ * Etapa dos exames no onboarding. A médica pede → o paciente envia (hoje pelo
+ * WhatsApp) → a equipe marca recebido → a médica revisa e inicia o tratamento.
+ */
+export const ExamsStatus = {
+  NAO_SOLICITADO: 'nao_solicitado',
+  SOLICITADO: 'solicitado',
+  RECEBIDO: 'recebido',
+  REVISADO: 'revisado',
+} as const;
+export type ExamsStatus = (typeof ExamsStatus)[keyof typeof ExamsStatus];
+export const EXAMS_STATUS_VALUES = values(ExamsStatus);

@@ -12,6 +12,7 @@ import type {
   SelfWeightLogInput,
   ConsultationRequestCreateInput,
   MeProfileUpdateInput,
+  MeAvatarUpdateInput,
 } from '@golev/shared';
 
 const meKeys = {
@@ -71,6 +72,18 @@ export function useAddWeightLog() {
       toast.success('Pesagem registrada. Cada passo conta.');
     },
     onError: (e: Error) => toast.error(e.message || 'Não foi possível registrar'),
+  });
+}
+
+export function useUpdateMeAvatar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: MeAvatarUpdateInput) =>
+      api('/me/avatar', { method: 'PUT', body: JSON.stringify(input) }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: meKeys.overview });
+    },
+    onError: (e: Error) => toast.error(e.message || 'Não foi possível salvar a foto'),
   });
 }
 

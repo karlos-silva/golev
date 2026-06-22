@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { dietPlanUpsertSchema } from '@golev/shared';
+import { dietPlanUpsertSchema, EXAMS_STATUS_VALUES, type ExamsStatus } from '@golev/shared';
 import { PatientsService, type PatientStatus } from './patients.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -26,12 +26,7 @@ const convertSchema = z.object({
 const updatePatientSchema = z.object({
   status: z.enum(['active', 'paused', 'discharged']).optional(),
   notes: z.string().max(5000).optional(),
-});
-
-const weightLogSchema = z.object({
-  weightKg: z.number().positive().max(500),
-  measuredAt: z.string().datetime().optional(),
-  notes: z.string().max(1000).optional(),
+  examsStatus: z.enum(EXAMS_STATUS_VALUES).optional(),
 });
 
 @Controller('patients')
@@ -61,23 +56,17 @@ export class PatientsController {
   @HttpCode(HttpStatus.OK)
   update(@Param('id') id: string, @Body() body: unknown) {
     const data = updatePatientSchema.parse(body);
-    return this.patientsService.updatePatient(id, data as { status?: PatientStatus; notes?: string });
+    return this.patientsService.updatePatient(
+      id,
+      data as { status?: PatientStatus; notes?: string; examsStatus?: ExamsStatus },
+    );
   }
 
+  // O peso é registrado SÓ pelo paciente no app (source patient_app) — a equipe
+  // não lança peso pelo portal. Aqui só LÊ a série.
   @Get(':id/weight-logs')
   findWeightLogs(@Param('id') id: string) {
     return this.patientsService.findWeightLogs(id);
-  }
-
-  @Post(':id/weight-logs')
-  @HttpCode(HttpStatus.CREATED)
-  addWeightLog(@Param('id') id: string, @Body() body: unknown) {
-    const data = weightLogSchema.parse(body);
-    return this.patientsService.addWeightLog(id, {
-      weightKg: data.weightKg,
-      measuredAt: data.measuredAt ? new Date(data.measuredAt) : new Date(),
-      notes: data.notes,
-    });
   }
 
   @Get(':id/diet-plan')

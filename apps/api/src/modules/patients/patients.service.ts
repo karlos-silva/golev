@@ -227,6 +227,8 @@ export class PatientsService {
         comorbidities: true,
         medications: true,
         contraindications: true,
+        examsStatus: true,
+        examsStatusAt: true,
       },
       with: {
         user: {
@@ -246,44 +248,27 @@ export class PatientsService {
 
   async updatePatient(
     id: string,
-    input: { status?: PatientStatus; notes?: string },
+    input: { status?: PatientStatus; notes?: string; examsStatus?: string },
   ) {
     const [row] = await this.db
       .update(patients)
-      .set({ ...input, updatedAt: new Date() })
+      .set({
+        ...input,
+        // Carimba quando a etapa de exames muda (auditoria leve p/ a equipe).
+        ...(input.examsStatus != null ? { examsStatusAt: new Date() } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(patients.id, id))
       .returning({
         id: patients.id,
         status: patients.status,
         notes: patients.notes,
+        examsStatus: patients.examsStatus,
+        examsStatusAt: patients.examsStatusAt,
       });
 
     if (!row) throw new NotFoundException('Paciente não encontrado');
     return row;
-  }
-
-  async addWeightLog(
-    patientId: string,
-    input: { weightKg: number; measuredAt: Date; notes?: string },
-  ) {
-    const patient = await this.db.query.patients.findFirst({
-      where: eq(patients.id, patientId),
-      columns: { id: true },
-    });
-    if (!patient) throw new NotFoundException('Paciente não encontrado');
-
-    const [row] = await this.db
-      .insert(weightLogs)
-      .values({
-        patientId,
-        weightKg: String(input.weightKg),
-        measuredAt: input.measuredAt,
-        source: 'portal',
-        notes: input.notes ?? null,
-      })
-      .returning();
-
-    return row!;
   }
 
   async findWeightLogs(patientId: string) {

@@ -1,35 +1,31 @@
 'use client';
 
 import Link from 'next/link';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import {
-  Scale,
-  TrendingDown,
-  CalendarHeart,
-  Activity,
-  ArrowRight,
-  Salad,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowRight, Sparkles, CalendarCheck, Flag } from 'lucide-react';
 import { WeightChart } from '@/components/app/weight-chart';
 import {
   PageHeader,
   Accent,
-  SectionCard,
-  Metric,
+  StatusPill,
   CenteredMessage,
 } from '@/components/client/primitives';
+import { TodayCard } from '@/components/client/today-card';
+import { ImcBand } from '@/components/client/imc-band';
 import { WeighInForm } from '@/components/client/weigh-in-form';
 import { ProfileConfirmCard } from '@/components/client/profile-confirm-card';
 import { useMeOverview } from '@/hooks/use-me';
 import { useAuth } from '@/stores/auth';
-import { imcClass } from '@/lib/anamnese';
-import { APPOINTMENT_TYPE_LABELS } from '@/lib/appointments';
+import { imcClass, OBJETIVO_LABELS } from '@/lib/anamnese';
+import {
+  greetingFor,
+  trendReading,
+  weeksRegistered,
+  lossMilestonePct,
+} from '@/lib/journey-insights';
 
-const kg = (n: number) => `${n.toFixed(1).replace('.', ',')} kg`;
-const signedKg = (n: number) =>
-  `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(1).replace('.', ',')} kg`;
+const DAY_MS = 86_400_000;
+const comma = (n: number, d = 1) => n.toFixed(d).replace('.', ',');
+const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${comma(Math.abs(n))}`;
 
 export default function InicioPage() {
   const { data, isLoading, error } = useMeOverview();
@@ -40,162 +36,210 @@ export default function InicioPage() {
   if (error || !data)
     return <CenteredMessage>Não conseguimos carregar agora. Tente recarregar a página.</CenteredMessage>;
 
-  const { journey, hasDietPlan } = data;
+  const { profile, journey } = data;
+  const greeting = greetingFor(new Date());
+
   const points = journey.chart.map((c) => ({ t: +new Date(c.measuredAt), w: c.weightKg }));
+  const cutoff = Date.now() - 28 * DAY_MS;
+  const recent = points.filter((p) => p.t >= cutoff);
+  const miniPoints = recent.length >= 2 ? recent : points;
+
+  const hasHero = journey.weighInCount >= 2 && journey.deltaKg != null;
   const lost = journey.deltaKg != null && journey.deltaKg < 0;
+  const trend = trendReading(journey);
+  const weeks = weeksRegistered(journey.chart);
+  const milestone = lossMilestonePct(journey.deltaPct);
 
   return (
     <>
       <PageHeader
         kicker="Sua jornada"
-        title={`Olá, ${firstName}`}
+        title={`${greeting}, ${firstName}`}
         subtitle={
-          <>
-            Que bom ter você aqui. A gente caminha <Accent>junto</Accent>, no seu ritmo — cada passo conta.
-          </>
+          profile.profileConfirmed ? (
+            <>
+              A gente caminha <Accent>junto</Accent>, no seu ritmo — cada passo conta.
+            </>
+          ) : (
+            <>Vamos confirmar seu perfil pra cuidar de você com mais precisão.</>
+          )
+        }
+        action={
+          <StatusPill
+            label={`${journey.daysInProgram} ${journey.daysInProgram === 1 ? 'dia' : 'dias'} com a gente`}
+            bg="var(--gl-support-tint)"
+            color="var(--gl-primary-strong)"
+          />
         }
       />
 
-      {!data.profile.profileConfirmed && (
-        <ProfileConfirmCard profile={data.profile} />
+      {profile.profileConfirmed ? (
+        <div className="gl-in" style={{ animationDelay: '40ms' }}>
+          <TodayCard overview={data} />
+        </div>
+      ) : (
+        <ProfileConfirmCard profile={profile} />
       )}
 
-      {/* Métricas da jornada */}
-      <div className="gl-in grid grid-cols-2 gap-4 lg:grid-cols-4" style={{ animationDelay: '40ms' }}>
-        <Metric
-          label="Peso atual"
-          value={journey.currentWeightKg != null ? kg(journey.currentWeightKg) : '—'}
-          icon={<Scale className="h-3.5 w-3.5" />}
-          accent
-        />
-        <Metric
-          label="Variação"
-          value={journey.deltaKg != null ? signedKg(journey.deltaKg) : '—'}
-          sub={
-            journey.deltaPct != null
-              ? `${journey.deltaPct > 0 ? '+' : journey.deltaPct < 0 ? '−' : ''}${Math.abs(journey.deltaPct).toFixed(1).replace('.', ',')}% desde o início`
-              : 'desde o início'
-          }
-          icon={<TrendingDown className="h-3.5 w-3.5" />}
-          tone={lost ? 'var(--gl-primary)' : 'var(--gl-ink)'}
-        />
-        <Metric
-          label="Acompanhamento"
-          value={`${journey.daysInProgram}`}
-          sub={journey.daysInProgram === 1 ? 'dia com a gente' : 'dias com a gente'}
-          icon={<CalendarHeart className="h-3.5 w-3.5" />}
-        />
-        <Metric
-          label="IMC atual"
-          value={journey.currentBmi != null ? journey.currentBmi.toFixed(1).replace('.', ',') : '—'}
-          sub={journey.currentBmi != null ? imcClass(journey.currentBmi) : undefined}
-          icon={<Activity className="h-3.5 w-3.5" />}
-        />
-      </div>
-
-      <div className="gl-in grid gap-5 lg:grid-cols-3" style={{ animationDelay: '90ms' }}>
-        {/* Evolução + pesagem rápida */}
-        <div className="lg:col-span-2">
-          <SectionCard
-            title="Sua evolução"
-            icon={<TrendingDown className="h-4 w-4" />}
-            action={
-              <Link
-                href="/evolucao"
-                className="inline-flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"
-                style={{ color: 'var(--gl-primary)' }}
-              >
-                Ver tudo <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            }
-          >
-            <WeightChart points={points} />
-            <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--gl-line)' }}>
-              <p className="mb-2 text-xs" style={{ color: 'var(--gl-ink-3)' }}>
-                Registre sua pesagem de hoje
-              </p>
-              <WeighInForm />
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* Coluna lateral */}
-        <div className="flex flex-col gap-5">
-          <SectionCard title="Próxima consulta" icon={<CalendarHeart className="h-4 w-4" />}>
-            {journey.nextAppointment ? (
-              <div className="space-y-3">
-                <p
-                  className="text-lg leading-tight"
-                  style={{ color: 'var(--gl-ink)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 500 }}
+      {/* Número-herói + leitura de tendência */}
+      <div className="gl-in" style={{ animationDelay: '90ms' }}>
+        <section
+          className="rounded-2xl p-5"
+          style={{ background: 'var(--gl-surface)', border: '1px solid var(--gl-line)' }}
+        >
+          {hasHero && journey.deltaKg != null ? (
+            <>
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span
+                  className="leading-none"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontStyle: 'italic',
+                    fontWeight: 500,
+                    fontSize: '2.6rem',
+                    color: lost ? 'var(--gl-primary)' : 'var(--gl-ink)',
+                  }}
                 >
-                  {format(new Date(journey.nextAppointment.scheduledAt), "EEEE, d 'de' MMMM", { locale: ptBR })}
+                  {signed(journey.deltaKg)}
+                </span>
+                <span className="text-base" style={{ color: 'var(--gl-ink-2)' }}>
+                  kg
+                </span>
+                <span className="text-sm" style={{ color: 'var(--gl-ink-2)' }}>
+                  {lost && milestone == null ? 'mais leve desde o início' : 'desde o início'}
+                  {milestone == null && journey.deltaPct != null && (
+                    <>
+                      {' · '}
+                      <span style={{ color: 'var(--gl-primary-strong)' }}>{signed(journey.deltaPct)}%</span>
+                    </>
+                  )}
+                </span>
+              </div>
+
+              {milestone != null && (
+                <p
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+                  style={{ background: 'var(--gl-accent-tint)', color: 'var(--gl-on-accent)' }}
+                >
+                  <Flag className="h-3.5 w-3.5" style={{ color: 'var(--gl-accent-strong)' }} />
+                  Você já está {milestone}% mais leve
                 </p>
-                <p className="text-sm" style={{ color: 'var(--gl-ink-2)' }}>
-                  às {format(new Date(journey.nextAppointment.scheduledAt), "HH'h'mm", { locale: ptBR })}
-                  {' · '}
-                  {APPOINTMENT_TYPE_LABELS[journey.nextAppointment.type as 'primeira' | 'retorno'] ?? journey.nextAppointment.type}
-                </p>
-                {journey.nextAppointment.doctor && (
-                  <p className="text-sm" style={{ color: 'var(--gl-ink-3)' }}>
-                    com {journey.nextAppointment.doctor.name}
-                  </p>
+              )}
+
+              <p
+                className="mt-3 text-sm leading-relaxed"
+                style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--gl-accent-strong)' }}
+              >
+                {trend.phrase}
+              </p>
+
+              <div className="mt-4">
+                <WeightChart points={miniPoints} />
+              </div>
+
+              <div
+                className="mt-4 flex items-center justify-between gap-3 border-t pt-3.5"
+                style={{ borderColor: 'var(--gl-line)' }}
+              >
+                {weeks.registered > 0 ? (
+                  <span className="inline-flex items-center gap-2 text-xs" style={{ color: 'var(--gl-ink-3)' }}>
+                    <CalendarCheck className="h-4 w-4" style={{ color: 'var(--gl-primary)' }} />
+                    Você registrou{' '}
+                    <span style={{ color: 'var(--gl-ink)' }}>
+                      {weeks.registered} das últimas {weeks.window} semanas
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-xs" style={{ color: 'var(--gl-ink-3)' }}>
+                    Sua evolução completa
+                  </span>
                 )}
                 <Link
-                  href="/consultas"
-                  className="inline-flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"
+                  href="/evolucao"
+                  className="inline-flex flex-shrink-0 items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"
                   style={{ color: 'var(--gl-primary)' }}
                 >
-                  Ver consultas <ArrowRight className="h-3.5 w-3.5" />
+                  Ver evolução <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-sm" style={{ color: 'var(--gl-ink-2)' }}>
-                  Você não tem consulta marcada.
-                </p>
-                <Link
-                  href="/consultas"
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
-                  style={{ background: 'var(--gl-primary)', color: 'var(--gl-paper)' }}
-                >
-                  Solicitar consulta
-                </Link>
-              </div>
-            )}
-          </SectionCard>
-
-          <SectionCard title="Meu plano" icon={<Salad className="h-4 w-4" />}>
-            {hasDietPlan ? (
-              <div>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
-                  Seu plano alimentar está pronto. Dê uma olhada quando puder.
-                </p>
-                <Link
-                  href="/plano"
-                  className="mt-3 inline-flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"
-                  style={{ color: 'var(--gl-primary)' }}
-                >
-                  Abrir meu plano <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            ) : (
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
-                Seu plano vai aparecer aqui assim que a equipe montar, com calma e do seu jeito.
+            </>
+          ) : (
+            <div className="py-2">
+              <p
+                className="text-xl leading-tight"
+                style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 500, color: 'var(--gl-ink)' }}
+              >
+                Sua história começa aqui
               </p>
-            )}
-          </SectionCard>
-        </div>
+              <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
+                Registre seu peso para a gente acompanhar sua evolução, no seu tempo.
+              </p>
+              <div className="mt-4">
+                <WeighInForm />
+              </div>
+            </div>
+          )}
+        </section>
       </div>
 
-      {/* Nota de acolhimento */}
-      <div
-        className="gl-in flex items-start gap-3 rounded-2xl px-5 py-4"
-        style={{ background: 'var(--gl-accent-tint)', animationDelay: '140ms' }}
-      >
-        <Sparkles className="mt-0.5 h-5 w-5 flex-shrink-0" style={{ color: 'var(--gl-accent-strong)' }} />
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--gl-on-accent)' }}>
-          Recomeçar quando precisar também faz parte. A gente está aqui para te acompanhar, sem cobrança.
-        </p>
+      {/* Faixa de IMC — o movimento, não o rótulo */}
+      {journey.currentBmi != null && (
+        <div className="gl-in" style={{ animationDelay: '120ms' }}>
+          <section
+            className="rounded-2xl p-5"
+            style={{ background: 'var(--gl-surface)', border: '1px solid var(--gl-line)' }}
+          >
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.13em]" style={{ color: 'var(--gl-ink-3)' }}>
+              Seu IMC, caminhando
+            </p>
+            <ImcBand initialBmi={journey.initialBmi} currentBmi={journey.currentBmi} />
+            <p className="mt-3 text-xs leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
+              <span style={{ color: 'var(--gl-ink)' }}>{imcClass(journey.currentBmi)}</span> hoje · a faixa
+              verde é a saudável (IMC abaixo de 25), um objetivo no seu tempo. Referência de orientação — a
+              meta real é definida com a equipe.
+            </p>
+          </section>
+        </div>
+      )}
+
+      {/* Por que você começou */}
+      {profile.objetivos.length > 0 && (
+        <div className="gl-in rounded-2xl px-5 py-4" style={{ background: 'var(--gl-accent-tint)', animationDelay: '150ms' }}>
+          <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.13em]" style={{ color: 'var(--gl-accent-strong)' }}>
+            Por que você começou
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {profile.objetivos.map((o) => (
+              <span
+                key={o}
+                className="rounded-full px-3 py-1 text-xs font-medium"
+                style={{ background: 'var(--gl-surface)', color: 'var(--gl-on-accent)' }}
+              >
+                {OBJETIVO_LABELS[o] ?? o}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Acolhimento + acessos rápidos */}
+      <div className="gl-in flex flex-col gap-3" style={{ animationDelay: '180ms' }}>
+        <div className="flex items-start gap-3 rounded-2xl px-5 py-4" style={{ background: 'var(--gl-support-tint)' }}>
+          <Sparkles className="mt-0.5 h-5 w-5 flex-shrink-0" style={{ color: 'var(--gl-primary)' }} />
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--gl-ink-2)' }}>
+            Recomeçar quando precisar também faz parte. A gente está aqui para te acompanhar, sem cobrança.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-1.5 px-1">
+          <Link href="/consultas" className="text-xs font-medium transition-opacity hover:opacity-70" style={{ color: 'var(--gl-primary)' }}>
+            Ver minhas consultas
+          </Link>
+          {data.hasDietPlan && (
+            <Link href="/plano" className="text-xs font-medium transition-opacity hover:opacity-70" style={{ color: 'var(--gl-primary)' }}>
+              Ver meu plano
+            </Link>
+          )}
+        </div>
       </div>
     </>
   );

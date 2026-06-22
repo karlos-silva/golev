@@ -99,12 +99,14 @@ export default function ClientsPage() {
         </FilterSlot>
       </FilterBar>
 
-      {/* Tabela */}
+      {/* Tabela — rola na horizontal em telas estreitas (largura mínima evita
+          o colapso da coluna Paciente, que sobrepunha o IMC). */}
       <div className="gl-in rounded-xl flex-1 min-h-0 overflow-hidden flex flex-col"
         style={{ background: 'var(--gl-surface)', border: '1px solid var(--gl-line)', animationDelay: '80ms' }}>
-
-        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 text-xs font-semibold uppercase tracking-wider flex-shrink-0"
-          style={{ borderBottom: '1px solid var(--gl-line)', color: 'var(--gl-ink-3)' }}>
+       <div className="flex-1 min-h-0 overflow-auto">
+        <div className="min-w-[720px]">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] gap-4 px-5 py-3 text-xs font-semibold uppercase tracking-wider sticky top-0 z-10"
+          style={{ borderBottom: '1px solid var(--gl-line)', color: 'var(--gl-ink-3)', background: 'var(--gl-surface)' }}>
           <span>Paciente</span>
           <span className="w-20 text-center">IMC</span>
           <span className="w-32">WhatsApp</span>
@@ -112,7 +114,7 @@ export default function ClientsPage() {
           <span className="w-24 text-center">Status</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y" style={{ borderColor: 'var(--gl-line)' }}>
+        <div className="divide-y" style={{ borderColor: 'var(--gl-line)' }}>
           {isLoading && (
             <div className="flex items-center justify-center py-16">
               <p className="text-sm" style={{ color: 'var(--gl-ink-3)' }}>Carregando…</p>
@@ -130,28 +132,32 @@ export default function ClientsPage() {
 
             return (
               <Link key={p.id} href={`/clients/${p.id}`}
-                className="gl-in grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3.5 items-center transition-colors"
+                className="gl-in grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] gap-4 px-5 py-3.5 items-center transition-colors"
                 style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--gl-support-tint)')}
                 onMouseLeave={e => (e.currentTarget.style.background = '')}
               >
                 {/* Paciente */}
-                <div className="min-w-0">
+                <div className="min-w-0 overflow-hidden">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--gl-ink)' }}>
                     {p.user.name}
                   </p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-xs truncate" style={{ color: 'var(--gl-ink-3)' }}>
+                  <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                    <span className="text-xs truncate min-w-0" style={{ color: 'var(--gl-ink-3)' }}>
                       {p.user.email}
                     </span>
-                    {comorbidades.length > 0 && (
-                      <span className="flex gap-1">
-                        {comorbidades.map(c => (
-                          <span key={c} className="text-xs rounded px-1.5 py-0.5"
-                            style={{ background: 'var(--gl-accent-tint)', color: 'var(--gl-accent-strong)' }}>
-                            {COMORBIDADE_LABELS[c] ?? c}
+                    {comorbidades[0] && (
+                      <span className="flex items-center gap-1 flex-shrink-0">
+                        <span className="text-xs rounded px-1.5 py-0.5 whitespace-nowrap"
+                          style={{ background: 'var(--gl-accent-tint)', color: 'var(--gl-accent-strong)' }}>
+                          {COMORBIDADE_LABELS[comorbidades[0]] ?? comorbidades[0]}
+                        </span>
+                        {comorbidades.length > 1 && (
+                          <span className="text-xs rounded px-1.5 py-0.5 whitespace-nowrap"
+                            style={{ background: 'var(--gl-support-tint)', color: 'var(--gl-ink-3)' }}>
+                            +{comorbidades.length - 1}
                           </span>
-                        ))}
+                        )}
                       </span>
                     )}
                   </div>
@@ -218,6 +224,8 @@ export default function ClientsPage() {
             </div>
           )}
         </div>
+        </div>
+       </div>
       </div>
     </div>
   );

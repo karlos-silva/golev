@@ -47,6 +47,16 @@ export const PATIENT_STATUS_CONFIG: Record<PatientStatus, StatusVisual> = {
   discharged: { label: 'Encerrado', bg: 'var(--gl-line)',         color: 'var(--gl-ink-3)', dot: 'var(--gl-ink-3)' },
 };
 
+export type ExamsStatus = 'nao_solicitado' | 'solicitado' | 'recebido' | 'revisado';
+
+/** Etapa dos exames do PACIENTE (pós-conversão). Progressão neutro → pêssego (aguardando o paciente) → azul (recebido) → sólido (revisado, pronto p/ tratar). */
+export const EXAMS_STATUS_CONFIG: Record<ExamsStatus, StatusVisual> = {
+  nao_solicitado: { label: 'Não solicitados', bg: 'var(--gl-support-tint)',  color: 'var(--gl-ink-2)',         dot: 'var(--gl-ink-3)' },
+  solicitado:     { label: 'Solicitados',     bg: 'var(--gl-accent-tint)',   color: 'var(--gl-accent-strong)', dot: 'var(--gl-accent-strong)' },
+  recebido:       { label: 'Recebidos',       bg: 'var(--gl-support-tint)',  color: 'var(--gl-primary)',       dot: 'var(--gl-primary)' },
+  revisado:       { label: 'Revisados',       bg: 'var(--gl-primary-strong)', color: 'var(--gl-paper)',         dot: 'var(--gl-accent)' },
+};
+
 export const OBJETIVO_LABELS: Record<string, string> = {
   saude_geral: 'Saúde geral',
   prevenir_problemas: 'Prevenção',

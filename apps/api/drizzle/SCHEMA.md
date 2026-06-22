@@ -241,9 +241,12 @@ erDiagram
     date birth_date "NOVO (substitui idade int)"
     int height_cm "NOVO"
     text phone "NOVO (whatsapp)"
+    text avatar_data_url "NOVO (foto perfil, data URL pequena)"
     array comorbidities "NOVO (estado atual, editável)"
     array medications "NOVO (estado atual, editável)"
     array contraindications "NOVO"
+    text exams_status "NOVO (nao_solicitado|solicitado|recebido|revisado)"
+    timestamp exams_status_at "NOVO"
     timestamp started_at
     text notes
   }

@@ -26,6 +26,10 @@ export interface MeProfile {
   /** Telefone/WhatsApp p/ pré-preencher o form de confirmação. */
   phone: string | null;
   objetivos: string[];
+  /** Foto de perfil (data URL) ou null se o paciente não definiu nenhuma. */
+  avatarUrl: string | null;
+  /** Etapa dos exames: nao_solicitado | solicitado | recebido | revisado. */
+  examsStatus: string;
   /** Paciente já revisou o próprio perfil? Falso → app pede a confirmação. */
   profileConfirmed: boolean;
 }
