@@ -38,6 +38,36 @@ function startsWithAny(path: string, prefixes: string[]): boolean {
   return prefixes.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
+/**
+ * Em produção, o portal (equipe) vive em `portal.<domínio>` e a área do cliente
+ * no domínio principal. Se o destino pertence ao OUTRO subdomínio, precisa de
+ * navegação cross-origin (window.location) — um `router.push` ficaria no host
+ * errado e o middleware desse host chutaria pra home. Em dev (localhost) é tudo
+ * no mesmo host → retorna null (segue com router.push).
+ */
+function crossDomainDest(dest: string): string | null {
+  if (typeof window === 'undefined') return null;
+  const host = window.location.host;
+  if (host.startsWith('localhost') || host.startsWith('127.')) return null;
+  const isOnPortal = host.startsWith('portal.');
+  const baseHost = isOnPortal ? host.slice('portal.'.length) : host;
+  const proto = window.location.protocol;
+  if (startsWithAny(dest, PORTAL_PREFIXES) && !isOnPortal) {
+    return `${proto}//portal.${baseHost}${dest}`;
+  }
+  if (startsWithAny(dest, CLIENT_PREFIXES) && isOnPortal) {
+    return `${proto}//${baseHost}${dest}`;
+  }
+  return null;
+}
+
+/** Navega para o destino, cruzando de subdomínio quando o role exige. */
+function navigate(router: ReturnType<typeof useRouter>, dest: string): void {
+  const cross = crossDomainDest(dest);
+  if (cross) window.location.href = cross;
+  else router.push(dest);
+}
+
 /** Para onde mandar o usuário logado, conforme role e estado da conta. */
 function destinationFor(user: AuthUser): string {
   if (user.mustResetPassword) return '/definir-senha';
@@ -103,7 +133,7 @@ export function useLogin() {
       const dest = data.user.mustResetPassword
         ? '/definir-senha'
         : (redirectForRole(data.user) ?? destinationFor(data.user));
-      router.push(dest);
+      navigate(router, dest);
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Credenciais inválidas');
@@ -124,7 +154,7 @@ export function useRegister() {
     onSuccess: (data) => {
       setSession(data.user);
       toast.success('Conta criada com sucesso!');
-      router.push(destinationFor(data.user));
+      navigate(router, destinationFor(data.user));
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Erro ao criar conta');
@@ -151,7 +181,7 @@ export function useChangePassword(redirectTo?: string) {
       // 1º acesso) — atualizamos a sessão para o app seguir sem interrupção.
       setSession(data.user);
       toast.success('Senha definida. Tudo pronto.');
-      if (redirectTo) router.push(redirectTo);
+      if (redirectTo) navigate(router, redirectTo);
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Não foi possível atualizar a senha');
@@ -186,7 +216,7 @@ export function useResetPassword() {
     onSuccess: (data) => {
       setSession(data.user);
       toast.success('Senha definida. Tudo pronto.');
-      router.push(destinationFor(data.user));
+      navigate(router, destinationFor(data.user));
     },
     onError: (error: Error) =>
       toast.error(error.message || 'Link inválido ou expirado'),
