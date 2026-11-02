@@ -15,6 +15,7 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-Drizzle-4169E1?logo=postgresql&logoColor=white" />
   <img alt="Stripe" src="https://img.shields.io/badge/Stripe-billing-635BFF?logo=stripe&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" />
+  <img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-22c55e" />
 </p>
 
 ---
@@ -151,6 +152,11 @@ chaves de **modo teste** no seu `.env`.
 - **Branches:** `feat/`, `fix/`, `chore/`, `refactor/`, `hotfix/`
 - **Commits:** Conventional Commits (`feat(billing): add stripe webhooks`)
 - **PRs:** squash merge, com template
+
+## Licença
+
+[MIT](./LICENSE). Use, copie e adapte à vontade. O nome e a marca Go Lev ficam como
+referência do projeto original.
 
 ---
 
